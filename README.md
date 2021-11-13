@@ -1,4 +1,4 @@
-# LED Effects Klipper.
+# LED Effects for Klipper.
 
 This plugin allows Klipper to run effects and animations on addressable LEDs, such as Neopixels, WS2812 or SK6812.
 
