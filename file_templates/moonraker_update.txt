@@ -2,4 +2,4 @@
 type: git_repo
 path: ~/klipper-led_effect
 origin: https://github.com/julianschill/klipper-led_effect.git
-
+is_system_service: False

@@ -21,26 +21,7 @@ link_extension()
     ln -sf "${SRCDIR}/led_effect.py" "${KLIPPER_PATH}/klippy/extras/led_effect.py"
 }
 
-
-# Step 3: Install startup script
-install_script()
-{
-# Create systemd service file
-    SERVICE_FILE="${SYSTEMDDIR}/led_effect.service"
-    #[ -f $SERVICE_FILE ] && return
-    if [ -f $SERVICE_FILE ]; then
-        sudo rm "$SERVICE_FILE"
-    fi
-
-    echo "Installing system start script..."
-    sudo cp -r $PWD/file_templates/led_effect.service /etc/systemd/system/
-# Use systemctl to enable the systemd service script
-    sudo systemctl daemon-reload
-    sudo systemctl enable led_effect.service
-}
-
-
-# Step 4: Add updater
+# Step 3: Add updater
 # webcamd to moonraker.conf
 echo -e "Adding update manager to moonraker.conf"
 
@@ -58,7 +39,7 @@ fi
 
 
 
-# Step 5: restarting Klipper
+# Step 4: restarting Klipper
 restart_klipper()
 {
     echo "Restarting Klipper..."
@@ -90,5 +71,4 @@ done
 # Run steps
 verify_ready
 link_extension
-install_script
 restart_klipper
