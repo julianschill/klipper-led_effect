@@ -103,7 +103,7 @@ frame_rate:             24
 leds:
     neopixel:panel_ring
 layers:
-    breathing  .5 1 top [(.5,.5,1)]
+    breathing  10 1 top (.5,.5,1)
 ```
 
 This has defined an effect called `panel_idle` that can be controlled
@@ -400,7 +400,7 @@ divide, it results in brighter colors
 ```
     ( t if t > b else b )
 ```
-The brigther of the color channels is used
+The brighter of the color channels is used
 
 #### darken
 ```
