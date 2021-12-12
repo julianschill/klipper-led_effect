@@ -282,8 +282,8 @@ class ledEffect:
                                         1.0 if x > 1.0 else x)
                     if ledChain.color_order == 'RGB':
                         getColorData = (lambda r, g, b:
-                                        ( int(clamp(g) * 255.0),
-                                          int(clamp(r) * 255.0),
+                                        ( int(clamp(r) * 255.0),
+                                          int(clamp(g) * 255.0),
                                           int(clamp(b) * 255.0)))
 
                     if ledChain.color_order == 'GRB':
