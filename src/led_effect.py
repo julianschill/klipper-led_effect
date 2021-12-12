@@ -13,7 +13,7 @@ from random import randint
 
 ANALOG_SAMPLE_TIME  = 0.001
 ANALOG_SAMPLE_COUNT = 5
-ANALOG_REPORT_TIME  = 0.2
+ANALOG_REPORT_TIME  = 0.05
 
 
 ## TODO:
@@ -68,7 +68,6 @@ class ledFrameHandler:
         self.printer = config.get_printer()
         self.gcode   = self.printer.lookup_object('gcode')
         self.printer.load_object(config, "display_status")
-        self.analogPins = []
         self.heaters = {}
         self.effects = []
         self.heaterCurrent   = {}
@@ -136,16 +135,7 @@ class ledFrameHandler:
                                                         self._pollStepper,
                                                         self.reactor.NOW)
 
-        if effect.analogPin:
-            ppins = self.printer.lookup_object('pins')
-            mcu_adc = ppins.setup_pin('adc', self.analogPin)
-            mcu_adc.setup_adc_callback(ANALOG_REPORT_TIME, self.adcCallback)
-            mcu_adc.setup_minmax(ANALOG_SAMPLE_TIME, ANALOG_SAMPLE_COUNT)
-            query_adc = self.printer.load_object(self.config, 'query_adc')
-            query_adc.register_adc(self.name, mcu_adc)
-
         self.effects.append(effect)
-
 
     def _pollHeater(self, eventtime):
         for heater in self.heaters.iterkeys():
@@ -200,9 +190,6 @@ class ledFrameHandler:
         return next_eventtime
 
 
-    def adcCallback(self, read_time, read_value):
-        self.analogValue = int(read_value * 1000) / 10.0
-
     def cmd_STOP_LED_EFFECTS(self, gcmd):
         for effect in self.effects:
             effect.set_enabled(False)
@@ -225,6 +212,7 @@ class ledEffect:
         self.enabled      = False
         self.iteration    = 0
         self.layers       = []
+        self.analogValue  = 0
 
         #Basic functions for layering colors. t=top and b=bottom color
         self.blendingModes  = {
@@ -259,6 +247,14 @@ class ledEffect:
         self.gcode.register_mux_command('SET_LED_EFFECT', 'EFFECT', self.name,
                                          self.cmd_SET_LED_EFFECT,
                                          desc=self.cmd_SET_LED_help)
+
+        if self.analogPin:
+            ppins = self.printer.lookup_object('pins')
+            self.mcu_adc = ppins.setup_pin('adc', self.analogPin)
+            self.mcu_adc.setup_minmax(ANALOG_SAMPLE_TIME, ANALOG_SAMPLE_COUNT)
+            self.mcu_adc.setup_adc_callback(ANALOG_REPORT_TIME, self.adcCallback)
+            query_adc = self.printer.load_object(self.config, 'query_adc')
+            query_adc.register_adc(self.name, self.mcu_adc)
 
     cmd_SET_LED_help = 'Starts or Stops the specified led_effect'
 
@@ -422,6 +418,8 @@ class ledEffect:
     def _handle_shutdown(self):
         self.set_enabled(self.runOnShutown)
 
+    def adcCallback(self, read_time, read_value):
+        self.analogValue = int(read_value * 1000.0) / 10.0
 
     ######################################################################
     # LED Effect layers
