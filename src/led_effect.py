@@ -746,6 +746,7 @@ class ledEffect:
                                 heaterCurrent[self.handler.heater] / 
                                 self.frameHandler.
                                 heaterTarget[self.handler.heater]) * 200)
+                    s = min(len(self.thisFrame)-1,s)
                     return self.thisFrame[s]
                 elif self.effectCutoff > 0:
                     return None
@@ -762,6 +763,7 @@ class ledEffect:
                                 self.effectRate) / 
                                 self.frameHandler.
                                 heaterLast[self.handler.heater]) * 200)
+                    s = min(len(self.thisFrame)-1,s)
                     return self.thisFrame[s]
 
             return None
