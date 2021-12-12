@@ -897,9 +897,9 @@ class ledEffect:
         def nextFrame(self, eventtime):
             frame = []
             spark = 0
-            heaterTarget  = self.handler.heaterTarget
-            heaterCurrent = self.handler.heaterCurrent
-            heaterLast    = self.handler.heaterLast
+            heaterTarget  = self.frameHandler.heaterTarget[self.handler.heater]
+            heaterCurrent = self.frameHandler.heaterCurrent[self.handler.heater]
+            heaterLast    = self.frameHandler.heaterLast[self.handler.heater]
 
             if heaterTarget > 0.0 and heaterCurrent > 0.0:
                 if heaterCurrent <= heaterTarget-5:
