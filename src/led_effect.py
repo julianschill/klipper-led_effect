@@ -122,7 +122,7 @@ class ledFrameHandler:
             self.toolhead = self.printer.lookup_object('toolhead')
             kin = self.toolhead.get_kinematics()
 
-            self.getAxisPosition = self.toolhead.get_position()
+            self.getAxisPosition = self.toolhead.get_position
             self.getAxisStatus = kin.get_status
 
             if not self.stepperTimer:
