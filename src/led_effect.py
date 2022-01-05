@@ -156,7 +156,8 @@ class ledFrameHandler:
         return eventtime + .5
 
     def _pollProgress(self, eventtime):
-        p = self.displayStatus.progress
+        status = self.displayStatus.get_status(eventtime)
+        p = status.get('progress')
         if p:
             self.printProgress = int(p * 100)
         return eventtime + 1
