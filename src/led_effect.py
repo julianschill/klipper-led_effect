@@ -69,6 +69,7 @@ class ledFrameHandler:
         self.gcode   = self.printer.lookup_object('gcode')
         self.printer.load_object(config, "display_status")
         self.heaters = {}
+        self.printProgress = 0
         self.effects = []
         self.heaterCurrent   = {}
         self.heaterTarget    = {}
@@ -985,7 +986,7 @@ class ledEffect:
             self.frameCount = len(self.thisFrame)
 
         def nextFrame(self, eventtime):
-            p = self.handler.printProgress
+            p = self.frameHandler.printProgress
             return self.thisFrame[p] #(p - 1) * (p > 0)]
 
 def load_config_prefix(config):
