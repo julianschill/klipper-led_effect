@@ -71,6 +71,7 @@ class ledFrameHandler:
         self.heaters = {}
         self.printProgress = 0
         self.effects = []
+        self.stepperPositions = [0.0,0.0,0.0]
         self.heaterCurrent   = {}
         self.heaterTarget    = {}
         self.heaterLast      = {}
@@ -117,24 +118,17 @@ class ledFrameHandler:
                                                                self.reactor.NOW)
 
         if effect.stepper:
-            self.stepperPosition = 0
             self.toolhead = self.printer.lookup_object('toolhead')
             kin = self.toolhead.get_kinematics()
 
-            for r in kin.rails:
-                steppers = r.get_steppers()
+            
+            self.getAxisPosition = kin.calc_position
+            self.getAxisStatus = kin.get_status
 
-                for s in steppers:
-                    if s.get_name() == self.stepper:
-                        axis = s.get_name(short=True)
-                        if axis == 'x': self.stepperAxis = 0
-                        if axis == 'y': self.stepperAxis = 1
-                        if axis == 'z': self.stepperAxis = 2
-                        self.stepperRange = r.get_range()
-                        self.getAxisPosition = kin.calc_tag_position
-                        self.stepperTimer = self.reactor.register_timer(
-                                                        self._pollStepper,
-                                                        self.reactor.NOW)
+            if not self.stepperTimer:
+                self.stepperTimer = self.reactor.register_timer(
+                                                self._pollStepper,
+                                                self.reactor.NOW)
 
         self.effects.append(effect)
 
@@ -148,11 +142,16 @@ class ledFrameHandler:
         return eventtime + 1
 
     def _pollStepper(self, eventtime):
-        p = self.getAxisPosition()[self.stepperAxis]
-        if p >= self.stepperRange[0] and p <= self.stepperRange[1]:
-            self.stepperPosition = int(
-                (self._clamp(p / (self.stepperRange[1] - self.stepperRange[0]))
-                    * 100)- 1)
+        pos = self.getAxisPosition()
+        status = self.getAxisStatus()
+        min = status.get('axis_minimum')
+        max = status.get('axis_maximum')
+
+        for i, p in enumerate(pos):
+            if p >= min[i] and p <= max[i]:
+                self.stepperPositions[i] = int(
+                    (self._clamp(p / (max[i] - min[i]))
+                        * 100)- 1)
         return eventtime + .5
 
     def _pollProgress(self, eventtime):
@@ -833,8 +832,12 @@ class ledEffect:
             self.frameCount = len(self.thisFrame)
 
         def nextFrame(self, eventtime):
-            p = self.handler.stepperPosition
-            return self.thisFrame[(p - 1) * (p > 0)]
+            if self.handler.stepper == 'x': axis = 0
+            elif self.handler.stepper == 'y': axis = 1
+            else: axis = 2
+
+            p = self.frameHandler.stepperPositions[int(axis)]
+            return self.thisFrame[int((p - 1) * (p > 0))]
 
      #Shameless port of Fire2012 by Mark Kriegsman
 
