@@ -72,6 +72,7 @@ class ledFrameHandler:
         self.printProgress = 0
         self.effects = []
         self.stepperPositions = [0.0,0.0,0.0]
+        self.stepperTimer     = None
         self.heaterCurrent   = {}
         self.heaterTarget    = {}
         self.heaterLast      = {}
