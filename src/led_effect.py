@@ -122,8 +122,7 @@ class ledFrameHandler:
             self.toolhead = self.printer.lookup_object('toolhead')
             kin = self.toolhead.get_kinematics()
 
-            
-            self.getAxisPosition = kin.calc_position
+            self.getAxisPosition = self.toolhead.get_position()
             self.getAxisStatus = kin.get_status
 
             if not self.stepperTimer:
@@ -143,6 +142,9 @@ class ledFrameHandler:
         return eventtime + 1
 
     def _pollStepper(self, eventtime):
+
+
+
         pos = self.getAxisPosition()
         status = self.getAxisStatus()
         min = status.get('axis_minimum')
