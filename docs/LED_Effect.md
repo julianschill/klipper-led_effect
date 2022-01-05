@@ -446,7 +446,7 @@ autostart:                          true
 frame_rate:                         24
 heater:                             heater_bed
 layers:
-    heating 50 0 add    (1,1,0),(1,0,0)
+    heater  50 0 add    (1,1,0),(1,0,0)
     static  0  0 top    (1,0,0)
 ```
 
@@ -535,15 +535,16 @@ the power they need. This usually only occurs on very long strips or
 if the power supply is already at its limit. It is always recommended
 to power LEDs like this from a separate 5V source from the board.
 
-## My colors arent correct
+## My colors aren't correct
 
 Different chip manufacturers and chip styles use slightly different
 protocols for color data. Some specify the color order be Red, Green,
 then Blue others specify Green, Red, Blue. The configuration for the
-LED strip has an optional parameter that can be set to change the color
-order.
+LED strip has an optional parameter that can be set in the 'neopixel' 
+section to change the color order.
 
-``color_order_GRB:                    true``
+``
+color_order: GRB``
 
 If you are unsure of the color order of your LEDs and want to test this,
 you can comment out or disable all of the effects you have configured
@@ -553,3 +554,8 @@ and use a gcode command to set the color of the led strips directly.
 
 This command should turn the entire strip red. If the strip turns green,
 then it uses a GRB color order.
+
+Some LEDs, like the SK6812, also have a white channel. For that the color order
+can be set to:
+
+``color_order: GRBW``
