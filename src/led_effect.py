@@ -120,10 +120,7 @@ class ledFrameHandler:
 
         if effect.stepper:
             self.toolhead = self.printer.lookup_object('toolhead')
-            kin = self.toolhead.get_kinematics()
-
-            self.getAxisPosition = self.toolhead.get_position
-            self.getAxisStatus = kin.get_status
+            self.kin = self.toolhead.get_kinematics()
 
             if not self.stepperTimer:
                 self.stepperTimer = self.reactor.register_timer(
@@ -143,19 +140,17 @@ class ledFrameHandler:
 
     def _pollStepper(self, eventtime):
 
-
-
-        pos = self.getAxisPosition()
-        status = self.getAxisStatus()
-        min = status.get('axis_minimum')
-        max = status.get('axis_maximum')
-
-        for i, p in enumerate(pos):
-            if p >= min[i] and p <= max[i]:
+        kin_spos = {s.get_name(): s.get_commanded_position()
+                    for s in self.kin.get_steppers()}
+       
+        pos = self.kin.calc_position(kin_spos)
+        
+        for i in range(3):
+            if pos[i] >= self.kin.axes_min[i] and pos[i] <= self.kin.axes_max[i]:
                 self.stepperPositions[i] = int(
-                    (self._clamp(p / (max[i] - min[i]))
+                    (pos[i] / (self.kin.axes_max[i] - self.kin.axes_min[i])
                         * 100)- 1)
-        return eventtime + .5
+        return eventtime + 0.5
 
     def _pollProgress(self, eventtime):
         status = self.displayStatus.get_status(eventtime)
@@ -840,6 +835,9 @@ class ledEffect:
             else: axis = 2
 
             p = self.frameHandler.stepperPositions[int(axis)]
+
+            if p < 0 : p=0
+            if p > 100 : p=100
             return self.thisFrame[int((p - 1) * (p > 0))]
 
      #Shameless port of Fire2012 by Mark Kriegsman
