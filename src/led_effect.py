@@ -170,9 +170,10 @@ class ledFrameHandler:
                     chain = effect.leds[i][0]
                     getColorData = effect.leds[i][2]
                     color_len =  effect.leds[i][3]
+                    offset =  effect.leds[i][4]
                     #TODO: blend instead of overwrite
                     with chain.mutex:
-                        chain.color_data[s:s+color_len] = \
+                        chain.color_data[s+offset:s+offset+color_len] = \
                             getColorData(*frame[i*3:i*3+3])
 
                     chainsToUpdate.add(chain)
@@ -278,6 +279,7 @@ class ledEffect:
                 #and clamps #values to between 0 and 1
                 clamp = (lambda x : 0.0 if x < 0.0 else \
                                     1.0 if x > 1.0 else x)
+                offset = 0
                 if hasattr(ledChain, 'color_order'):
                     color_len = len(ledChain.color_order)
 
@@ -327,6 +329,7 @@ class ledEffect:
                                       int(clamp(g) * 255.0),
                                       int(clamp(r) * 255.0)))
                     color_len = 4
+                    offset = 4
                 else: 
                     getColorData = (lambda r, g, b:
                                         ( int(clamp(r) * 255.0),
@@ -345,15 +348,15 @@ class ledEffect:
                             start, stop = map(int,led.split('-'))
                             for i in range(start-1, stop-1):
                                 self.leds.append([ledChain, 
-                                    int(i) * color_len, getColorData, color_len])
+                                    int(i) * color_len, getColorData, color_len, offset])
                         else:
                             for i in led.split(','):
                                 self.leds.append([ledChain,
-                                    (int(i)-1) * color_len, getColorData, color_len])
+                                    (int(i)-1) * color_len, getColorData, color_len, offset])
                     else:
                         for i in range(ledChain.chain_count):
                             self.leds.append([ledChain, 
-                                    int(i) * color_len, getColorData, color_len])
+                                    int(i) * color_len, getColorData, color_len, offset])
 
         self.ledCount = len(self.leds)
 
