@@ -1,5 +1,3 @@
-test edita
-
 # LED Effects for Klipper
 
 ## Description
