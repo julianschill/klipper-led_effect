@@ -167,11 +167,13 @@ class ledFrameHandler:
                 frame = effect.getFrame(eventtime)
                 for i in range(effect.ledCount):
                     s = effect.leds[i][1]
-                    chain =  effect.leds[i][0]
-                    getColorData =  effect.leds[i][2]
+                    chain = effect.leds[i][0]
+                    getColorData = effect.leds[i][2]
+                    color_len =  effect.leds[i][3]
+                    offset =  effect.leds[i][4]
                     #TODO: blend instead of overwrite
                     with chain.mutex:
-                        chain.color_data[s:s+len(chain.color_order)] = \
+                        chain.color_data[s+offset:s+offset+color_len] = \
                             getColorData(*frame[i*3:i*3+3])
 
                     chainsToUpdate.add(chain)
@@ -275,33 +277,67 @@ class ledEffect:
 
                 #Add a call for each chain that orders the colors correctly
                 #and clamps #values to between 0 and 1
-
+                clamp = (lambda x : 0.0 if x < 0.0 else \
+                                    1.0 if x > 1.0 else x)
+                offset = 0
                 if hasattr(ledChain, 'color_order'):
-                    clamp = (lambda x : 0.0 if x < 0.0 else \
-                                        1.0 if x > 1.0 else x)
+                    color_len = len(ledChain.color_order)
+
                     if ledChain.color_order == 'RGB':
                         getColorData = (lambda r, g, b:
                                         ( int(clamp(r) * 255.0),
                                           int(clamp(g) * 255.0),
                                           int(clamp(b) * 255.0)))
 
-                    if ledChain.color_order == 'GRB':
+                    elif ledChain.color_order == 'GRB':
                         getColorData = (lambda r, g, b:
                                         ( int(clamp(g) * 255.0),
                                           int(clamp(r) * 255.0),
                                           int(clamp(b) * 255.0)))
 
-                    if ledChain.color_order == 'RGBW' or \
-                       ledChain.color_order == 'GRBW':
+                    elif ledChain.color_order == 'BRG':
+                        getColorData = (lambda r, g, b:
+                                        ( int(clamp(b) * 255.0),
+                                          int(clamp(r) * 255.0),
+                                          int(clamp(g) * 255.0)))
+
+                    elif ledChain.color_order == 'RGBW':
                         getColorData = (lambda r, g, b:
                                         self._rgb2rgbw((
                                           int(clamp(r) * 255.0),
                                           int(clamp(g) * 255.0),
                                           int(clamp(b) * 255.0)),
-                                          ledChain.color_order ))
+                                          'RGBW' ))
 
-                color_len = len(ledChain.color_order)
+                    elif ledChain.color_order == 'GRBW':
+                        getColorData = (lambda r, g, b:
+                                        self._rgb2rgbw((
+                                          int(clamp(r) * 255.0),
+                                          int(clamp(g) * 255.0),
+                                          int(clamp(b) * 255.0)),
+                                          'GRBW' ))
+                    else:
+                        getColorData = (lambda r, g, b:
+                                        ( int(clamp(r) * 255.0),
+                                          int(clamp(g) * 255.0),
+                                          int(clamp(b) * 255.0)))
 
+                elif parms[0].startswith('dotstar'):
+                    getColorData = (lambda r, g, b:
+                                    ( 0xFF,
+                                      int(clamp(b) * 255.0),
+                                      int(clamp(g) * 255.0),
+                                      int(clamp(r) * 255.0)))
+                    color_len = 4
+                    offset = 4
+                else: 
+                    getColorData = (lambda r, g, b:
+                                        ( int(clamp(r) * 255.0),
+                                          int(clamp(g) * 255.0),
+                                          int(clamp(b) * 255.0)))
+                    color_len = 3
+
+               
                 #Add each discrete chain to the collection
                 if ledChain not in self.ledChains:
                     self.ledChains.append(ledChain)
@@ -312,15 +348,15 @@ class ledEffect:
                             start, stop = map(int,led.split('-'))
                             for i in range(start-1, stop-1):
                                 self.leds.append([ledChain, 
-                                    int(i) * color_len, getColorData])
+                                    int(i) * color_len, getColorData, color_len, offset])
                         else:
                             for i in led.split(','):
                                 self.leds.append([ledChain,
-                                    (int(i)-1) * color_len, getColorData])
+                                    (int(i)-1) * color_len, getColorData, color_len, offset])
                     else:
                         for i in range(ledChain.chain_count):
                             self.leds.append([ledChain, 
-                                    int(i) * color_len, getColorData])
+                                    int(i) * color_len, getColorData, color_len, offset])
 
         self.ledCount = len(self.leds)
 
