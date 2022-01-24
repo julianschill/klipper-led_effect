@@ -47,7 +47,7 @@ class colorArray(list):
     def reverse(self):
         self[:] = [c for cl in range(len(self)-1,-1, -1)
                         for c in self[cl]]
-    def shift(self, shift=1, direction=1):
+    def shift(self, shift=1, direction=True):
         if direction:
             #shift array to the right
             self[:] = self[-shift:] + self[:-shift]
@@ -506,9 +506,9 @@ class ledEffect:
             palette = colorArray(palette[:])
 
             if self.effectRate > 0:
-                self.direction = 1
+                self.direction = True
             else:
-                self.direction = 0
+                self.direction = False
                 self.effectRate *= -1
 
             if len(palette) == 1:
@@ -660,12 +660,6 @@ class ledEffect:
         def __init__(self,  **kwargs):
             super(ledEffect.layerComet, self).__init__(**kwargs)
 
-            if self.effectRate > 0:
-                self.direction = 1
-            else:
-                self.direction = 0
-                self.effectRate *= -1
-
             if self.effectCutoff <= 0: self.effectCutoff = .1
 
             decayTable = self._decayTable(factor=len(self.paletteColors) * \
@@ -677,7 +671,7 @@ class ledEffect:
             decayTable = [c for b in zip(decayTable, decayTable, decayTable) \
                 for c in b]
 
-            comet  = colorArray([a * b for a, b in zip(gradient,decayTable)])
+            comet = colorArray([a * b for a, b in zip(gradient,decayTable)])
 
             comet.padRight([0.0,0.0,0.0], self.ledCount)
 
@@ -697,12 +691,6 @@ class ledEffect:
     class layerChase(_layerBase):
         def __init__(self,  **kwargs):
             super(ledEffect.layerChase, self).__init__(**kwargs)
-
-            if self.effectRate > 0:
-                self.direction = 1
-            else:
-                self.direction = 0
-                self.effectRate *= -1
 
             decayTable = self._decayTable(factor=len(self.paletteColors) * \
                             self.effectCutoff, rate=1)
