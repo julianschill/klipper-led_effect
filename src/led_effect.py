@@ -267,7 +267,7 @@ class ledEffect:
         #map each LED from the chains to the "pixels" in the effect frame
         for chain in chains:
             chain = chain.strip()
-            parms = [parameter.strip() for parameter in chain.split(' ')
+            parms = [parameter.strip() for parameter in chain.split()
                         if parameter.strip()]
 
             if parms:
@@ -373,7 +373,7 @@ class ledEffect:
             in self.configLayers.split('\n') if line.strip()]:
 
             parms = [st(parameter) for parameter \
-                in layer.split(' ') if st(parameter)]
+                in layer.split() if st(parameter)]
 
             if not parms[0] in availableLayers:
                 raise self.printer\
