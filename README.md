@@ -6,7 +6,8 @@ This is the standalone repository of the Klipper LED Effects module developed by
 It allows Klipper to run effects and animations on addressable LEDs, such as Neopixels, WS2812 or SK6812.
 
 ## Disclaimer
-**This is work in progress and not ready for production use yet. Not all effects are working and the documentation might be outdated.**
+**This is work in progress and currently in "alpha" state.**
+If you encounter any problems, feel free to open an issue.
 If you want to help by testing or contributing, please contact me on Discord: Hagbard#7867
 
 ## Installation
