@@ -1,17 +1,17 @@
 # LED Effects
 
 
-Addressable LEDs are beginning to supercede RGB LEDs for their
+Addressable LEDs are beginning to supersede RGB LEDs for their
 flexibility and relative ease of use. With each individual element
 capable of displaying an entire spectrum of colors at very high speed,
 they can be used to create a variety of lighting effects.
 
 <!-- DEMO GIF GOES HERE -->
 
-At this time, klipper supports most WS2812 compatible (neopixels)
-and APA102 compatible (dotstar) chips for LED Effects.
+At this time, Klipper supports most WS2812 compatible (Neopixels)
+and APA102 compatible (Dotstar) chips for LED Effects.
 
-## Wiring WS2812 compatible (neopixel) LEDs
+## Wiring WS2812 compatible (Neopixel) LEDs
 
 Neopixel type LEDs require one digital IO pin and a supply of power.
 Most are 5V but can be driven from a 3V source. Check manufacturer
@@ -26,20 +26,19 @@ with the LED strip. Neopixels will typically use 60mA of current per
 emitter at full brightness so depending on the power capabilities of
 your printer board, it is recommended that they be powered from a
 separate power source. It is important that a GND wire be run from
-the neopixel chain back to the MCU board in addition to the GND to
+the Neopixel chain back to the MCU board in addition to the GND to
 the power source. This will ensure the board can communicate with
 the strips.
 
-At the present time, Klipper only supports 18 discrete emitters per
-IO pin. It is possible to wire two strips to the same data pin and
-have them show the same colors. It is also possible to specify
-multiple LED chains on different IO pins in the LED Effects
-configuration settings.
+The number of discrete emitters per IO pin is limited. It is possible 
+to wire two strips to the same data pin and have them show the same colors. 
+It is also possible to specify multiple LED chains on different IO pins 
+in the LED Effects configuration settings.
 
-## Wiring APA102 compatible (dotstar) LEDs
+## Wiring APA102 compatible (Dotstar) LEDs
 
-APA102 dotstar LEDs are similar to the neopixel LEDs with the exception
-that dotstar uses one-way SPI for communication. This requires the
+APA102 Dotstar LEDs are similar to the Neopixel LEDs with the exception
+that Dotstar uses one-way SPI for communication. This requires the
 addition of a clock signal for the emitters. Multiple strips should be
 able to share the same clock pin but they each require their own
 data line.
@@ -47,11 +46,11 @@ data line.
 # Configuring the strips
 
 In your config file, each strip or chain connected to an IO pin must
-have a definition. Following the example in [config/example-extras.cfg](example-extras.cfg)
-each strips data pin (and clock pin if applicable) is defined along
-with the number of LEDs in the chain. The LED Effect instances are
-capable of using multiple strips of different types and color orders
-concurrently, but each strip must first be defined by its type.
+have a definition. Each strips data pin (and clock pin if applicable) 
+is defined along with the number of LEDs in the chain. The LED Effect 
+instances are capable of using multiple strips of different types and 
+color orders concurrently, but each strip must first be defined by its 
+type.
 
 ```
 [neopixel panel_ring]
@@ -64,18 +63,18 @@ chain_count:             16
 Effects are, in a more abstract sense, a _state_ that the strips
 exist in. Effects can be comprised of 1 led or 100. There can be
 one effect layer or 10. It is all arbitrary and extensible. This
-means the only limit to how many layers and leds can be run
+means the only limit to how many layers and LEDs can be run
 concurrently is how much processing power the host OS is capable
 of handling. During initial testing, upwards of 100 LEDs and 12
 effect layers were run concurrently on a Raspberry Pi 4 at 24 FPS.
 
 ## Basic layer definition
 
-For our example printer, there is one neopixel ring with 16 leds
+For our example printer, there is one Neopixel ring with 16 LEDs
 that is situated on the front panel, and a short segment of
-neopixel LEDs next to the hot end for illuminating the print.
+Neopixel LEDs next to the hot end for illuminating the print.
 
-There are also 5 dotstar LEDs located underneath the bed.
+There are also 5 Dotstar LEDs located underneath the bed.
 Pin numbers listed here are completely made-up.
 
 ```
@@ -94,7 +93,7 @@ chain_count:             5
 ```
 
 We would like the ring to turn on a light shade of blue when the
-printer comes online and we want the brightness to _breathe_ in and out.
+printer comes online, and we want the brightness to _breathe_ in and out.
 
 ```
 [led_effect panel_idle]
@@ -107,7 +106,10 @@ layers:
 ```
 
 This has defined an effect called `panel_idle` that can be controlled
-via the gcode command `SET_LED_EFFECT EFFECT=panel_idle`
+via the gcode command `SET_LED_EFFECT EFFECT=panel_idle`. Calling the command
+enables this effect. It can be disabled again by calling 
+`SET_LED_EFFECT EFFECT=panel_idle STOP=1`. Running `STOP_LED_EFFECTS` disables
+all active effects.
 
 ### Additional effect level parameters
 
@@ -125,7 +127,7 @@ stepper
 
 ## Defining LEDs
 
-the `leds:` section is a list of neopixel or dotstar strips that will
+The `leds:` section is a list of Neopixel or Dotstar strips that will
 make up the effect. Both types can be used for the same effect. Each
 strip is defined on a separate line and indented beneath the `leds:`
 section.
@@ -180,7 +182,7 @@ on the size of the frame or number of LEDs on a strip. Colors are defined
 as groups of Red, Green, and Blue. The range for each color is a decimal
 number from 0.0 to 1.0. So for yellow, you would use ( 1.0, 1.0, 0.0 ).
 
-Individual colors should be wrapped in parenthesis and separated by commas.
+Individual colors should be wrapped in parentheses and separated by commas.
 
 Some Sample Palettes:
 
@@ -204,7 +206,7 @@ colors is provided, colors will be evenly blended along the LEDs based on
 difference in hue.
 
 #### Breathing
-    Effect Rate:  3   Duration of a complete cylce
+    Effect Rate:  3   Duration of a complete cycle
     Cutoff:       0   Not used but must be provided
     Palette:          Colors are cycled in order
 
@@ -213,7 +215,7 @@ cycle through those colors in the order they are specified in the palette.
 The effect speed parameter controls how long it takes to "breathe" one time.
 
 #### Blink
-    Effect Rate:  1   Duration of a complete cylce
+    Effect Rate:  1   Duration of a complete cycle
     Cutoff:       0   Not used but must be provided
     Palette:          Colors are cycled in order
 
@@ -269,9 +271,9 @@ This effect becomes active when the specified heater is active or the temperatur
 is greater than the minimum specified temperature. For instance, if a heater is
 turned on and set to a target temperature, the LEDs will cycle through the gradient
 colors until the target temperature is met. Once it has been met, the last color
-of the gradient is used and the effect is essentially a static color until the.
+of the gradient is used and the effect is essentially a static color until the
 Heater state changes. If the cutoff parameter is supplied, the effect will be
-disabled once the targe temperature is met. If the heater is turned off,
+disabled once the target temperature is met. If the heater is turned off,
 the colors will follow this pattern in reverse until the temperature falls
 below the minimum temperature specified in the config. This can be used to
 indicate the hotend or bed is in a safe state to touch.
@@ -320,8 +322,8 @@ on either side. As the stepper position changes relative to the axis length,
 the lights move up and down the strip. It should be noted that the effect
 itself updates stepper position every half second based on the reported position
 of the stepper similar to the GET_POSITION gcode command. It will not be realtime.
-A neagive value in effect rate will fill the entire strip leading up to the stepper
-postion, a negative value in cutoff will fill the entire strip after the stepper position.
+A negative value in effect rate will fill the entire strip leading up to the stepper
+position, a negative value in cutoff will fill the entire strip after the stepper position.
 
 #### Progress
     Effect Rate:  4   Number of trailing LEDs
@@ -333,7 +335,7 @@ layer reports print progress.
 ## Effect Layer Blending
 If you have ever used image editing software you may be familiar with
 color blending between image layers. Several common color blending
-techniques have been added to blend LEDS layers together. Layers defined
+techniques have been added to blend LED layers together. Layers defined
 in the configuration are ordered top to bottom.
 
 If there are 3 layers defined, the bottom layer is first blended with the
@@ -343,7 +345,7 @@ layer will never be blended with anything even if a blending mode is specified.
 Layer blending is always evaluated from the bottom up.
 
 Since values cannot exceed 100% brightness and 0% darkness, they are clamped
-to this range as a floating point number ( 0.0 - 1.0 )
+to this range as a floating-point number ( 0.0 - 1.0 )
 
 #### bottom
 No blending is done, the value from the color channel of the bottom layer is used.
@@ -418,7 +420,7 @@ of increasing contrast.
 # Sample Configurations
 
 ## das Blinkenlights
-In the event of critical error, all LED strips breath red in unision to
+In the event of critical error, all LED strips breath red in unison to
 provide a visible indicator of an error condition with the printer. This
 effect is disabled during normal operation and only starts when the MCU
 enters a shutdown state.
@@ -496,8 +498,8 @@ layers:
 
 ## My LEDs are flickering randomly
 
-This is usuall due to some sort of signal issue. Most addressable
-LEDS have a specific protocol they use for communication. It typically
+This is usually due to some sort of signal issue. Most addressable
+LEDs have a specific protocol they use for communication. It typically
 involves sending bits of data at a specific interval followed by a
 reset latch to signal them to light up. They will stay the last color
 they were set until told to do something different.
@@ -518,6 +520,11 @@ To mitigate this, one can try insulating or isolating the data line from
 other wires. Try to keep the data lines as short as possible. This is
 especially problematic for 32 bit boards which typically output the
 data signal at 3.3V.
+
+Signal integrity can also be deteriorated by ringing and reflections on
+the data line. Especially, when the cable to the first LED is rather long.
+This can be reduced by adding a 700 Ohm resistor in line to the data line 
+directly in front of the first LED.
 
 Another source of flickering is voltage drop. Addressable LEDs consume
 between 20 and 60mA of power each depending on how bright they are set.
