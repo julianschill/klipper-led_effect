@@ -346,7 +346,7 @@ class ledEffect:
                     if led:
                         if '-' in led:
                             start, stop = map(int,led.split('-'))
-                            for i in range(start-1, stop-1):
+                            for i in range(start-1, stop):
                                 self.leds.append([ledChain, 
                                     int(i) * color_len, getColorData, color_len, offset])
                         else:
