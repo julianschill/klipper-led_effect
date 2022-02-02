@@ -513,6 +513,8 @@ class ledEffect:
 
             if len(palette) == 1:
                 return colorArray(palette * steps)
+            elif steps < len(palette):
+                divs = steps
             else:
                 divs = int(steps / (len(palette)-1)) + 1
 
