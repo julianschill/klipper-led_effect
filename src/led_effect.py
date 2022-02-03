@@ -513,8 +513,6 @@ class ledEffect:
 
             if len(palette) == 1:
                 return colorArray(palette * steps)
-            elif steps < len(palette):
-                divs = steps
             else:
                 divs = int(steps / (len(palette)-1)) + 1
 
@@ -525,9 +523,9 @@ class ledEffect:
 
             for i in range(1, len(palette)):
                 nextColor = palette[i]
-                for t in range(1, divs):
+                for t in range(0, divs):
                     z = [thisColor[j] +
-                                (float(t)/(divs-1))*(nextColor[j]-thisColor[j])
+                                (float(t)/divs)*(nextColor[j]-thisColor[j])
                                 for j in range(3)]
                     gradient += z
                 thisColor = nextColor
