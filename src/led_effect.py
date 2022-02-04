@@ -890,7 +890,7 @@ class ledEffect:
                 c = randint(0,self.effectCutoff)
                 self.heatMap[h] -= (self.heatMap[h] - c >= 0 ) * c
 
-            for i in range(self.ledCount - 1, 2, -1):
+            for i in range(self.ledCount - 1, self.heatSource, -1):
                 d = (self.heatMap[i - 1] +
                      self.heatMap[i - 2] +
                      self.heatMap[i - 3] ) / 3
@@ -954,7 +954,7 @@ class ledEffect:
                     c = randint(0, cooling)
                     self.heatMap[h] -= (self.heatMap[h] - c >= 0 ) * c
 
-                for i in range(self.ledCount - 1, 2, -1):
+                for i in range(self.ledCount - 1, self.heatSource, -1):
                     d = (self.heatMap[i - 1] +
                          self.heatMap[i - 2] +
                          self.heatMap[i - 3] ) / 3
