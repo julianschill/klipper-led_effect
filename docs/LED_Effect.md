@@ -216,7 +216,7 @@ The effect speed parameter controls how long it takes to "breathe" one time.
 
 #### Blink
     Effect Rate:  1   Duration of a complete cycle
-    Cutoff:       0   Not used but must be provided
+    Cutoff:       0.5 Ratio of the time the LEDs are on (between 0 and 1)
     Palette:          Colors are cycled in order
 
 LEDs are turned fully on and fully off based on the effect speed. If a palette

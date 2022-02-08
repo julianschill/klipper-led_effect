@@ -588,12 +588,16 @@ class ledEffect:
         def __init__(self, **kwargs):
             super(ledEffect.layerBlink, self).__init__(**kwargs)
 
-            frameCount = int(( 1.0 / self.frameRate ) * self.effectRate)
+            dutyCycle= max(0,min(1.0, self.effectCutoff))
+            frameCountOn = int(( 1.0 / self.frameRate ) * self.effectRate\
+                 * dutyCycle)
+            frameCountOff = int(( 1.0 / self.frameRate ) * self.effectRate\
+                 * (1-dutyCycle))
 
             for c in range(0, len(self.paletteColors)):
                 color = self.paletteColors[c]
-                self.thisFrame += [color * self.ledCount] * frameCount
-                self.thisFrame += [[0,0,0] * self.ledCount] * frameCount
+                self.thisFrame += [color * self.ledCount] * frameCountOn
+                self.thisFrame += [[0,0,0] * self.ledCount] * frameCountOff
 
             self.frameCount = len(self.thisFrame)
 
