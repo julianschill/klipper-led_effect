@@ -582,6 +582,21 @@ class ledEffect:
                     self.thisFrame += [[b * i for i in color] * self.ledCount]
 
             self.frameCount = len(self.thisFrame)
+    class layerLinearFade(_layerBase):
+        def __init__(self,  **kwargs):
+            super(ledEffect.layerLinearFade, self).__init__(**kwargs)
+
+            self.paletteColors = colorArray(self.paletteColors + \
+                                            self.paletteColors[0])
+
+            gradientLength = int(self.effectRate / self.frameRate) 
+            gradient   = colorArray(self._gradient(self.paletteColors, 
+                                                   gradientLength))
+
+            for i in range(gradientLength):
+                self.thisFrame.append(gradient[i]*self.ledCount)
+
+            self.frameCount = len(self.thisFrame)
 
     #Turns the entire strip on and off
     class layerBlink(_layerBase):

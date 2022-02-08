@@ -205,6 +205,15 @@ A single color is displayed and it does not change. If a palette of multiple
 colors is provided, colors will be evenly blended along the LEDs based on
 difference in hue.
 
+#### LinearFade
+    Effect Rate:  3   Duration of a complete cycle
+    Cutoff:       0   Not used but must be provided
+    Palette:          Colors are cycled in order
+
+LEDs fade through the colors. If a palette of multiple colors is provided, it 
+will cycle through those colors in the order they are specified in the palette.
+The effect rate parameter controls how long it takes to go through all colors.
+
 #### Breathing
     Effect Rate:  3   Duration of a complete cycle
     Cutoff:       0   Not used but must be provided
@@ -212,7 +221,8 @@ difference in hue.
 
 Colors fade in and out. If a palette of multiple colors is provided, it will
 cycle through those colors in the order they are specified in the palette.
-The effect speed parameter controls how long it takes to "breathe" one time.
+The effect rate parameter controls how long it takes to "breathe" one time.
+
 
 #### Blink
     Effect Rate:  1   Duration of a complete cycle
