@@ -501,7 +501,7 @@ class ledEffect:
 
             return frame
 
-        def _gradient(self, palette, steps, reverse=False, toFirst=False):
+        def _gradient(self, palette, steps:int, reverse=False, toFirst=False):
             palette = colorArray(palette[:])
             if reverse: palette.reverse()
 
@@ -870,14 +870,14 @@ class ledEffect:
                 trailing = colorArray([0.0,0.0,0.0] * self.ledCount)
             else:
                 trailing = colorArray(self._gradient(self.paletteColors[1:],
-                                                     self.effectRate, True))
+                                                     int(self.effectRate), True))
                 trailing.padLeft([0.0,0.0,0.0], self.ledCount)
 
             if self.effectCutoff == 0:
                 leading = colorArray([0.0,0.0,0.0] * self.ledCount)
             else:
                 leading = colorArray(self._gradient(self.paletteColors[1:],
-                                                    self.effectCutoff, False))
+                                                    int(self.effectCutoff), False))
                 leading.padRight([0.0,0.0,0.0], self.ledCount)
 
             gradient = colorArray(trailing + self.paletteColors[0] + leading)
@@ -1031,14 +1031,14 @@ class ledEffect:
                 trailing = colorArray([0.0,0.0,0.0] * self.ledCount)
             else:
                 trailing = colorArray(self._gradient(self.paletteColors[1:],
-                                                     self.effectRate, True))
+                                                     int(self.effectRate), True))
                 trailing.padLeft([0.0,0.0,0.0], self.ledCount)
 
             if self.effectCutoff == 0:
                 leading = colorArray([0.0,0.0,0.0] * self.ledCount)
             else:
                 leading = colorArray(self._gradient(self.paletteColors[1:],
-                                                    self.effectCutoff, False))
+                                                    int(self.effectCutoff), False))
                 leading.padRight([0.0,0.0,0.0], self.ledCount)
 
             gradient = colorArray(trailing + self.paletteColors[0] + leading)
