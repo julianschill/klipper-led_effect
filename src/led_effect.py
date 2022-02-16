@@ -501,7 +501,7 @@ class ledEffect:
 
             return frame
 
-        def _gradient(self, palette, steps:int, reverse=False, toFirst=False):
+        def _gradient(self, palette, steps, reverse=False, toFirst=False):
             palette = colorArray(palette[:])
             if reverse: palette.reverse()
 
