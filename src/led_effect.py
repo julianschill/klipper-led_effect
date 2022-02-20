@@ -162,20 +162,36 @@ class ledFrameHandler:
     def _getFrames(self, eventtime):
         chainsToUpdate = set()
 
+        #first set all LEDs to 0, that should be updated
         for effect in self.effects:
-            if eventtime > effect.nextEventTime:
-                frame = effect.getFrame(eventtime)
+            frame, update = effect.getFrame(eventtime)
+            if update:
                 for i in range(effect.ledCount):
                     s = effect.leds[i][1]
                     chain = effect.leds[i][0]
                     getColorData = effect.leds[i][2]
                     color_len =  effect.leds[i][3]
                     offset =  effect.leds[i][4]
-                    #TODO: blend instead of overwrite
                     with chain.mutex:
                         chain.color_data[s+offset:s+offset+color_len] = \
-                            getColorData(*frame[i*3:i*3+3])
+                            getColorData(*[0,0,0])
+                    chainsToUpdate.add(chain)
 
+        #then sum up all effects for that LEDs
+        for effect in self.effects:
+            frame, update = effect.getFrame(eventtime)
+            if update:
+                for i in range(effect.ledCount):
+                    s = effect.leds[i][1]
+                    chain = effect.leds[i][0]
+                    getColorData = effect.leds[i][2]
+                    color_len =  effect.leds[i][3]
+                    offset =  effect.leds[i][4]
+                    with chain.mutex:
+                        chain.color_data[s+offset:s+offset+color_len] = \
+                            [min(255,a+b) for a,b in \
+                            zip(chain.color_data[s+offset:s+offset+color_len],\
+                                getColorData(*frame[i*3:i*3+3]))]
                     chainsToUpdate.add(chain)
 
         for chain in chainsToUpdate:
@@ -359,6 +375,7 @@ class ledEffect:
                                     int(i) * color_len, getColorData, color_len, offset])
 
         self.ledCount = len(self.leds)
+        self.frame = [0.0] * 3 * self.ledCount
 
         #enumerate all effects from the subclasses of _layerBase...
         availableLayers = {str(c).rpartition('.layer')[2]\
@@ -423,21 +440,26 @@ class ledEffect:
             return (g_out, r_out, b_out, w_out)
 
     def getFrame(self, eventtime):
-
-        frame = [0.0] * 3 * self.ledCount
+        update = False
+        
         if not self.enabled:
-            self.nextEventTime = self.handler.reactor.NEVER
-            return frame
+            if self.nextEventTime < self.handler.reactor.NEVER:
+                self.nextEventTime = self.handler.reactor.NEVER
+                self.frame = [0.0] * 3 * self.ledCount
+                update = True
         else:
-            self.nextEventTime = eventtime + self.frameRate
+            update = True
+            if eventtime > self.nextEventTime:
+                self.nextEventTime = eventtime + self.frameRate
+                self.frame = [0.0] * 3 * self.ledCount
+                for layer in self.layers:
+                    layerFrame = layer.nextFrame(eventtime)
 
-        for layer in self.layers:
-            layerFrame = layer.nextFrame(eventtime)
-
-            if layerFrame:
-                blend = self.blendingModes[layer.blendingMode]
-                frame = [blend(t, b) for t, b in zip(layerFrame, frame)]
-        return frame
+                    if layerFrame:
+                        blend = self.blendingModes[layer.blendingMode]
+                        self.frame = [blend(t, b) for t, b in zip(layerFrame, self.frame)]
+        
+        return self.frame, update
 
     def set_enabled(self, state):
         self.enabled = state
