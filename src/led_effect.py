@@ -6,8 +6,7 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 
-import neopixel, dotstar
-import logging
+#import logging
 from math import cos, exp, pi
 from random import randint
 
@@ -15,11 +14,6 @@ ANALOG_SAMPLE_TIME  = 0.001
 ANALOG_SAMPLE_COUNT = 5
 ANALOG_REPORT_TIME  = 0.05
 
-
-## TODO:
-#  Disable individual layers by layer index
-#  Blending between multiple concurrent effects
-############
 
 ######################################################################
 # Custom color value list, returns lists of [r, g ,b] values
@@ -440,13 +434,14 @@ class ledEffect:
             return (g_out, r_out, b_out, w_out)
 
     def getFrame(self, eventtime):
-        update = False
-        
         if not self.enabled:
             if self.nextEventTime < self.handler.reactor.NEVER:
+                # Effect has just been disabled. Set colors to 0 and update once.
                 self.nextEventTime = self.handler.reactor.NEVER
                 self.frame = [0.0] * 3 * self.ledCount
                 update = True
+            else:
+                update = False
         else:
             update = True
             if eventtime > self.nextEventTime:
