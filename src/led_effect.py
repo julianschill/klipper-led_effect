@@ -230,7 +230,7 @@ class ledEffect:
             'top'       : (lambda t, b: t ),
             'bottom'    : (lambda t, b: b ),
             'add'       : (lambda t, b: t + b ),
-            'subtract ' : (lambda t, b: (b - t) * (b - t > 0)),
+            'subtract'  : (lambda t, b: (b - t) * (b - t > 0)),
             'subtract_b': (lambda t, b: (t - b) * (t - b > 0)),
             'difference': (lambda t, b: (t - b) * (t > b) + (b - t) * (t <= b)),
             'average'   : (lambda t, b: 0.5 * (t + b)),
