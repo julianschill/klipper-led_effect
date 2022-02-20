@@ -372,6 +372,13 @@ in channels becoming brighter.
 
 #### subtract
 ```
+    ( b - t )
+```
+The the top layer is subtracted from the bottom layer. This results in darkening
+similar colors.
+
+#### subtract_b
+```
     ( t - b )
 ```
 The the bottom layer is subtracted from the top layer. This results in darkening
@@ -400,6 +407,12 @@ The channels are multiplied together, this is useful to darken colors
     ( t / b )
 ```
 The channels are divided, this results in brightening colors, often to white
+
+#### divide_inv
+```
+    ( b / t )
+```
+Like divide, but bottom divided by top
 
 #### screen
 ```
