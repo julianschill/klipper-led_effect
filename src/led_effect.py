@@ -102,8 +102,12 @@ class ledFrameHandler:
     def addEffect(self, effect):
 
         if effect.heater:
-            pheater = self.printer.lookup_object('heaters')
-            self.heaters[effect.heater] = pheater.lookup_heater(effect.heater)
+            effect.heater=effect.heater.strip('\"\'')
+            if effect.heater.startswith("temperature_fan "):
+                self.heaters[effect.heater] = self.printer.lookup_object(effect.heater)
+            else:
+                pheater = self.printer.lookup_object('heaters')
+                self.heaters[effect.heater] = pheater.lookup_heater(effect.heater)
             self.heaterLast[effect.heater] = 100
             self.heaterCurrent[effect.heater] = 0
             self.heaterTarget[effect.heater]  = 0

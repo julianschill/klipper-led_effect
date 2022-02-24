@@ -114,16 +114,23 @@ all active effects.
 ### Additional effect level parameters
 
 autostart: true
-Setting this to true
-frame_rate
+Starts the effect on startup
 
-run_on_error
+frame_rate:
+Sets the frame rate in frames per second for the effect
 
-heater
+run_on_error:
+Keeps the last color on a shutdown. (Currently not working)
 
-analog_pin
+heater:
+Specifies the heater to use for a heater effect. For a temperature fan put 
+temperature_fan and use quotes: `heater: "temperature_fan myfan"`
 
-stepper
+analog_pin:
+Specifies the pin to use for effects using an analog signal.
+
+stepper:
+Specifies the stepper motor to use for the stepper effect.
 
 ## Defining LEDs
 
