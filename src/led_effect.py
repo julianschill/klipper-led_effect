@@ -362,13 +362,15 @@ class ledEffect:
                     if led:
                         if '-' in led:
                             start, stop = map(int,led.split('-'))
-                            ledList = list(range(start-1, stop))
-                            if not ledList:
+                            if stop == start:
+                                ledList = [start-1]
+                            elif stop > start:
+                                ledList = list(range(start-1, stop))
+                            else:
                                 ledList = list(reversed(range(stop-1, start)))
-                            if ledList:
-                                for i in ledList:
-                                    self.leds.append([ledChain,
-                                        int(i) * color_len, getColorData, color_len, offset])
+                            for i in ledList:
+                                self.leds.append([ledChain,
+                                    int(i) * color_len, getColorData, color_len, offset])
                         else:
                             for i in led.split(','):
                                 self.leds.append([ledChain,
