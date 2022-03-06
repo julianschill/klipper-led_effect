@@ -518,7 +518,6 @@ leds:
     neopixel:progress_lights
 autostart:                          true
 frame_rate:                         24
-analog_pin:                         ar52
 layers:
     progress  -1  0 add         ( 0, 0,   1),( 0, 0.1, 0.6)
     static     0  0 top         ( 0, 0, 0.1)
