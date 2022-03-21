@@ -211,7 +211,6 @@ class ledFrameHandler:
             if effect.enabled:
                 effect.set_fade_time(gcmd.get_float('FADETIME', 0.0))
             effect.set_enabled(False)
-            
 
 def load_config(config):
     return ledFrameHandler(config)
@@ -493,6 +492,7 @@ class ledEffect:
         self.fadeEndTime = self.handler.reactor.monotonic() + fadetime
 
     def cmd_SET_LED_EFFECT(self, gcmd):
+        self.set_fade_time(gcmd.get_float('FADETIME', 0.0))
         if gcmd.get_int('STOP', 0) == 1:
             if self.enabled:
                 self.set_fade_time(gcmd.get_float('FADETIME', 0.0))

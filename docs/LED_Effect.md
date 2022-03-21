@@ -215,8 +215,8 @@ Some Sample Palettes:
 
 ```
 layers:
-   breathing  .5 screen (0,.1,1), (0,1,.5), (0, 1,1), (0,.1,.5)
-   static     1  bottom (1,.1,0), (1,.1,0), (1,.1,0), (1,1,0)
+   breathing  .5 0 screen (0,.1,1), (0,1,.5), (0, 1,1), (0,.1,.5)
+   static     1 0 bottom (1,.1,0), (1,.1,0), (1,.1,0), (1,1,0)
 ```
 There are several effects to choose from.
 
@@ -534,7 +534,6 @@ leds:
     neopixel:progress_lights
 autostart:                          true
 frame_rate:                         24
-analog_pin:                         ar52
 layers:
     progress  -1  0 add         ( 0, 0,   1),( 0, 0.1, 0.6)
     static     0  0 top         ( 0, 0, 0.1)
