@@ -208,8 +208,10 @@ class ledFrameHandler:
 
     def cmd_STOP_LED_EFFECTS(self, gcmd):
         for effect in self.effects:
+            if effect.enabled:
+                effect.set_fade_time(gcmd.get_float('FADETIME', 0.0))
             effect.set_enabled(False)
-            effect.set_fade_time(gcmd.get_float('FADETIME', 0.0))
+            
 
 def load_config(config):
     return ledFrameHandler(config)
@@ -491,10 +493,12 @@ class ledEffect:
         self.fadeEndTime = self.handler.reactor.monotonic() + fadetime
 
     def cmd_SET_LED_EFFECT(self, gcmd):
-        self.set_fade_time(gcmd.get_float('FADETIME', 0.0))
         if gcmd.get_int('STOP', 0) == 1:
+            if self.enabled:
+                self.set_fade_time(gcmd.get_float('FADETIME', 0.0))
             self.set_enabled(False)
         else:
+            self.set_fade_time(gcmd.get_float('FADETIME', 0.0))
             self.set_enabled(True)
 
     def _handle_shutdown(self):
