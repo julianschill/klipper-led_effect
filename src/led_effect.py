@@ -7,6 +7,7 @@
 # This file may be distributed under the terms of the GNU GPLv3 license.
 
 #import logging
+import logging
 from math import cos, exp, pi
 from random import randint
 
@@ -208,6 +209,7 @@ class ledFrameHandler:
     def cmd_STOP_LED_EFFECTS(self, gcmd):
         for effect in self.effects:
             effect.set_enabled(False)
+            effect.set_fade_time(gcmd.get_float('FADETIME', 0.0))
 
 def load_config(config):
     return ledFrameHandler(config)
@@ -230,6 +232,7 @@ class ledEffect:
         self.analogValue  = 0
         self.fadeValue    = 1.0
         self.fadeTime     = 0.0
+        self.fadeEndTime  = 0
 
         #Basic functions for layering colors. t=top and b=bottom color
         self.blendingModes  = {
@@ -460,19 +463,6 @@ class ledEffect:
             update = True
             if eventtime > self.nextEventTime:
                 self.nextEventTime = eventtime + self.frameRate
-                if self.fadeTime >= self.frameRate:
-                    self.fadeTime -= self.frameRate
-                    if self.enabled:
-                        self.fadeValue = self.fadeValue + \
-                            ( (1-self.fadeValue) * self.frameRate)\
-                                /self.fadeTime
-                    else:
-                        self.fadeValue = self.fadeValue - \
-                            (self.fadeValue * self.frameRate)\
-                                /self.fadeTime
-                else:
-                    self.fadeTime = 0.0
-                    self.fadeValue = 1.0 if self.enabled else 0.0
 
                 self.frame = [0.0] * 3 * self.ledCount
                 for layer in self.layers:
@@ -481,21 +471,31 @@ class ledEffect:
                     if layerFrame:
                         blend = self.blendingModes[layer.blendingMode]
                         self.frame = [blend(t, b) for t, b in zip(layerFrame, self.frame)]
-        
+
+                if (self.fadeEndTime > eventtime) and (self.fadeTime > 0.0):
+                    remainingFade = ((self.fadeEndTime - eventtime) / self.fadeTime)
+                else:
+                    remainingFade = 0.0    
+
+                self.fadeValue = 1.0-remainingFade if self.enabled else remainingFade
+
         return self.frame, update
 
     def set_enabled(self, state):
         self.enabled = state
         if self.enabled:
             self.nextEventTime = self.handler.reactor.NOW
+    
+    def set_fade_time(self, fadetime):
+        self.fadeTime = fadetime
+        self.fadeEndTime = self.handler.reactor.monotonic() + fadetime
 
     def cmd_SET_LED_EFFECT(self, gcmd):
-        self.fadeTime = gcmd.get_float('FADETIME', 0.0)
+        self.set_fade_time(gcmd.get_float('FADETIME', 0.0))
         if gcmd.get_int('STOP', 0) == 1:
             self.set_enabled(False)
         else:
             self.set_enabled(True)
-            self.fadeValue = 0.0
 
     def _handle_shutdown(self):
         self.set_enabled(self.runOnShutown)
