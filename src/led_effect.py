@@ -7,6 +7,7 @@
 # This file may be distributed under the terms of the GNU GPLv3 license.
 
 #import logging
+import logging
 from math import cos, exp, pi
 from random import randint
 
@@ -208,6 +209,7 @@ class ledFrameHandler:
     def cmd_STOP_LED_EFFECTS(self, gcmd):
         for effect in self.effects:
             effect.set_enabled(False)
+            effect.set_fade_time(gcmd.get_float('FADETIME', 0.0))
 
 def load_config(config):
     return ledFrameHandler(config)
@@ -228,6 +230,9 @@ class ledEffect:
         self.iteration    = 0
         self.layers       = []
         self.analogValue  = 0
+        self.fadeValue    = 1.0
+        self.fadeTime     = 0.0
+        self.fadeEndTime  = 0
 
         #Basic functions for layering colors. t=top and b=bottom color
         self.blendingModes  = {
@@ -301,56 +306,56 @@ class ledEffect:
 
                     if ledChain.color_order == 'RGB':
                         getColorData = (lambda r, g, b:
-                                        ( int(clamp(r) * 255.0),
-                                          int(clamp(g) * 255.0),
-                                          int(clamp(b) * 255.0)))
+                                        ( int(clamp(r) * 255.0 * clamp(self.fadeValue)),
+                                          int(clamp(g) * 255.0 * clamp(self.fadeValue)),
+                                          int(clamp(b) * 255.0 * clamp(self.fadeValue))))
 
                     elif ledChain.color_order == 'GRB':
                         getColorData = (lambda r, g, b:
-                                        ( int(clamp(g) * 255.0),
-                                          int(clamp(r) * 255.0),
-                                          int(clamp(b) * 255.0)))
+                                        ( int(clamp(g) * 255.0 * clamp(self.fadeValue)),
+                                          int(clamp(r) * 255.0 * clamp(self.fadeValue)),
+                                          int(clamp(b) * 255.0 * clamp(self.fadeValue))))
 
                     elif ledChain.color_order == 'BRG':
                         getColorData = (lambda r, g, b:
-                                        ( int(clamp(b) * 255.0),
-                                          int(clamp(r) * 255.0),
-                                          int(clamp(g) * 255.0)))
+                                        ( int(clamp(b) * 255.0 * clamp(self.fadeValue)),
+                                          int(clamp(r) * 255.0 * clamp(self.fadeValue)),
+                                          int(clamp(g) * 255.0 * clamp(self.fadeValue))))
 
                     elif ledChain.color_order == 'RGBW':
                         getColorData = (lambda r, g, b:
                                         self._rgb2rgbw((
-                                          int(clamp(r) * 255.0),
-                                          int(clamp(g) * 255.0),
-                                          int(clamp(b) * 255.0)),
+                                          int(clamp(r) * 255.0 * clamp(self.fadeValue)),
+                                          int(clamp(g) * 255.0 * clamp(self.fadeValue)),
+                                          int(clamp(b) * 255.0 * clamp(self.fadeValue))),
                                           'RGBW' ))
 
                     elif ledChain.color_order == 'GRBW':
                         getColorData = (lambda r, g, b:
                                         self._rgb2rgbw((
-                                          int(clamp(r) * 255.0),
-                                          int(clamp(g) * 255.0),
-                                          int(clamp(b) * 255.0)),
+                                          int(clamp(r) * 255.0 * clamp(self.fadeValue)),
+                                          int(clamp(g) * 255.0 * clamp(self.fadeValue)),
+                                          int(clamp(b) * 255.0 * clamp(self.fadeValue))),
                                           'GRBW' ))
                     else:
                         getColorData = (lambda r, g, b:
-                                        ( int(clamp(r) * 255.0),
-                                          int(clamp(g) * 255.0),
-                                          int(clamp(b) * 255.0)))
+                                        ( int(clamp(r) * 255.0 * clamp(self.fadeValue)),
+                                          int(clamp(g) * 255.0 * clamp(self.fadeValue)),
+                                          int(clamp(b) * 255.0 * clamp(self.fadeValue))))
 
                 elif parms[0].startswith('dotstar'):
                     getColorData = (lambda r, g, b:
                                     ( 0xFF,
-                                      int(clamp(b) * 255.0),
-                                      int(clamp(g) * 255.0),
-                                      int(clamp(r) * 255.0)))
+                                      int(clamp(b) * 255.0 * clamp(self.fadeValue)),
+                                      int(clamp(g) * 255.0 * clamp(self.fadeValue)),
+                                      int(clamp(r) * 255.0 * clamp(self.fadeValue))))
                     color_len = 4
                     offset = 4
                 else: 
                     getColorData = (lambda r, g, b:
-                                        ( int(clamp(r) * 255.0),
-                                          int(clamp(g) * 255.0),
-                                          int(clamp(b) * 255.0)))
+                                        ( int(clamp(r) * 255.0 * clamp(self.fadeValue)),
+                                          int(clamp(g) * 255.0 * clamp(self.fadeValue)),
+                                          int(clamp(b) * 255.0 * clamp(self.fadeValue))))
                     color_len = 3
 
                
@@ -446,7 +451,7 @@ class ledEffect:
             return (g_out, r_out, b_out, w_out)
 
     def getFrame(self, eventtime):
-        if not self.enabled:
+        if not self.enabled and self.fadeTime <= 0.0:
             if self.nextEventTime < self.handler.reactor.NEVER:
                 # Effect has just been disabled. Set colors to 0 and update once.
                 self.nextEventTime = self.handler.reactor.NEVER
@@ -458,6 +463,7 @@ class ledEffect:
             update = True
             if eventtime > self.nextEventTime:
                 self.nextEventTime = eventtime + self.frameRate
+
                 self.frame = [0.0] * 3 * self.ledCount
                 for layer in self.layers:
                     layerFrame = layer.nextFrame(eventtime)
@@ -465,15 +471,27 @@ class ledEffect:
                     if layerFrame:
                         blend = self.blendingModes[layer.blendingMode]
                         self.frame = [blend(t, b) for t, b in zip(layerFrame, self.frame)]
-        
+
+                if (self.fadeEndTime > eventtime) and (self.fadeTime > 0.0):
+                    remainingFade = ((self.fadeEndTime - eventtime) / self.fadeTime)
+                else:
+                    remainingFade = 0.0    
+
+                self.fadeValue = 1.0-remainingFade if self.enabled else remainingFade
+
         return self.frame, update
 
     def set_enabled(self, state):
         self.enabled = state
         if self.enabled:
             self.nextEventTime = self.handler.reactor.NOW
+    
+    def set_fade_time(self, fadetime):
+        self.fadeTime = fadetime
+        self.fadeEndTime = self.handler.reactor.monotonic() + fadetime
 
     def cmd_SET_LED_EFFECT(self, gcmd):
+        self.set_fade_time(gcmd.get_float('FADETIME', 0.0))
         if gcmd.get_int('STOP', 0) == 1:
             self.set_enabled(False)
         else:

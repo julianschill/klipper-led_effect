@@ -105,11 +105,27 @@ layers:
     breathing  10 1 top (.5,.5,1)
 ```
 
-This has defined an effect called `panel_idle` that can be controlled
-via the gcode command `SET_LED_EFFECT EFFECT=panel_idle`. Calling the command
-enables this effect. It can be disabled again by calling 
-`SET_LED_EFFECT EFFECT=panel_idle STOP=1`. Running `STOP_LED_EFFECTS` disables
-all active effects.
+This has defined an effect called `panel_idle`.
+
+### Controlling the effects
+Effects can be active or inactive. Inactive effects don't output any color 
+data, while active effects return color data, that is added up for each LED 
+they run on.
+
+#### Activating and deactivating effects
+Our example effect can be activated by running the GCode command 
+`SET_LED_EFFECT EFFECT=panel_idle`.
+Running the command `SET_LED_EFFECT EFFECT=panel_idle STOP=1` deactivates this 
+particular effect again.
+To deactivate all effects we can use the GCode command `STOP_LED_EFFECTS`.
+
+#### Fading in and out
+Effects can be faded in and out by specifying the `FADETIME` parameter:
+`SET_LED_EFFECT EFFECT=panel_idle FADETIME=1.0` fades the effect in during one 
+second. Running `SET_LED_EFFECT EFFECT=panel_idle STOP=1 FADETIME=1.0` fades it 
+out in one second. We can also fade out all effects by running 
+`STOP_LED_EFFECTS FADETIME=1.0`. It is also possible to crossfade effects by 
+running a fade in command and a fade out command successively.
 
 ### Additional effect level parameters
 
