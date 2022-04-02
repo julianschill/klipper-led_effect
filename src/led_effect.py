@@ -6,8 +6,6 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 
-#import logging
-import logging
 from math import cos, exp, pi
 from random import randint
 
@@ -168,13 +166,7 @@ class ledFrameHandler:
                 for i in range(effect.ledCount):
                     s = effect.leds[i][1]
                     chain = effect.leds[i][0]
-                    getColorData = effect.leds[i][2]
-                    color_map = effect.leds[i][3]
-                    offset = effect.leds[i][4]
-                    color_len = len(color_map)
-                    with chain.mutex:
-                        chain.color_data[s+offset:s+offset+color_len] = \
-                            getColorData([0,0,0], color_map)
+                    chain.led_helper.led_state[s] = (0.0, 0.0, 0.0, 0.0)
                     chainsToUpdate.add(chain)
 
         #then sum up all effects for that LEDs
@@ -185,19 +177,21 @@ class ledFrameHandler:
                     s = effect.leds[i][1]
                     chain = effect.leds[i][0]
                     getColorData = effect.leds[i][2]
-                    color_map = effect.leds[i][3]
-                    offset = effect.leds[i][4]
-                    color_len = len(color_map)
-                    with chain.mutex:
-                        chain.color_data[s+offset:s+offset+color_len] = \
-                            [min(255,a+b) for a,b in \
-                            zip(chain.color_data[s+offset:s+offset+color_len],\
-                                getColorData(frame[i*3:i*3+3], color_map))]
+                    has_white = effect.leds[i][3]
+                    
+                    current_state=list(chain.led_helper.led_state[s])
+                    new_state=[min(1.0,a+b) for a,b in \
+                                 zip(current_state,\
+                                     getColorData(frame[i*3:i*3+3], has_white))]
+
+                    chain.led_helper.led_state[s] = tuple(new_state)
+
                     chainsToUpdate.add(chain)
 
         for chain in chainsToUpdate:
-            with chain.mutex:
-                chain.send_data()
+            if hasattr(chain,"prev_data"):
+                chain.prev_data = None
+            chain.led_helper.update_func(chain.led_helper.led_state, None)
 
         next_eventtime=min(self.effects, key=lambda x: x.nextEventTime)\
                         .nextEventTime
@@ -301,29 +295,16 @@ class ledEffect:
 
                 #Add a call for each chain that orders the colors correctly
                 #and clamps #values to between 0 and 1
-                offset = 0
-                color_map= [(0,0),(1,1),(2,2)]
-                if hasattr(ledChain, 'color_map'):
-                    color_map= ledChain.color_map
-                    color_len= len(color_map)
-                    getColorData = (lambda rgb, color_map: 
-                        self._getColorData(rgb, color_map))
-                    
-          
-                # elif parms[0].startswith('dotstar'):
-                    
-                #     color_map= [(0,0),(1,1),(2,2)(3,3)]
-                    
-                #     getColorData = (lambda rgb:
-                #                     ( 0xFF,
-                #                     int(clamp(rgb[2]) * 255.0 * clamp(self.fadeValue)),
-                #                     int(clamp(rgb[1]) * 255.0 * clamp(self.fadeValue)),
-                #                     int(clamp(rgb[0]) * 255.0 * clamp(self.fadeValue))))
-                #     offset = 4
-               
+ 
+                getColorData = (lambda rgb, has_white: 
+                    self._getColorData(rgb, has_white))
+
                 #Add each discrete chain to the collection
                 if ledChain not in self.ledChains:
                     self.ledChains.append(ledChain)
+                has_white = False
+                if hasattr(ledChain, 'color_map'):
+                    has_white = (len(ledChain.color_map) == 4)
 
                 for led in ledIndices:
                     if led:
@@ -337,15 +318,15 @@ class ledEffect:
                                 ledList = list(reversed(range(stop-1, start)))
                             for i in ledList:
                                 self.leds.append([ledChain,
-                                    int(i) * color_len, getColorData, color_map, offset])
+                                    int(i), getColorData, has_white])
                         else:
                             for i in led.split(','):
                                 self.leds.append([ledChain,
-                                    (int(i)-1) * color_len, getColorData, color_map, offset])
+                                    (int(i)-1), getColorData, has_white])
                     else:
                         for i in range(ledChain.chain_count):
                             self.leds.append([ledChain, 
-                                    int(i) * color_len, getColorData, color_map, offset])
+                                    int(i), getColorData, has_white])
 
         self.ledCount = len(self.leds)
         self.frame = [0.0] * 3 * self.ledCount
@@ -390,18 +371,17 @@ class ledEffect:
 
         self.handler.addEffect(self)
 
-    def _getColorData(self, colors, color_map):
-        clamp = (lambda x : 0 if x < 0 else 255 if x > 255 else int(x))
+    def _getColorData(self, colors, has_white):
+        clamp = (lambda x : 0.0 if x < 0.0 else 1.0 if x > 1.0 else x)
 
         colors = [x*self.fadeValue for x in colors]
-        if len(color_map) == 4:
+        if has_white:
             colors = self._rgb_to_rgbw(colors)
-        
-        
-        colors = [clamp(255.0 * x) for x in colors]
-        color_output=self._mapColors(colors, color_map)
+        else:
+            colors = colors + [0.0]
+        colors = [clamp(x) for x in colors]
 
-        return tuple(color_output)
+        return tuple(colors)
 
     # Todo: Make color temperature configurable in Neopixel config and 
     # maybe move conversion function to Neopixel module
@@ -417,12 +397,6 @@ class ledEffect:
             color_output[i] = colors[i] - minWhite * color_temp_of_w[i]
         color_output[3] = minWhite
         return color_output
-
-    def _mapColors(self, colors, color_map):
-        color_mapped = [0 for _ in range(len(colors))]
-        for lidx, cidx in color_map:
-            color_mapped[cidx] = colors[lidx]
-        return tuple(color_mapped)
 
     def getFrame(self, eventtime):
         if not self.enabled and self.fadeValue <= 0.0:
