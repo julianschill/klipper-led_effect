@@ -6,15 +6,12 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 
-#import logging
-import logging
 from math import cos, exp, pi
 from random import randint
 
 ANALOG_SAMPLE_TIME  = 0.001
 ANALOG_SAMPLE_COUNT = 5
 ANALOG_REPORT_TIME  = 0.05
-
 
 ######################################################################
 # Custom color value list, returns lists of [r, g ,b] values
@@ -158,6 +155,31 @@ class ledFrameHandler:
             self.printProgress = int(p * 100)
         return eventtime + 1
 
+    # Todo: Make color temperature configurable in Neopixel config and 
+    # maybe move conversion function to Neopixel module
+    def _rgb_to_rgbw(self, colors, color_temp_of_w = (1.0,0.705,0.420)):
+
+        minWhite = min( colors[0] / color_temp_of_w[0], 
+                        colors[1] / color_temp_of_w[1], 
+                        colors[2] / color_temp_of_w[2])
+
+        color_output = [0 for _ in range(4)]
+
+        for i in range(3):
+            color_output[i] = colors[i] - minWhite * color_temp_of_w[i]
+        color_output[3] = minWhite
+        return color_output
+
+    def _getColorData(self, colors, has_white, fade):
+        clamp = (lambda x : 0.0 if x < 0.0 else 1.0 if x > 1.0 else x)
+        colors = [x*clamp(fade) for x in colors]
+        if has_white:
+            colors = self._rgb_to_rgbw(colors)
+        else:
+            colors = colors + [0.0]
+        colors = [clamp(x) for x in colors]
+        return tuple(colors)
+
     def _getFrames(self, eventtime):
         chainsToUpdate = set()
 
@@ -166,14 +188,8 @@ class ledFrameHandler:
             frame, update = effect.getFrame(eventtime)
             if update:
                 for i in range(effect.ledCount):
-                    s = effect.leds[i][1]
-                    chain = effect.leds[i][0]
-                    getColorData = effect.leds[i][2]
-                    color_len =  effect.leds[i][3]
-                    offset =  effect.leds[i][4]
-                    with chain.mutex:
-                        chain.color_data[s+offset:s+offset+color_len] = \
-                            getColorData(*[0,0,0])
+                    chain,index=effect.leds[i]
+                    chain.led_helper.led_state[index] = (0.0, 0.0, 0.0, 0.0)
                     chainsToUpdate.add(chain)
 
         #then sum up all effects for that LEDs
@@ -181,30 +197,33 @@ class ledFrameHandler:
             frame, update = effect.getFrame(eventtime)
             if update:
                 for i in range(effect.ledCount):
-                    s = effect.leds[i][1]
-                    chain = effect.leds[i][0]
-                    getColorData = effect.leds[i][2]
-                    color_len =  effect.leds[i][3]
-                    offset =  effect.leds[i][4]
-                    with chain.mutex:
-                        chain.color_data[s+offset:s+offset+color_len] = \
-                            [min(255,a+b) for a,b in \
-                            zip(chain.color_data[s+offset:s+offset+color_len],\
-                                getColorData(*frame[i*3:i*3+3]))]
+                    chain,index=effect.leds[i]
+                    
+                    has_white = False
+                    if hasattr(chain, 'color_map'):
+                        has_white = (len(chain.color_map) == 4)
+
+                    current_state=list(chain.led_helper.led_state[index])
+                    effect_state=self._getColorData(frame[i*3:i*3+3], 
+                                                    has_white, 
+                                                    effect.fadeValue)
+
+                    next_state=[min(1.0,a+b) for a,b in \
+                                 zip(current_state, effect_state)]
+
+                    chain.led_helper.led_state[index] = tuple(next_state)
                     chainsToUpdate.add(chain)
 
         for chain in chainsToUpdate:
-            with chain.mutex:
-                chain.send_data()
+            if hasattr(chain,"prev_data"):
+                chain.prev_data = None # workaround to force update of dotstars
+            chain.led_helper.update_func(chain.led_helper.led_state, None)
 
         next_eventtime=min(self.effects, key=lambda x: x.nextEventTime)\
                         .nextEventTime
         # run at least with 10Hz
         next_eventtime=min(next_eventtime, eventtime + 0.1) 
-        
-
         return next_eventtime
-
 
     def cmd_STOP_LED_EFFECTS(self, gcmd):
         for effect in self.effects:
@@ -297,72 +316,10 @@ class ledEffect:
                                                 .replace(':',' '))
                 ledIndices   = ''.join(parms[1:]).strip('()').split(',')
 
-                #Add a call for each chain that orders the colors correctly
-                #and clamps #values to between 0 and 1
-                clamp = (lambda x : 0.0 if x < 0.0 else \
-                                    1.0 if x > 1.0 else x)
-                offset = 0
-                if hasattr(ledChain, 'color_order'):
-                    color_len = len(ledChain.color_order)
-
-                    if ledChain.color_order == 'RGB':
-                        getColorData = (lambda r, g, b:
-                                        ( int(clamp(r) * 255.0 * clamp(self.fadeValue)),
-                                          int(clamp(g) * 255.0 * clamp(self.fadeValue)),
-                                          int(clamp(b) * 255.0 * clamp(self.fadeValue))))
-
-                    elif ledChain.color_order == 'GRB':
-                        getColorData = (lambda r, g, b:
-                                        ( int(clamp(g) * 255.0 * clamp(self.fadeValue)),
-                                          int(clamp(r) * 255.0 * clamp(self.fadeValue)),
-                                          int(clamp(b) * 255.0 * clamp(self.fadeValue))))
-
-                    elif ledChain.color_order == 'BRG':
-                        getColorData = (lambda r, g, b:
-                                        ( int(clamp(b) * 255.0 * clamp(self.fadeValue)),
-                                          int(clamp(r) * 255.0 * clamp(self.fadeValue)),
-                                          int(clamp(g) * 255.0 * clamp(self.fadeValue))))
-
-                    elif ledChain.color_order == 'RGBW':
-                        getColorData = (lambda r, g, b:
-                                        self._rgb2rgbw((
-                                          int(clamp(r) * 255.0 * clamp(self.fadeValue)),
-                                          int(clamp(g) * 255.0 * clamp(self.fadeValue)),
-                                          int(clamp(b) * 255.0 * clamp(self.fadeValue))),
-                                          'RGBW' ))
-
-                    elif ledChain.color_order == 'GRBW':
-                        getColorData = (lambda r, g, b:
-                                        self._rgb2rgbw((
-                                          int(clamp(r) * 255.0 * clamp(self.fadeValue)),
-                                          int(clamp(g) * 255.0 * clamp(self.fadeValue)),
-                                          int(clamp(b) * 255.0 * clamp(self.fadeValue))),
-                                          'GRBW' ))
-                    else:
-                        getColorData = (lambda r, g, b:
-                                        ( int(clamp(r) * 255.0 * clamp(self.fadeValue)),
-                                          int(clamp(g) * 255.0 * clamp(self.fadeValue)),
-                                          int(clamp(b) * 255.0 * clamp(self.fadeValue))))
-
-                elif parms[0].startswith('dotstar'):
-                    getColorData = (lambda r, g, b:
-                                    ( 0xFF,
-                                      int(clamp(b) * 255.0 * clamp(self.fadeValue)),
-                                      int(clamp(g) * 255.0 * clamp(self.fadeValue)),
-                                      int(clamp(r) * 255.0 * clamp(self.fadeValue))))
-                    color_len = 4
-                    offset = 4
-                else: 
-                    getColorData = (lambda r, g, b:
-                                        ( int(clamp(r) * 255.0 * clamp(self.fadeValue)),
-                                          int(clamp(g) * 255.0 * clamp(self.fadeValue)),
-                                          int(clamp(b) * 255.0 * clamp(self.fadeValue))))
-                    color_len = 3
-
-               
                 #Add each discrete chain to the collection
                 if ledChain not in self.ledChains:
                     self.ledChains.append(ledChain)
+
 
                 for led in ledIndices:
                     if led:
@@ -375,16 +332,14 @@ class ledEffect:
                             else:
                                 ledList = list(reversed(range(stop-1, start)))
                             for i in ledList:
-                                self.leds.append([ledChain,
-                                    int(i) * color_len, getColorData, color_len, offset])
+                                self.leds.append((ledChain, int(i)))
                         else:
                             for i in led.split(','):
-                                self.leds.append([ledChain,
-                                    (int(i)-1) * color_len, getColorData, color_len, offset])
+                                self.leds.append((ledChain, \
+                                                (int(i)-1)))
                     else:
                         for i in range(ledChain.chain_count):
-                            self.leds.append([ledChain, 
-                                    int(i) * color_len, getColorData, color_len, offset])
+                            self.leds.append((ledChain, int(i)))
 
         self.ledCount = len(self.leds)
         self.frame = [0.0] * 3 * self.ledCount
@@ -429,30 +384,8 @@ class ledEffect:
 
         self.handler.addEffect(self)
 
-    # Todo: Make color temperature configurable in Neopixel config and 
-    # maybe move conversion function to Neopixel module
-    def _rgb2rgbw(self, colors, color_order = "RGBW", 
-                    color_temp_of_w = (255,180,107)):
-        clamp = (lambda x : 0 if x < 0 else 255 if x > 255 else int(x))
-
-        color_temp_factor = [x/255.0 for x in color_temp_of_w]
-
-        minWhite = min( colors[0] / color_temp_factor[0], 
-                        colors[1] / color_temp_factor[1], 
-                        colors[2] / color_temp_factor[2])
-
-        w_out = clamp( minWhite )
-        r_out = clamp( colors[0] - minWhite * color_temp_factor[0])
-        g_out = clamp( colors[1] - minWhite * color_temp_factor[1])
-        b_out = clamp( colors[2] - minWhite * color_temp_factor[2])
-
-        if color_order == "RGBW":
-            return (r_out, g_out, b_out, w_out)
-        elif color_order == "GRBW":
-            return (g_out, r_out, b_out, w_out)
-
     def getFrame(self, eventtime):
-        if not self.enabled and self.fadeTime <= 0.0:
+        if not self.enabled and self.fadeValue <= 0.0:
             if self.nextEventTime < self.handler.reactor.NEVER:
                 # Effect has just been disabled. Set colors to 0 and update once.
                 self.nextEventTime = self.handler.reactor.NEVER
