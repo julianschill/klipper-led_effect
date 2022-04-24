@@ -794,7 +794,7 @@ class ledEffect:
                self.frameHandler.heaterCurrent[self.handler.heater] > 0.0:
 
                 if self.frameHandler.heaterCurrent[self.handler.heater] <= \
-                   self.frameHandler.heaterTarget[self.handler.heater]-5:
+                   self.frameHandler.heaterTarget[self.handler.heater]-2:
 
                     s = int((self.frameHandler.
                                 heaterCurrent[self.handler.heater] / 
@@ -963,7 +963,7 @@ class ledEffect:
             heaterLast    = self.frameHandler.heaterLast[self.handler.heater]
 
             if heaterTarget > 0.0 and heaterCurrent > 0.0:
-                if heaterCurrent <= heaterTarget-5:
+                if heaterCurrent <= heaterTarget-2:
                     spark = int((heaterCurrent / heaterTarget) * 80)
                     brightness = int((heaterCurrent / heaterTarget) * 100)
                 elif self.effectCutoff > 0:
