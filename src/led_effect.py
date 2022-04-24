@@ -74,10 +74,12 @@ class ledFrameHandler:
         self.gcode.register_command('STOP_LED_EFFECTS',
                                     self.cmd_STOP_LED_EFFECTS,
                                     desc=self.cmd_STOP_LED_EFFECTS_help)
+        self.shutdown = False
 
     cmd_STOP_LED_EFFECTS_help = 'Stops all led_effects'
 
     def _handle_ready(self):
+        self.shutdown = False
         self.reactor = self.printer.get_reactor()
         self.printer.register_event_handler('klippy:shutdown', 
                                             self._handle_shutdown)
@@ -89,11 +91,12 @@ class ledFrameHandler:
                                                          self.reactor.NOW)
 
     def _handle_shutdown(self):
+        self.shutdown = True
         for effect in self.effects:
-            if not effect.run_on_error:
+            if not effect.runOnShutown:
                 for chain in self.ledChains:
-                    chain.color_data = [] * (chain.chain_count * 3)
-                    chain.send_data()
+                    chain.led_helper.set_color(None, (0.0, 0.0, 0.0, 0.0))
+                    chain.led_helper.update_func(chain.led_helper.led_state, None)
 
         pass
 
@@ -217,7 +220,8 @@ class ledFrameHandler:
         for chain in chainsToUpdate:
             if hasattr(chain,"prev_data"):
                 chain.prev_data = None # workaround to force update of dotstars
-            chain.led_helper.update_func(chain.led_helper.led_state, None)
+            if not self.shutdown: 
+                chain.led_helper.update_func(chain.led_helper.led_state, None)
 
         next_eventtime=min(self.effects, key=lambda x: x.nextEventTime)\
                         .nextEventTime
@@ -305,6 +309,8 @@ class ledEffect:
         self.ledChains    = []
         self.leds         = []
         self.enabled = self.autoStart
+        self.printer.register_event_handler('klippy:shutdown', 
+                                    self._handle_shutdown)
         #map each LED from the chains to the "pixels" in the effect frame
         for chain in chains:
             chain = chain.strip()
@@ -338,7 +344,7 @@ class ledEffect:
                                 self.leds.append((ledChain, \
                                                 (int(i)-1)))
                     else:
-                        for i in range(ledChain.chain_count):
+                        for i in range(ledChain.led_helper.get_led_count()):
                             self.leds.append((ledChain, int(i)))
 
         self.ledCount = len(self.leds)
