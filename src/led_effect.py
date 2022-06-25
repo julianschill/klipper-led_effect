@@ -35,7 +35,7 @@ class colorArray(list):
             super(colorArray, self).__setitem__(a*3+1, v[1])
             super(colorArray, self).__setitem__(a*3+2, v[2])
     def __len__(self):
-        return super(colorArray, self).__len__() / 3
+        return super(colorArray, self).__len__() // 3
     def reverse(self):
         self[:] = [c for cl in range(len(self)-1,-1, -1)
                         for c in self[cl]]
