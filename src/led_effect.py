@@ -6,11 +6,8 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 
-from asyncio.log import logger
-import collections
 from math import cos, exp, pi
 from random import randint
-import logging
 
 ANALOG_SAMPLE_TIME  = 0.001
 ANALOG_SAMPLE_COUNT = 5
