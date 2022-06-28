@@ -131,7 +131,7 @@ class ledFrameHandler:
         self.effects.append(effect)
 
     def _pollHeater(self, eventtime):
-        for heater in self.heaters.iterkeys():
+        for heater in self.heaters.keys():
             current, target = self.heaters[heater].get_temp(eventtime)
             self.heaterCurrent[heater] = current
             self.heaterTarget[heater]  = target
