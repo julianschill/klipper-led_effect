@@ -158,6 +158,8 @@ class ledFrameHandler:
         p = status.get('progress')
         if p:
             self.printProgress = int(p * 100)
+        else:
+            self.printProgress = 0
         return eventtime + 1
 
     # Todo: Make color temperature configurable in Neopixel config and 
@@ -1043,7 +1045,8 @@ class ledEffect:
                 gradient.shift(1,1)
                 frames.append(gradient[:self.ledCount])
 
-            for i in range(101):
+            self.thisFrame.append(colorArray([0.0,0.0,0.0] * self.ledCount))
+            for i in range(1, 101):
                 x = int((i / 101.0) * self.ledCount)
                 self.thisFrame.append(frames[x])
 
