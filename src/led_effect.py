@@ -156,10 +156,8 @@ class ledFrameHandler:
     def _pollProgress(self, eventtime):
         status = self.displayStatus.get_status(eventtime)
         p = status.get('progress')
-        if p:
+        if p is not None:
             self.printProgress = int(p * 100)
-        else:
-            self.printProgress = 0
         return eventtime + 1
 
     # Todo: Make color temperature configurable in Neopixel config and 
