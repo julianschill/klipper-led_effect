@@ -156,7 +156,7 @@ class ledFrameHandler:
     def _pollProgress(self, eventtime):
         status = self.displayStatus.get_status(eventtime)
         p = status.get('progress')
-        if p:
+        if p is not None:
             self.printProgress = int(p * 100)
         return eventtime + 1
 
@@ -1046,7 +1046,8 @@ class ledEffect:
                 gradient.shift(1,1)
                 frames.append(gradient[:self.ledCount])
 
-            for i in range(101):
+            self.thisFrame.append(colorArray([0.0,0.0,0.0] * self.ledCount))
+            for i in range(1, 101):
                 x = int((i / 101.0) * self.ledCount)
                 self.thisFrame.append(frames[x])
 
