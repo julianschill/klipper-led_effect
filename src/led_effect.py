@@ -234,10 +234,13 @@ class ledFrameHandler:
         return next_eventtime
 
     def cmd_STOP_LED_EFFECTS(self, gcmd):
+        led_param = gcmd.get('LEDS', "")
+
         for effect in self.effects:
-            if effect.enabled:
-                effect.set_fade_time(gcmd.get_float('FADETIME', 0.0))
-            effect.set_enabled(False)
+            if led_param in effect.configChains or led_param == "":
+                if effect.enabled:
+                    effect.set_fade_time(gcmd.get_float('FADETIME', 0.0))
+                effect.set_enabled(False)
 
 def load_config(config):
     return ledFrameHandler(config)
@@ -309,14 +312,14 @@ class ledEffect:
     cmd_SET_LED_help = 'Starts or Stops the specified led_effect'
 
     def _handle_ready(self):
-        chains = self.configLeds.split('\n')
+        self.configChains = self.configLeds.split('\n')
         self.ledChains    = []
         self.leds         = []
         self.enabled = self.autoStart
         self.printer.register_event_handler('klippy:shutdown', 
                                     self._handle_shutdown)
         #map each LED from the chains to the "pixels" in the effect frame
-        for chain in chains:
+        for chain in self.configChains:
             chain = chain.strip()
             parms = [parameter.strip() for parameter in chain.split()
                         if parameter.strip()]

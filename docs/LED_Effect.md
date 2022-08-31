@@ -118,6 +118,12 @@ Our example effect can be activated by running the GCode command
 Running the command `SET_LED_EFFECT EFFECT=panel_idle STOP=1` deactivates this 
 particular effect again.
 To deactivate all effects we can use the GCode command `STOP_LED_EFFECTS`.
+To only deactivate effects for certain LEDs we can specify the LEDS parameter:
+`STOP_LED_EFFECTS LEDS="neopixel:panel_ring"` The parameter has match exactly 
+the line defined in the "leds" section of the effect, including the indices 
+(see below): `STOP_LED_EFFECTS LEDS="neopixel:panel_ring (1-7)"`. Only one 
+LED parameter can be specified at a time. To stop the effects for multiple LEDs 
+we have to run the command multiple times.
 
 #### Fading in and out
 Effects can be faded in and out by specifying the `FADETIME` parameter:
