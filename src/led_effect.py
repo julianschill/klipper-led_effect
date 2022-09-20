@@ -555,7 +555,7 @@ class ledEffect:
 
             brightness = []
 
-            p = (1.0 / self.frameRate) * (self.effectRate * 0.5)
+            p = (1 / self.frameRate) * (self.effectRate * 0.5)
             o = int(p)
             f = 2 * pi
 
@@ -757,29 +757,26 @@ class ledEffect:
         def __init__(self,  **kwargs):
             super(ledEffect.layerGradient, self).__init__(**kwargs)
 
-            if self.effectRate > 0:
-                self.direction = True
+            direction = -1 if self.effectRate < 0 else 1
+
+            if self.effectRate == 0: 
+                gradientLength = self.ledCount
             else:
-                self.direction = False
-                self.effectRate *= -1
+                gradientLength=abs(int(1/(self.effectRate * self.frameRate)))
+            gradient = colorArray(self._gradient(self.paletteColors, 
+                                                  gradientLength,
+                                                  toFirst=True))
 
-            gradientLength = int(self.ledCount)
-            gradient   = colorArray(self._gradient(self.paletteColors, 
-                                                   gradientLength, toFirst=True))
-
-            if self.effectRate == 0:
-                self.thisFrame.append(gradient[0:self.ledCount])
-            else:                                                   
-                for i in range(len(gradient)):
-                    gradient.shift(int(self.effectRate+(self.effectRate < 1)), 
-                                    self.direction)
-                    self.thisFrame.append(gradient[0:self.ledCount])
-
-                    for x in range(int((1/self.effectRate)-(self.effectRate <= 1))):
-                        self.thisFrame.append(gradient[0:self.ledCount])
+            for i in range(gradientLength if self.effectRate != 0 else 1):
+                frame = colorArray([0.0, 0.0, 0.0] * self.ledCount)
+                for led in range(self.ledCount):
+                    frame[led] = gradient[ int(i*direction + \
+                        self.effectCutoff * gradientLength * led \
+                        / self.ledCount ) % gradientLength]
+            self.thisFrame.append(frame)
 
             self.frameCount = len(self.thisFrame)
-
+            
     #Responds to heater temperature
     class layerHeater(_layerBase):
         def __init__(self,  **kwargs):
