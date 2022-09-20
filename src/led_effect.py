@@ -773,7 +773,7 @@ class ledEffect:
                     frame[led] = gradient[ int(i*direction + \
                         self.effectCutoff * gradientLength * led \
                         / self.ledCount ) % gradientLength]
-            self.thisFrame.append(frame)
+                self.thisFrame.append(frame)
 
             self.frameCount = len(self.thisFrame)
             
