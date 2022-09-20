@@ -273,13 +273,16 @@ Random flashes of light with decay along a strip. If a palette is specified,
 a random color is chosen from the palette.
 
 #### Gradient
-    Effect Rate:  1   How fast to cycle through the gradient
-    Cutoff:       0   Not used but must be provided
+    Effect Rate:  1   How fast to cycle through the gradient, negative values change direction.
+    Cutoff:       1   Number of gradients on chain
     Palette:          Linear gradient with even spacing.
 Colors from the palette are blended into a linear gradient across the length
 of the strip. The effect rate parameter controls the speed at which the colors
 are cycled through. A negative value for the effect rate changes the direction
-the gradient cycles (right to left vs left to right)
+the gradient cycles (right to left vs left to right). The Cutoff determines the
+length of the gradient in relation to the chain length. The bigger the value, 
+the shorter the gradient (e.g. the value 2 means 2 gradients on the length of 
+the chain)
 
 #### Comet
     Effect Rate:  1   How fast the comet moves, negative values change direction
@@ -323,7 +326,7 @@ of heat to accumulate at the base of the strip resulting a more intense flame.
 Changing the rate of cooling results in longer or shorter overall flames.
 
 #### HeaterFire
-    Effect Rate:  1  Minimum temperature to activate effect
+    Effect Rate:  1   Minimum temperature to activate effect
     Cutoff:       0   Disable effect once temp is reached
     Palette:          Color values to blend from "Cold" to "Hot"
 The fire effect but responsive to the temperature of the specified heater.
