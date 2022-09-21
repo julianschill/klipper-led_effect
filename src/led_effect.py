@@ -1036,7 +1036,7 @@ class ledEffect:
                 leading.padRight([0.0,0.0,0.0], self.ledCount)
 
             gradient = colorArray(trailing + self.paletteColors[0] + leading)
-            gradient.shift(len(trailing)-1, 0)
+            gradient.shift(len(trailing), 0)
             frames = [gradient[:self.ledCount]]
 
             for i in range(0, self.ledCount):
