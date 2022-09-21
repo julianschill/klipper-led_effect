@@ -149,14 +149,15 @@ class ledFrameHandler:
         for i in range(3):
             if pos[i] >= self.kin.axes_min[i] and pos[i] <= self.kin.axes_max[i]:
                 self.stepperPositions[i] = int(
-                    (pos[i] / (self.kin.axes_max[i] - self.kin.axes_min[i])
-                        * 100)- 1)
+                    ((pos[i] - self.kin.axes_min[i]) / \
+                     (self.kin.axes_max[i] - self.kin.axes_min[i])
+                    * 100)- 1)
         return eventtime + 0.5
 
     def _pollProgress(self, eventtime):
         status = self.displayStatus.get_status(eventtime)
         p = status.get('progress')
-        if p:
+        if p is not None:
             self.printProgress = int(p * 100)
         return eventtime + 1
 
@@ -234,10 +235,13 @@ class ledFrameHandler:
         return next_eventtime
 
     def cmd_STOP_LED_EFFECTS(self, gcmd):
+        led_param = gcmd.get('LEDS', "")
+
         for effect in self.effects:
-            if effect.enabled:
-                effect.set_fade_time(gcmd.get_float('FADETIME', 0.0))
-            effect.set_enabled(False)
+            if led_param in effect.configChains or led_param == "":
+                if effect.enabled:
+                    effect.set_fade_time(gcmd.get_float('FADETIME', 0.0))
+                effect.set_enabled(False)
 
 def load_config(config):
     return ledFrameHandler(config)
@@ -309,14 +313,14 @@ class ledEffect:
     cmd_SET_LED_help = 'Starts or Stops the specified led_effect'
 
     def _handle_ready(self):
-        chains = self.configLeds.split('\n')
+        self.configChains = self.configLeds.split('\n')
         self.ledChains    = []
         self.leds         = []
         self.enabled = self.autoStart
         self.printer.register_event_handler('klippy:shutdown', 
                                     self._handle_shutdown)
         #map each LED from the chains to the "pixels" in the effect frame
-        for chain in chains:
+        for chain in self.configChains:
             chain = chain.strip()
             parms = [parameter.strip() for parameter in chain.split()
                         if parameter.strip()]
@@ -552,7 +556,7 @@ class ledEffect:
 
             brightness = []
 
-            p = (1.0 / self.frameRate) * (self.effectRate * 0.5)
+            p = (1 / self.frameRate) * (self.effectRate * 0.5)
             o = int(p)
             f = 2 * pi
 
@@ -754,29 +758,26 @@ class ledEffect:
         def __init__(self,  **kwargs):
             super(ledEffect.layerGradient, self).__init__(**kwargs)
 
-            if self.effectRate > 0:
-                self.direction = True
+            direction = -1 if self.effectRate < 0 else 1
+
+            if self.effectRate == 0: 
+                gradientLength = self.ledCount
             else:
-                self.direction = False
-                self.effectRate *= -1
+                gradientLength=abs(int(1/(self.effectRate * self.frameRate)))
+            gradient = colorArray(self._gradient(self.paletteColors, 
+                                                  gradientLength,
+                                                  toFirst=True))
 
-            gradientLength = int(self.ledCount)
-            gradient   = colorArray(self._gradient(self.paletteColors, 
-                                                   gradientLength, toFirst=True))
-
-            if self.effectRate == 0:
-                self.thisFrame.append(gradient[0:self.ledCount])
-            else:                                                   
-                for i in range(len(gradient)):
-                    gradient.shift(int(self.effectRate+(self.effectRate < 1)), 
-                                    self.direction)
-                    self.thisFrame.append(gradient[0:self.ledCount])
-
-                    for x in range(int((1/self.effectRate)-(self.effectRate <= 1))):
-                        self.thisFrame.append(gradient[0:self.ledCount])
+            for i in range(gradientLength if self.effectRate != 0 else 1):
+                frame = colorArray([0.0, 0.0, 0.0] * self.ledCount)
+                for led in range(self.ledCount):
+                    frame[led] = gradient[ int(i*direction + \
+                        self.effectCutoff * gradientLength * led \
+                        / self.ledCount ) % gradientLength]
+                self.thisFrame.append(frame)
 
             self.frameCount = len(self.thisFrame)
-
+            
     #Responds to heater temperature
     class layerHeater(_layerBase):
         def __init__(self,  **kwargs):
@@ -1036,14 +1037,15 @@ class ledEffect:
                 leading.padRight([0.0,0.0,0.0], self.ledCount)
 
             gradient = colorArray(trailing + self.paletteColors[0] + leading)
-            gradient.shift(len(trailing)-1, 0)
+            gradient.shift(len(trailing), 0)
             frames = [gradient[:self.ledCount]]
 
             for i in range(0, self.ledCount):
                 gradient.shift(1,1)
                 frames.append(gradient[:self.ledCount])
 
-            for i in range(101):
+            self.thisFrame.append(colorArray([0.0,0.0,0.0] * self.ledCount))
+            for i in range(1, 101):
                 x = int((i / 101.0) * self.ledCount)
                 self.thisFrame.append(frames[x])
 
