@@ -149,8 +149,9 @@ class ledFrameHandler:
         for i in range(3):
             if pos[i] >= self.kin.axes_min[i] and pos[i] <= self.kin.axes_max[i]:
                 self.stepperPositions[i] = int(
-                    (pos[i] / (self.kin.axes_max[i] - self.kin.axes_min[i])
-                        * 100)- 1)
+                    ((pos[i] - self.kin.axes_min[i]) / \
+                     (self.kin.axes_max[i] - self.kin.axes_min[i])
+                    * 100)- 1)
         return eventtime + 0.5
 
     def _pollProgress(self, eventtime):
