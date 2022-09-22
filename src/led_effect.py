@@ -166,14 +166,9 @@ class ledFrameHandler:
             self.printProgress = int(p * 100)
         return eventtime + 1
 
-    def _getColorData(self, colors, has_white, fade):
+    def _getColorData(self, colors, fade):
         clamp = (lambda x : 0.0 if x < 0.0 else 1.0 if x > 1.0 else x)
         colors = [x*clamp(fade) for x in colors]
-        if not has_white and COLORS > 3:
-            colors[0] += colors[3]
-            colors[1] += colors[3]
-            colors[2] += colors[3]
-        
         colors=colors + [0.0] * (4 - len(colors))
         colors=colors[:4]
         colors = [clamp(x) for x in colors]
@@ -198,13 +193,8 @@ class ledFrameHandler:
                 for i in range(effect.ledCount):
                     chain,index=effect.leds[i]
                     
-                    has_white = False
-                    if hasattr(chain, 'color_map'):
-                        has_white = (len(chain.color_map) == 4)
-
                     current_state=list(chain.led_helper.led_state[index])
                     effect_state=self._getColorData(frame[i*COLORS:i*COLORS+COLORS], 
-                                                    has_white, 
                                                     effect.fadeValue)
 
                     next_state=[min(1.0,a+b) for a,b in \
