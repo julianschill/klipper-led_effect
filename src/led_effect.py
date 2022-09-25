@@ -189,9 +189,10 @@ class ledFrameHandler:
     def _getFrames(self, eventtime):
         chainsToUpdate = set()
 
+        frames = [(effect, effect.getFrame(eventtime)) for effect in self.effects]
+
         #first set all LEDs to 0, that should be updated
-        for effect in self.effects:
-            frame, update = effect.getFrame(eventtime)
+        for effect, (frame, update) in frames:
             if update:
                 for i in range(effect.ledCount):
                     chain,index=effect.leds[i]
@@ -199,8 +200,7 @@ class ledFrameHandler:
                     chainsToUpdate.add(chain)
 
         #then sum up all effects for that LEDs
-        for effect in self.effects:
-            frame, update = effect.getFrame(eventtime)
+        for effect, (frame, update) in frames:
             if update:
                 for i in range(effect.ledCount):
                     chain,index=effect.leds[i]
