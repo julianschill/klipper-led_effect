@@ -76,12 +76,10 @@ class ledFrameHandler:
         self.gcode.register_command('STOP_LED_EFFECTS',
                                     self.cmd_STOP_LED_EFFECTS,
                                     desc=self.cmd_STOP_LED_EFFECTS_help)
-        self.shutdown = False
 
     cmd_STOP_LED_EFFECTS_help = 'Stops all led_effects'
 
     def _handle_ready(self):
-        self.shutdown = False
         self.reactor = self.printer.get_reactor()
         self.printer.register_event_handler('klippy:shutdown', 
                                             self._handle_shutdown)
@@ -93,7 +91,6 @@ class ledFrameHandler:
                                                          self.reactor.NOW)
 
     def _handle_shutdown(self):
-        self.shutdown = True
         for effect in self.effects:
             if not effect.runOnShutown:
                 for chain in self.ledChains:
@@ -223,8 +220,7 @@ class ledFrameHandler:
         for chain in chainsToUpdate:
             if hasattr(chain,"prev_data"):
                 chain.prev_data = None # workaround to force update of dotstars
-            if not self.shutdown: 
-                chain.led_helper.update_func(chain.led_helper.led_state, None)
+            chain.led_helper.update_func(chain.led_helper.led_state, None)
         if self.effects:
             next_eventtime=min(self.effects, key=lambda x: x.nextEventTime)\
                             .nextEventTime
