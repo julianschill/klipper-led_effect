@@ -348,8 +348,6 @@ class ledEffect:
                                    for c in self._layerBase.__subclasses__()
                                    if str(c).startswith("<class")}
 
-        st = (lambda x : x.strip(('( )')))
-
         for layer in [line for line \
             in self.configLayers.split('\n') if line.strip()]:
 
@@ -372,22 +370,22 @@ class ledEffect:
             convert = lambda s: float(s)
                 
             try:
-                palette="".join(parms[4:])                # join all elements of the list
-                palette="".join(palette.split())          # remove whitespaces
+                palette="".join(parms[4:])                                      # join all elements of the list
+                palette="".join(palette.split())                                # remove whitespaces
                 palette=palette.strip(",")
-                palette=palette.split("),(")              # split colors
-                palette=[c.split(",") for c in palette]   # split color components
-                palette=[[convert(k.strip("()")) for k in c] for c in palette] #convert to float
+                palette=palette.split("),(")                                    # split colors
+                palette=[c.split(",") for c in palette]                         # split color components
+                palette=[[convert(k.strip("()")) for k in c] for c in palette]  # convert to float
                 for i in palette: 
                     if len(i) > COLORS: 
-                        raise self.printer.config_error("Color " + str(i) + " has too many elements.")
-                palette=[pad(c) for c in palette]         # pad to COLORS colors
-                palette = [k for c in palette for k in c] # flatten list
+                        raise Exception(
+                            "Color %s has too many elements." % (str(i),))
+                palette=[pad(c) for c in palette]                               # pad to COLORS colors
+                palette=[k for c in palette for k in c]                         # flatten list
             except Exception as e:
-                raise self.printer.config_error("Error parsing palette in "
-                    "LED Effect '%s' for layer \"%s\": %s"\
-                        % (self.name, parms[0], e))
-
+                raise self.printer.config_error(
+                    "Error parsing palette in '%s' for layer \"%s\": %s"\
+                        % (self.config.get_name(), parms[0], e,))
             self.layers.insert(0, layer(handler       = self,
                                         frameHandler  = self.handler,
                                         effectRate    = float(parms[1]),
