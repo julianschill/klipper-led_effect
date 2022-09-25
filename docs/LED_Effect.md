@@ -142,7 +142,9 @@ frame_rate:
 Sets the frame rate in frames per second for the effect
 
 run_on_error:
-Keeps the last color on a shutdown. (Currently not working)
+Starts the effect, when a shutdown occurs. For this to work the MCU firmware
+needs to be patched. Note: Using this with the incorrect firmware will crash
+Klipper, when an error occurs!
 
 heater:
 Specifies the heater to use for a heater effect. For a temperature fan put 
