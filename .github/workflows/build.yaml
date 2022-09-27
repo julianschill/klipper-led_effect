@@ -51,6 +51,7 @@ jobs:
     - name: Install environment
       working-directory: ./simulator
       run: poetry install --no-interaction --no-root
+    - name: Install root environment
       if: steps.cache-deps.outputs.cache-hit != 'true'
       run: poetry install --no-interaction
 
