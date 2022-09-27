@@ -47,10 +47,12 @@ jobs:
       with:
         path: .venv
         key: pydeps-${{ hashFiles('**/poetry.lock') }}
-
-    - run: poetry install --no-interaction --no-root
-      if: steps.cache-deps.outputs.cache-hit != 'true'
-    - run: poetry install --no-interaction
+    
+    - name: Install environment
+        working-directory: ./simulator
+        run: poetry install --no-interaction --no-root
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction
 
     - name: Build with pyinstaller for ${{matrix.TARGET}}
       run: ${{matrix.CMD_BUILD}}
