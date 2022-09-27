@@ -51,24 +51,27 @@ jobs:
     - name: Install environment
       working-directory: ./simulator
       run: poetry install --no-interaction --no-root
+      if: steps.cache-deps.outputs.cache-hit != 'true'
     - name: Install root environment
       working-directory: ./simulator
-      if: steps.cache-deps.outputs.cache-hit != 'true'
       run: poetry install --no-interaction
 
     - name: Build with pyinstaller for ${{matrix.TARGET}}
-      run: ${{matrix.CMD_BUILD}}
+      working-directory: ./simulator
+      run: poetry run ${{matrix.CMD_BUILD}}
     - name: Load Release URL File from release job
       uses: actions/download-artifact@v1
       with:
         name: release_url
     - name: Get Release File Name & Upload URL
+      working-directory: ./simulator
       id: get_release_info
       shell: bash
       run: |
         value=`cat release_url/release_url.txt`
         echo ::set-output name=upload_url::$value
     - name: Upload Release Asset
+      working-directory: ./simulator
       id: upload-release-asset
       uses: actions/upload-release-asset@v1
       env:
