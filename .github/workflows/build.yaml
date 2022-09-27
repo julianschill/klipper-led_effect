@@ -34,7 +34,9 @@ jobs:
     - name: cache poetry install
       uses: actions/cache@v3
       with:
-        path: ~/.local
+        path: |
+          ~/.local 
+          C:/Users/runneradmin/AppData/Roaming/Python/Scripts
         key: poetry-1.2.1-0
     - uses: snok/install-poetry@v1
       with:
@@ -61,6 +63,6 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
       with:
-        name: ${{matrix.TARGET}}
+        name: ledeffect-simulator_${{matrix.TARGET}}
         path: simulator/dist/
 
