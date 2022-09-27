@@ -32,7 +32,7 @@ jobs:
       with:
         python-version: 3.8
     - name: cache poetry install
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.local
           key: poetry-1.1.12-0
