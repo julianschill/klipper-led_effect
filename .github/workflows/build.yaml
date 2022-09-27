@@ -32,10 +32,10 @@ jobs:
       with:
         python-version: 3.8
     - name: cache poetry install
-        uses: actions/cache@v3
-        with:
-          path: ~/.local
-          key: poetry-1.1.12-0
+      uses: actions/cache@v3
+      with:
+        path: ~/.local
+        key: poetry-1.1.12-0
     - uses: snok/install-poetry@v1
         with:
           version: 1.1.12
@@ -43,7 +43,7 @@ jobs:
           virtualenvs-in-project: true
     - name: cache deps
         id: cache-deps
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: .venv
           key: pydeps-${{ hashFiles('**/poetry.lock') }}
