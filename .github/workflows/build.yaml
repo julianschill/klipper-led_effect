@@ -15,14 +15,14 @@ jobs:
           - os: macos-latest
             TARGET: macos
             CMD_BUILD: >
-                pyinstaller -F -w -n ledeffect-simulator -p .. simulator/simulator/simulator.py &&
+                pyinstaller -F -w -n ledeffect-simulator -p .. simulator/simulator.py &&
                 cd dist/ &&
                 zip -r9 ledeffect-simulator ledeffect-simulator.app/
             OUT_FILE_NAME: ledeffect-simulator.zip
             ASSET_MIME: application/zip
           - os: windows-latest
             TARGET: windows
-            CMD_BUILD: pyinstaller -F -w -n ledeffect-simulator -p .. simulator/simulator/simulator.py
+            CMD_BUILD: pyinstaller -F -w -n ledeffect-simulator -p .. simulator/simulator.py
             OUT_FILE_NAME: ledeffect-simulator.exe
             ASSET_MIME: application/vnd.microsoft.portable-executable
     steps:
