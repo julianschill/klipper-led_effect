@@ -64,5 +64,5 @@ jobs:
       uses: actions/upload-artifact@v1.0.0
       with:
         name: ledeffect-simulator_${{matrix.TARGET}}
-        path: simulator/dist/
+        path: simulator/dist/${{matrix.OUT_FILE_NAME}}
 
