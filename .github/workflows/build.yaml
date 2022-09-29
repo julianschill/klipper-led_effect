@@ -34,7 +34,9 @@ jobs:
     - name: cache poetry install
       uses: actions/cache@v3
       with:
-        path: ~/.local
+        path: |
+          ~/.local 
+          C:/Users/runneradmin/AppData/Roaming/Python/Scripts
         key: poetry-1.2.1-0
     - uses: snok/install-poetry@v1
       with:
@@ -45,7 +47,7 @@ jobs:
       id: cache-deps
       uses: actions/cache@v3
       with:
-        path: .venv
+        path: simulator/.venv
         key: pydeps-${{ hashFiles('**/poetry.lock') }}
     
     - name: Install environment
@@ -55,28 +57,12 @@ jobs:
     - name: Install root environment
       working-directory: ./simulator
       run: poetry install --no-interaction
-
     - name: Build with pyinstaller for ${{matrix.TARGET}}
       working-directory: ./simulator
       run: poetry run ${{matrix.CMD_BUILD}}
-    - name: Load Release URL File from release job
-      uses: actions/download-artifact@v1
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1.0.0
       with:
-        name: release_url
-    - name: Get Release File Name & Upload URL
-      working-directory: ./simulator
-      id: get_release_info
-      shell: bash
-      run: |
-        value=`cat release_url/release_url.txt`
-        echo ::set-output name=upload_url::$value
-    - name: Upload Release Asset
-      id: upload-release-asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-        asset_path: ./simulator/dist/${{ matrix.OUT_FILE_NAME}}
-        asset_name: ${{ matrix.OUT_FILE_NAME}}
-        asset_content_type: ${{ matrix.ASSET_MIME}}
+        name: ledeffect-simulator_${{matrix.TARGET}}
+        path: simulator/dist/
+
