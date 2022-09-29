@@ -17,7 +17,7 @@ jobs:
             CMD_BUILD: >
                 pyinstaller -F -w -n ledeffect-simulator -p .. simulator/simulator.py &&
                 cd dist/ &&
-                zip -r9 ledeffect-simulator ledeffect-simulator.app/
+                zip -r9 ledeffect-simulator ledeffect-simulator.app
             OUT_FILE_NAME: ledeffect-simulator.zip
             ASSET_MIME: application/zip
           - os: windows-latest
