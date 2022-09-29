@@ -283,7 +283,7 @@ class ledEffect:
             'darken'    : (lambda t, b: t * (t < b) +  b * (t >= b)),
             'overlay'   : (lambda t, b: \
                                 2.0 * t * b if t > 0.5 else \
-                                1.0 - (2.0 * (1.0-t) * (1.0-b)))
+                                1.0 - (2.0 * (1.0-t) * (1.0-b))),
            }
 
         self.name         = config.get_name().split()[1]
@@ -359,7 +359,7 @@ class ledEffect:
         self.frame = [0.0] * 3 * self.ledCount
 
         #enumerate all effects from the subclasses of _layerBase...
-        availableLayers = {str(c).rpartition('.layer')[2]\
+        self.availableLayers = {str(c).rpartition('.layer')[2]\
                                  .replace("'>", "")\
                                  .lower() : c
                                    for c in self._layerBase.__subclasses__()
@@ -373,7 +373,7 @@ class ledEffect:
             parms = [st(parameter) for parameter \
                 in layer.split() if st(parameter)]
 
-            if not parms[0] in availableLayers:
+            if not parms[0] in self.availableLayers:
                 raise self.printer\
                     .config_error("LED Effect '%s' in section '%s' is not a \
                         valid effect layer" % (parms[0], self.name))
@@ -382,7 +382,7 @@ class ledEffect:
                 raise self.printer.config_error("Blending mode '%s' in section\
                      '%s' is not a valid blending mode" % (parms[3], self.name))
 
-            layer = availableLayers[parms[0]]
+            layer = self.availableLayers[parms[0]]
 
             palette = \
                 [float(st(c)) for t in parms[4:] for c in t.split(',') if st(c)]

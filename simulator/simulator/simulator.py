@@ -7,7 +7,7 @@ print(root)
 sys.path.append(str(root))
 from pathlib import Path
 
-import wx
+import wx, wx.grid
 import time
 from src.led_effect import ledEffect, ledFrameHandler
 
@@ -92,25 +92,77 @@ class mockConfig:
 class SimFrame(wx.Frame):
     def __init__(self, *args, **kw):
         super(SimFrame, self).__init__(*args, **kw)
-        self.SetBackgroundColour("white")
+        self.config = mockConfig()
+        self.config.setint("ledcount",25)
+        self.config.set("layers", "gradient 1 1 top (1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0) ")
+        self.init_printer()
         self.SetClientSize(500,500)
         panel = wx.Panel(self) 
-        
+        self.console_font = wx.Font(12, wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.NORMAL)
+
         self.led_panel = LEDPanel(panel,-1)
-        self.led_ctrl=wx.SpinCtrl(panel, -1, min=1, max=128, initial=20)
+
+        self.leds_lbl=wx.StaticText(panel, -1, "LED Count: ")
+        self.led_ctrl=wx.SpinCtrl(panel, -1, min=1, max=128, initial=self.config.getint("ledcount",3,1,1000))
         self.led_ctrl.Bind(wx.EVT_SPINCTRL,self.OnLed_ctrl_changed) 
 
-        self.layer_txt = wx.TextCtrl(panel, id=-1, value='gradient       1 1 top  (1.0, 0.0, 0.0),(0.0, 1.0, 0.0),(0.0, 0.0, 1.0)', pos=wx.DefaultPosition,
-                            size=(700,100),
-                            style= wx.TE_MULTILINE | wx.SUNKEN_BORDER|wx.TE_PROCESS_TAB)
-        font = wx.Font(12, wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.NORMAL)
-        self.layer_txt.SetFont(font)
-        self.btnApply = wx.Button(panel,-1,"Apply")
+        self.init_printer()
+
+        self.btnApply = wx.Button(panel,-1,"Load")
         self.btnApply.Bind(wx.EVT_BUTTON,self.OnApplyClicked) 
+        self.btnAddLayerTop = wx.Button(panel,-1,"+")
+        self.btnAddLayerBottom = wx.Button(panel,-1,"+")
+        self.btnAddLayerTop.Bind(wx.EVT_BUTTON,self.OnBtnLayerClicked) 
+        self.btnAddLayerBottom.Bind(wx.EVT_BUTTON,self.OnBtnLayerClicked) 
+        self.btnRemoveLayerTop = wx.Button(panel,-1,"-")
+        self.btnRemoveLayerBottom = wx.Button(panel,-1,"-")
+        self.btnRemoveLayerTop.Bind(wx.EVT_BUTTON,self.OnBtnLayerClicked) 
+        self.btnRemoveLayerBottom.Bind(wx.EVT_BUTTON,self.OnBtnLayerClicked) 
+        self.settingsgrid = wx.grid.Grid(panel, -1)
+
+
+        self.settingsgrid.CreateGrid(1, 6)
+        self.settingsgrid.SetColSize(5, 300)
+        
+
+        self.settingsgrid.SetColLabelValue(0, "active")
+        self.settingsgrid.SetColLabelValue(1, "Effect")
+        self.settingsgrid.SetColLabelValue(2, "Effect Rate")
+        self.settingsgrid.SetColLabelValue(3, "Cut-off")
+        self.settingsgrid.SetColLabelValue(4, "Blending")
+        self.settingsgrid.SetColLabelValue(5, "Palette")
+        
+        self.settingsgrid.HideRowLabels()
+
+        self.settingsgrid.SetColFormatFloat(2,-1,2)
+        self.settingsgrid.SetColFormatFloat(3,-1,2)
+        self.settingsgrid.SetColFormatBool(0)
+
+        self.settingsgrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnSettingsGridCellChange)
+        self.layer_txt = wx.TextCtrl(panel, id=-1, value=self.config.get("layers"), pos=wx.DefaultPosition,
+                            size=(700,200),
+                            style= wx.TE_MULTILINE | wx.SUNKEN_BORDER|wx.TE_PROCESS_TAB)
+        
+        self.layer_txt.SetFont(self.console_font)
+
+        self.parse_layers_from_text()
+        self.configureGrid()
 
         topSizer = wx.BoxSizer(wx.VERTICAL)
+        horSizerTop = wx.BoxSizer(wx.HORIZONTAL)
+        horSizerBottom = wx.BoxSizer(wx.HORIZONTAL)
         topSizer.Add(self.led_panel,0, wx.EXPAND|wx.ALL)
-        topSizer.Add(self.led_ctrl,0,wx.ALL)
+                
+        horSizerTop.Add(self.btnAddLayerTop,0,wx.ALL)
+        horSizerTop.Add(self.btnRemoveLayerTop,0,wx.ALL)
+        horSizerTop.Add(self.leds_lbl,0,wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+        horSizerTop.Add(self.led_ctrl,0,wx.ALL)
+        topSizer.Add(horSizerTop,0,wx.ALL)
+
+        topSizer.Add(self.settingsgrid,1,wx.EXPAND|wx.ALL)
+        horSizerBottom.Add(self.btnAddLayerBottom,0,wx.ALL)
+        horSizerBottom.Add(self.btnRemoveLayerBottom,0,wx.ALL)
+        topSizer.Add(horSizerBottom,0,wx.ALL)
         topSizer.Add(self.layer_txt,1,wx.EXPAND|wx.ALL)
         topSizer.Add(self.btnApply,0,wx.ALL)
 
@@ -119,10 +171,7 @@ class SimFrame(wx.Frame):
 
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.update, self.timer)
-        self.timer.Start(1/24.0)
-
-        self.config = mockConfig()
-        self.config.setint("ledcount",self.led_ctrl.GetValue())
+        self.timer.Start(int(1000.0/24.0))
         
         self.init_printer()
 
@@ -131,14 +180,74 @@ class SimFrame(wx.Frame):
         self.printer._handle_ready()
         self.printer.led_effect.set_enabled(True)
 
+    def parse_layers_from_text(self):
+        self.settingsgrid.DeleteRows(0,self.settingsgrid.GetNumberRows())
+        for i, layer in enumerate([line for line \
+            in self.layer_txt.GetValue().split('\n') if line.strip()]):
+            parms = layer.split()
+            self.settingsgrid.InsertRows(self.settingsgrid.GetNumberRows())
+            for c in range(1,self.settingsgrid.GetNumberCols()):
+                self.settingsgrid.SetCellValue(i, c, parms[c-1])
+            self.settingsgrid.SetCellValue(i, 5, "".join(parms[4:]))
+            self.settingsgrid.SetCellValue(i, 0, "1")
+
+    def parse_layers_from_grid(self):
+        layer_str = ""
+        for r in range(self.settingsgrid.GetNumberRows()):
+            if self.settingsgrid.GetCellValue(r,0):
+                for c in range(1,self.settingsgrid.GetNumberCols()):
+                    layer_str = layer_str + self.settingsgrid.GetCellValue(r,c) + " "
+                layer_str += "\n"
+        self.layer_txt.SetValue(layer_str)
+        self.config.set("layers",layer_str)
+        self.init_printer()
+
+        
+    def configureGrid(self):
+        effect_list=list(self.printer.led_effect.availableLayers)
+        blend_list=list(self.printer.led_effect.blendingModes)
+        for i in range(self.settingsgrid.GetNumberRows()):
+            self.settingsgrid.SetCellEditor(i, 1, wx.grid.GridCellChoiceEditor(effect_list, False))
+            self.settingsgrid.SetCellEditor(i, 2, wx.grid.GridCellFloatEditor(-1,2))
+            self.settingsgrid.SetCellEditor(i, 3, wx.grid.GridCellFloatEditor(-1,2))
+            self.settingsgrid.SetCellEditor(i, 4, wx.grid.GridCellChoiceEditor(blend_list, False))
+
     def OnLed_ctrl_changed(self, event):
         self.config.setint("ledcount",self.led_ctrl.GetValue())
         self.init_printer()
     
     def OnApplyClicked(self, event):
+        self.parse_layers_from_text()        
         self.config.set("layers", self.layer_txt.GetValue())
         self.init_printer()
+        self.configureGrid()
 
+    def _init_row(self, row=0):
+        self.settingsgrid.SetCellValue(row,0, "1")
+        self.settingsgrid.SetCellValue(row,1, "static")
+        self.settingsgrid.SetCellValue(row,2, "0.0")
+        self.settingsgrid.SetCellValue(row,3, "0.0")
+        self.settingsgrid.SetCellValue(row,4, "add")
+        self.settingsgrid.SetCellValue(row,5, "(0.0,0.0,0.0)")
+
+    def OnBtnLayerClicked(self, event):
+        btn = event.GetEventObject()
+        if btn == self.btnAddLayerTop:
+            self.settingsgrid.InsertRows()
+            self._init_row()
+        elif btn == self.btnAddLayerBottom:
+            self.settingsgrid.InsertRows(self.settingsgrid.GetNumberRows())
+            self._init_row(self.settingsgrid.GetNumberRows()-1)
+        elif btn == self.btnRemoveLayerTop:
+            self.settingsgrid.DeleteRows(0)
+        elif btn == self.btnRemoveLayerBottom:
+            self.settingsgrid.DeleteRows(self.settingsgrid.GetNumberRows()-1)
+        self.configureGrid()
+        self.parse_layers_from_grid()
+
+    def OnSettingsGridCellChange(self, event):
+        self.parse_layers_from_grid()
+        event.Skip()
 
     def OnExit(self, event):
         self.Close(True)
@@ -185,7 +294,7 @@ class LEDPanel(wx.Panel):
         for i, led in enumerate(self.leds):
             dc.SetPen(wx.Pen(led, 1, wx.PENSTYLE_SOLID))
             dc.SetBrush(wx.Brush(led))
-            dc.DrawCircle(30 + i*30,self.GetClientSize()[1]/2,15)
+            dc.DrawCircle(30 + i*30,int(self.GetClientSize()[1]/2),15)
 
 if __name__ == '__main__':
     app = wx.App(False)
