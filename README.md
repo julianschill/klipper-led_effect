@@ -5,6 +5,10 @@
 This is the standalone repository of the Klipper LED Effects module developed by [Paul McGowan](https://github.com/mental405) with contributions from myself.
 It allows Klipper to run effects and animations on addressable LEDs, such as Neopixels, WS2812 or SK6812.
 
+Check out Paul's printer:
+
+[![Hello Friend. -International Edition-](https://yt-embed.herokuapp.com/embed?v=-VpZTDSu1-8&img=0)](https://www.youtube.com/watch?v=-VpZTDSu1-8)
+
 See the chapter in this video from Vector3D what it can do and how to set it up (start from the beginning to learn how to connect the LEDs):
 
 [![The 3D Printer Upgrade You didn’t know you needed](https://yt-embed.herokuapp.com/embed?v=14LC8Tcd_JQ)](https://youtu.be/14LC8Tcd_JQ?t=779)
