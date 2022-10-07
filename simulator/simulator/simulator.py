@@ -259,9 +259,9 @@ class SimFrame(wx.Frame):
             self.led_panel.setLedCount( led_count )
             for led_index in range(led_count):
                 self.led_panel.setLeds(led_index, 
-                    int(255.0*ledframe[led_index * 3]),
-                    int(255.0*ledframe[led_index * 3 + 1]),
-                    int(255.0*ledframe[led_index * 3 + 2]))
+                    int(255.0*ledframe[led_index * 4]),
+                    int(255.0*ledframe[led_index * 4 + 1]),
+                    int(255.0*ledframe[led_index * 4 + 2]))
     
 class LEDPanel(wx.Panel):
     def __init__(self, parent, id):
