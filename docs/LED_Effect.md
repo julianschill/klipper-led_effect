@@ -208,10 +208,13 @@ Each layer is defined with the following parameters
 Each layer must be on a single line and each line must be indented.
 Color palettes can be of unlimited length but may be compressed depending
 on the size of the frame or number of LEDs on a strip. Colors are defined
-as groups of Red, Green, and Blue. The range for each color is a decimal
-number from 0.0 to 1.0. So for yellow, you would use ( 1.0, 1.0, 0.0 ).
+as groups of Red, Green, Blue and (optional) White. The white channel only used 
+on RGBW LEDs and ignored on RGB LEDs. The range for each color is a decimal 
+number from 0.0 to 1.0. So for yellow, you would use ( 1.0, 1.0, 0.0 ). For 
+white you would use ( 1.0, 1.0, 1.0 ) on an RGB LED or ( 0.0, 0.0, 0.0, 1.0 ) 
+on an RGBW LED.
 
-Individual colors should be wrapped in parentheses and separated by commas.
+Individual colors must be wrapped in parentheses and separated by commas.
 
 Some Sample Palettes:
 
