@@ -51,7 +51,7 @@ jobs:
     
     - name: Install environment
       working-directory: ./simulator
-      run: ${{matrix.POETRY_FOLDER}}poetry install --no-interaction --no-root
+      run: ${{matrix.POETRY_FOLDER}}/bin/poetry install --no-interaction --no-root
       if: steps.cache-deps.outputs.cache-hit != 'true'
     - name: Install root environment
       working-directory: ./simulator
