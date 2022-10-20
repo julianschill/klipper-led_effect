@@ -1,5 +1,6 @@
 from distutils.command.config import config
 import sys
+
 from pathlib import Path # if you haven't already done so
 file = Path(__file__).resolve()
 parent, root = file.parent, file.parents[2]
@@ -7,7 +8,8 @@ print(root)
 sys.path.append(str(root))
 from pathlib import Path
 
-import wx, wx.grid
+import wx
+import simgui
 import time
 from src.led_effect import ledEffect, ledFrameHandler
 
@@ -89,91 +91,37 @@ class mockConfig:
         self.config[key]=value
 
 
-class SimFrame(wx.Frame):
-    def __init__(self, *args, **kw):
-        super(SimFrame, self).__init__(*args, **kw)
+class Simulator( simgui.SimFrame ):
+    def __init__( self, parent ):
+        simgui.SimFrame.__init__( self, parent )
         self.config = mockConfig()
-        self.config.setint("ledcount",25)
+        self.config.setint("ledcount",self.m_spinLED.GetValue())
         self.config.set("layers", "gradient 1 1 top (1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0) ")
         self.init_printer()
-        self.SetClientSize(500,500)
-        panel = wx.Panel(self) 
-        self.console_font = wx.Font(12, wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.NORMAL)
 
-        self.led_panel = LEDPanel(panel,-1)
+        effect_list=list(self.printer.led_effect.availableLayers)
+        blend_list=list(self.printer.led_effect.blendingModes)
 
-        self.leds_lbl=wx.StaticText(panel, -1, "LED Count: ")
-        self.led_ctrl=wx.SpinCtrl(panel, -1, min=1, max=128, initial=self.config.getint("ledcount",3,1,1000))
-        self.led_ctrl.Bind(wx.EVT_SPINCTRL,self.OnLed_ctrl_changed) 
+        self.m_cbEffect.Set(effect_list)
+        self.m_cbBlending.Set(blend_list)
 
-        self.init_printer()
+        self.led_count = 0
+        self.leds = [wx.Colour("black")] * self.led_count
 
-        self.btnApply = wx.Button(panel,-1,"Load")
-        self.btnApply.Bind(wx.EVT_BUTTON,self.OnApplyClicked) 
-        self.btnAddLayerTop = wx.Button(panel,-1,"+")
-        self.btnAddLayerBottom = wx.Button(panel,-1,"+")
-        self.btnAddLayerTop.Bind(wx.EVT_BUTTON,self.OnBtnLayerClicked) 
-        self.btnAddLayerBottom.Bind(wx.EVT_BUTTON,self.OnBtnLayerClicked) 
-        self.btnRemoveLayerTop = wx.Button(panel,-1,"-")
-        self.btnRemoveLayerBottom = wx.Button(panel,-1,"-")
-        self.btnRemoveLayerTop.Bind(wx.EVT_BUTTON,self.OnBtnLayerClicked) 
-        self.btnRemoveLayerBottom.Bind(wx.EVT_BUTTON,self.OnBtnLayerClicked) 
-        self.settingsgrid = wx.grid.Grid(panel, -1)
+        self.m_ledpanel.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
 
-
-        self.settingsgrid.CreateGrid(1, 6)
-        self.settingsgrid.SetColSize(5, 300)
+        self.m_lcEffectsList.AppendColumn("Active")
+        self.m_lcEffectsList.AppendColumn("Effect")
+        self.m_lcEffectsList.AppendColumn("Effect Rate")
+        self.m_lcEffectsList.AppendColumn("Cut-Off")
+        self.m_lcEffectsList.AppendColumn("Blending")
+        self.m_lcEffectsList.AppendColumn("Palette")
         
 
-        self.settingsgrid.SetColLabelValue(0, "active")
-        self.settingsgrid.SetColLabelValue(1, "Effect")
-        self.settingsgrid.SetColLabelValue(2, "Effect Rate")
-        self.settingsgrid.SetColLabelValue(3, "Cut-off")
-        self.settingsgrid.SetColLabelValue(4, "Blending")
-        self.settingsgrid.SetColLabelValue(5, "Palette")
-        
-        self.settingsgrid.HideRowLabels()
-
-        self.settingsgrid.SetColFormatFloat(2,-1,2)
-        self.settingsgrid.SetColFormatFloat(3,-1,2)
-        self.settingsgrid.SetColFormatBool(0)
-
-        self.settingsgrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnSettingsGridCellChange)
-        self.layer_txt = wx.TextCtrl(panel, id=-1, value=self.config.get("layers"), pos=wx.DefaultPosition,
-                            size=(700,200),
-                            style= wx.TE_MULTILINE | wx.SUNKEN_BORDER|wx.TE_PROCESS_TAB)
-        
-        self.layer_txt.SetFont(self.console_font)
+        self.m_txtSettings.SetValue("gradient 1 1 top (1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0)")
 
         self.parse_layers_from_text()
-        self.configureGrid()
-
-        topSizer = wx.BoxSizer(wx.VERTICAL)
-        horSizerTop = wx.BoxSizer(wx.HORIZONTAL)
-        horSizerBottom = wx.BoxSizer(wx.HORIZONTAL)
-        topSizer.Add(self.led_panel,0, wx.EXPAND|wx.ALL)
-                
-        horSizerTop.Add(self.btnAddLayerTop,0,wx.ALL)
-        horSizerTop.Add(self.btnRemoveLayerTop,0,wx.ALL)
-        horSizerTop.Add(self.leds_lbl,0,wx.ALL|wx.ALIGN_CENTER_VERTICAL)
-        horSizerTop.Add(self.led_ctrl,0,wx.ALL)
-        topSizer.Add(horSizerTop,0,wx.ALL)
-
-        topSizer.Add(self.settingsgrid,1,wx.EXPAND|wx.ALL)
-        horSizerBottom.Add(self.btnAddLayerBottom,0,wx.ALL)
-        horSizerBottom.Add(self.btnRemoveLayerBottom,0,wx.ALL)
-        topSizer.Add(horSizerBottom,0,wx.ALL)
-        topSizer.Add(self.layer_txt,1,wx.EXPAND|wx.ALL)
-        topSizer.Add(self.btnApply,0,wx.ALL)
-
-        panel.SetSizer(topSizer) 
-        topSizer.Fit(self)
-
-        self.timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.update, self.timer)
-        self.timer.Start(int(1000.0/24.0))
-        
-        self.init_printer()
+        self.m_timer.Start(int(1000.0/24.0))
 
     def init_printer(self):
         self.printer = mockPrinter(self.config)
@@ -181,54 +129,37 @@ class SimFrame(wx.Frame):
         self.printer.led_effect.set_enabled(True)
 
     def parse_layers_from_text(self):
-        self.settingsgrid.DeleteRows(0,self.settingsgrid.GetNumberRows())
+        self.m_lcEffectsList.DeleteAllItems()
         for i, layer in enumerate([line for line \
-            in self.layer_txt.GetValue().split('\n') if line.strip()]):
+            in self.m_txtSettings.GetValue().split('\n') if line.strip()]):
             parms = layer.split()
-            self.settingsgrid.InsertRows(self.settingsgrid.GetNumberRows())
-            for c in range(1,self.settingsgrid.GetNumberCols()):
-                self.settingsgrid.SetCellValue(i, c, parms[c-1])
-            self.settingsgrid.SetCellValue(i, 5, "".join(parms[4:]))
-            self.settingsgrid.SetCellValue(i, 0, "1")
+            self.m_lcEffectsList.InsertItem(self.m_lcEffectsList.GetItemCount(),"")
+            for c in range(1,self.m_lcEffectsList.GetColumnCount()):
+                self.m_lcEffectsList.SetItem(i,c,parms[c-1])
+            self.m_lcEffectsList.SetItem(i,5, "".join(parms[4:]) )
+            self.m_lcEffectsList.SetItem(i,0, "1")
+            self.m_lcEffectsList.SetColumnWidth(5,wx.LIST_AUTOSIZE )
 
-    def parse_layers_from_grid(self):
+    def parse_layers_from_list(self):
         layer_str = ""
-        for r in range(self.settingsgrid.GetNumberRows()):
-            if self.settingsgrid.GetCellValue(r,0):
-                for c in range(1,self.settingsgrid.GetNumberCols()):
-                    layer_str = layer_str + self.settingsgrid.GetCellValue(r,c) + " "
+        for r in range(self.m_lcEffectsList.GetItemCount()):
+            if self.m_lcEffectsList.GetItem(r,0).GetText() == "1":
+                for c in range(1,self.m_lcEffectsList.GetColumnCount()):
+                    layer_str = layer_str + self.m_lcEffectsList.GetItem(r,c).GetText() + " "
                 layer_str += "\n"
-        self.layer_txt.SetValue(layer_str)
+        self.m_txtSettings.SetValue(layer_str)
         self.config.set("layers",layer_str)
         self.init_printer()
 
         
-    def configureGrid(self):
-        effect_list=list(self.printer.led_effect.availableLayers)
-        blend_list=list(self.printer.led_effect.blendingModes)
-        for i in range(self.settingsgrid.GetNumberRows()):
-            self.settingsgrid.SetCellEditor(i, 1, wx.grid.GridCellChoiceEditor(effect_list, False))
-            self.settingsgrid.SetCellEditor(i, 2, wx.grid.GridCellFloatEditor(-1,2))
-            self.settingsgrid.SetCellEditor(i, 3, wx.grid.GridCellFloatEditor(-1,2))
-            self.settingsgrid.SetCellEditor(i, 4, wx.grid.GridCellChoiceEditor(blend_list, False))
-
     def OnLed_ctrl_changed(self, event):
-        self.config.setint("ledcount",self.led_ctrl.GetValue())
+        self.config.setint("ledcount",self.m_spinLED.GetValue())
         self.init_printer()
     
     def OnApplyClicked(self, event):
         self.parse_layers_from_text()        
-        self.config.set("layers", self.layer_txt.GetValue())
+        self.config.set("layers", self.m_txtSettings.GetValue())
         self.init_printer()
-        self.configureGrid()
-
-    def _init_row(self, row=0):
-        self.settingsgrid.SetCellValue(row,0, "1")
-        self.settingsgrid.SetCellValue(row,1, "static")
-        self.settingsgrid.SetCellValue(row,2, "0.0")
-        self.settingsgrid.SetCellValue(row,3, "0.0")
-        self.settingsgrid.SetCellValue(row,4, "add")
-        self.settingsgrid.SetCellValue(row,5, "(0.0,0.0,0.0)")
 
     def OnBtnLayerClicked(self, event):
         btn = event.GetEventObject()
@@ -244,10 +175,156 @@ class SimFrame(wx.Frame):
             self.settingsgrid.DeleteRows(self.settingsgrid.GetNumberRows()-1)
         self.configureGrid()
         self.parse_layers_from_grid()
+    
+    def _insert_in_list(self, list_ctrl, row, item):
+        r = list_ctrl.InsertItem(row,"")
+        for c,v in enumerate(item):
+            list_ctrl.SetItem(r,c,v)
+        
+    def _remove_from_list(self, list_ctrl, index):
+        list_ctrl.DeleteItem(index)
+        index=min(index, list_ctrl.GetItemCount()-1)
+        list_ctrl.Select(index)
 
-    def OnSettingsGridCellChange(self, event):
-        self.parse_layers_from_grid()
-        event.Skip()
+    def OnBtnAddClicked(self, event):
+        i = self.m_lcEffectsList.GetFirstSelected()
+        self._insert_in_list(self.m_lcEffectsList, i+1,["1","static","0","0","add","(0.0,0.0,0.0)"])
+        self.parse_layers_from_list()
+
+    def OnBtnRemoveClicked(self, event):
+        self._remove_from_list(self.m_lcEffectsList, self.m_lcEffectsList.GetFirstSelected())
+        self.parse_layers_from_list()
+
+    def OnBtnUpClicked(self, event):
+        r = self.m_lcEffectsList.GetFirstSelected()
+        if r <= 0: return
+        item=[]
+        for c in range(self.m_lcEffectsList.GetColumnCount()):
+            item.append(self.m_lcEffectsList.GetItem(r,c).GetText())
+        
+        self._remove_from_list(self.m_lcEffectsList,r)
+        self._insert_in_list(self.m_lcEffectsList,r-1, item)
+        self.m_lcEffectsList.Select(r-1)
+        self.parse_layers_from_list()
+
+
+    def OnBtnDownClicked(self, event):
+        r = self.m_lcEffectsList.GetFirstSelected()
+        if r >= self.m_lcEffectsList.GetItemCount()-1: return
+        item=[]
+        for c in range(self.m_lcEffectsList.GetColumnCount()):
+            item.append(self.m_lcEffectsList.GetItem(r,c).GetText())
+        
+        self._remove_from_list(self.m_lcEffectsList,r)
+        self._insert_in_list(self.m_lcEffectsList,r+1, item)
+        self.m_lcEffectsList.Select(min(r+1,self.m_lcEffectsList.GetItemCount()-1))
+        self.parse_layers_from_list()
+
+    def OnEffectsListItemSelected(self, event):
+
+        r = self.m_lcEffectsList.GetFirstSelected()
+        if r < 0: 
+            self.m_cbActive.Enable(False)
+            self.m_cbEffect.Enable(False)
+            self.m_spinEffectRate.Enable(False)
+            self.m_spinCutOff.Enable(False)
+            self.m_cbBlending.Enable(False)
+            self.m_lbPalette.Enable(False)
+            self.m_lbPalette.Clear()
+            self.m_btnAddColour.Enable(False)
+            self.m_btnRemoveColour.Enable(False)
+            self.m_btnColourUp.Enable(False)
+            self.m_btnColourDown.Enable(False)
+            self.m_cpColor.Enable(False)
+            return
+        else:
+            self.m_cbActive.Enable(True)
+            self.m_cbEffect.Enable(True)
+            self.m_spinEffectRate.Enable(True)
+            self.m_spinCutOff.Enable(True)
+            self.m_cbBlending.Enable(True)
+            self.m_lbPalette.Enable(True)
+            self.m_btnAddColour.Enable(True)
+            self.m_btnRemoveColour.Enable(True)
+            self.m_btnColourUp.Enable(True)
+            self.m_btnColourDown.Enable(True)
+            self.m_cpColor.Enable(True)
+
+        self.m_cbActive.SetValue(self.m_lcEffectsList.GetItem(r,0).GetText() == "1")
+        self.m_cbEffect.SetValue(self.m_lcEffectsList.GetItem(r,1).GetText())
+        self.m_spinEffectRate.SetValue(float(self.m_lcEffectsList.GetItem(r,2).GetText()))
+        self.m_spinCutOff.SetValue(float(self.m_lcEffectsList.GetItem(r,3).GetText()))
+        self.m_cbBlending.SetValue(self.m_lcEffectsList.GetItem(r,4).GetText())
+        palette = self._parse_palette_from_string(self.m_lcEffectsList.GetItem(r,5).GetText())
+        self.m_lbPalette.Clear()
+        for c in palette:
+            self.m_lbPalette.Append(c)
+
+    def _parse_palette_from_string(self, palette_string):
+        palette="".join(palette_string.split())                         # remove whitespaces
+        palette=palette.strip(",")
+        palette=palette.split("),(")                                    # split colors
+        palette=[ c.strip("()") for c in palette]
+        return palette
+
+    def OnEffectSettingChanged(self,event):
+        r = self.m_lcEffectsList.GetFirstSelected()
+        self.m_lcEffectsList.SetItem(r,0,str(int(self.m_cbActive.GetValue())))
+        self.m_lcEffectsList.SetItem(r,1,self.m_cbEffect.GetValue())
+        self.m_lcEffectsList.SetItem(r,2,self.m_spinEffectRate.GetTextValue())
+        self.m_lcEffectsList.SetItem(r,3,self.m_spinCutOff.GetTextValue())
+        self.m_lcEffectsList.SetItem(r,4,self.m_cbBlending.GetValue())
+        
+        sel = self.m_lbPalette.GetSelection()            
+        if sel >=0:
+            selected_colour=self.m_lbPalette.GetString(self.m_lbPalette.GetSelection())
+            selected_colour=selected_colour.split(",")
+            selected_colour=[int(255.0 * float(v)) for v in selected_colour]
+            self.m_cpColor.SetColour(wx.Colour(selected_colour))
+        self.parse_layers_from_list()
+        
+    
+    def OnColourChanged(self, event):
+        colour=self.m_cpColor.GetColour()
+        colour = [colour.GetRed(),colour.GetGreen(),colour.GetBlue()]
+        colour = ["{:.2f}".format(c/255.0) for c in colour]
+        colour = ",".join(colour)
+        self.m_lbPalette.SetString(self.m_lbPalette.GetSelection(),colour)
+        self._update_colors()
+
+    def _update_colors(self):
+        palette=self.m_lbPalette.GetStrings()
+        palette= ["(" + c + ")" for c in palette]
+        self.m_lcEffectsList.SetItem(self.m_lcEffectsList.GetFirstSelected(),5,",".join(palette))
+        self.parse_layers_from_list()
+
+    def OnBtnAddColourClick(self, event):
+        i = self.m_lbPalette.GetSelection()
+        self.m_lbPalette.Insert("0.0,0.0,0.0",i+1)        
+        self._update_colors()
+
+    def OnBtnRemoveColourClick(self, event):
+        i = self.m_lbPalette.GetSelection()
+        self.m_lbPalette.Delete(i)
+        self.m_lbPalette.Select(min(i,self.m_lbPalette.GetCount()-1))
+        self._update_colors()
+
+    def OnBtnColourUpClick(self, event):
+        i = self.m_lbPalette.GetSelection()
+        if i <= 0: return
+        self.m_lbPalette.Insert(self.m_lbPalette.GetString(i), i-1)
+        self.m_lbPalette.Delete(i+1)
+        self.m_lbPalette.Select(i-1)
+        self._update_colors()
+
+    def OnBtnColourDownClick(self, event):
+        i = self.m_lbPalette.GetSelection()
+        if i >= self.m_lbPalette.GetCount()-1: return
+        self.m_lbPalette.Insert(self.m_lbPalette.GetString(i), i+2)
+        self.m_lbPalette.Delete(i)
+        self.m_lbPalette.Select(i+1)
+        self._update_colors()
+
 
     def OnExit(self, event):
         self.Close(True)
@@ -256,29 +333,13 @@ class SimFrame(wx.Frame):
         ledframe, update = self.printer.led_effect.getFrame(time.monotonic())
         if update:
             led_count = self.printer.led_helper.get_led_count()
-            self.led_panel.setLedCount( led_count )
+            self.setLedCount( led_count )
             for led_index in range(led_count):
-                self.led_panel.setLeds(led_index, 
+                self.setLeds(led_index, 
                     int(255.0*ledframe[led_index * 4]),
                     int(255.0*ledframe[led_index * 4 + 1]),
                     int(255.0*ledframe[led_index * 4 + 2]))
     
-class LEDPanel(wx.Panel):
-    def __init__(self, parent, id):
-        # create a panel
-        wx.Panel.__init__(self, parent, id, size=(800,200))
-        self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
-        self.SetBackgroundColour("black")
-        self.led_count = 0
-        self.leds = [wx.Colour("black")] * self.led_count
-
-        self.Bind(wx.EVT_PAINT, self.OnPaint)
-        self.Bind(wx.EVT_SIZE, self.on_size)
-        
-    
-    def on_size(self, event):
-        event.Skip()
-        self.Refresh()
 
     def setLedCount(self, count):
         self.led_count = count
@@ -288,17 +349,24 @@ class LEDPanel(wx.Panel):
         self.leds[index]=wx.Colour(r,g,b)
         self.Refresh()
 
-    def OnPaint(self, event):
-        dc = wx.AutoBufferedPaintDC(self)
+    def OnLedPanelSize(self, event):
+        event.Skip()
+        self.Refresh()
+
+    def OnLedPanelPaint(self, event):
+        dc = wx.AutoBufferedPaintDC(self.m_ledpanel)
         dc.Clear()
+        size = int(self.m_spinLEDSize.GetTextValue())
+        distance = int(self.m_spinDistance.GetTextValue())
+        offset= self.m_ledpanel.GetClientSize()[0]/2 - (0.5 * self.led_count * (2* size + distance)) 
         for i, led in enumerate(self.leds):
             dc.SetPen(wx.Pen(led, 1, wx.PENSTYLE_SOLID))
             dc.SetBrush(wx.Brush(led))
-            dc.DrawCircle(30 + i*30,int(self.GetClientSize()[1]/2),15)
+            dc.DrawCircle(int(size + i*(2*size+distance) + offset),int(self.m_ledpanel.GetClientSize()[1]/2), int(size))
 
 if __name__ == '__main__':
     app = wx.App(False)
-    frame = SimFrame(None, wx.ID_ANY, "LED Effect Simulator")
-    
+    frame = Simulator(None)
     frame.Show(True)
     app.MainLoop()
+
