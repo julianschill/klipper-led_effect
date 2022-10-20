@@ -20,13 +20,13 @@ jobs:
                 zip -r9 ledeffect-simulator ledeffect-simulator.app
             OUT_FILE_NAME: ledeffect-simulator.zip
             ASSET_MIME: application/zip
-            POETRY_FOLDER: C:\Users\runneradmin\.local\bin\
+            POETRY_FOLDER: ~/.local/
           - os: windows-latest
             TARGET: windows
             CMD_BUILD: pyinstaller -F -w -n ledeffect-simulator -p .. simulator/simulator.py
             OUT_FILE_NAME: ledeffect-simulator.exe
             ASSET_MIME: application/vnd.microsoft.portable-executable
-            POETRY_FOLDER: ~/.local/
+            POETRY_FOLDER: C:\Users\runneradmin\.local\bin\
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python 3.9
