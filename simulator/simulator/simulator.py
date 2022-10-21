@@ -9,7 +9,7 @@ sys.path.append(str(root))
 from pathlib import Path
 
 import wx
-import simgui
+import simulator.simgui as simgui
 import time
 from src.led_effect import ledEffect, ledFrameHandler
 
