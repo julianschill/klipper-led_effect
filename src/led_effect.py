@@ -794,33 +794,26 @@ class ledEffect:
             self.frameCount = len(self.thisFrame)
 
         def nextFrame(self, eventtime):
-            if self.frameHandler.heaterTarget[self.handler.heater] > 0.0 and \
-               self.frameHandler.heaterCurrent[self.handler.heater] > 0.0:
+            heaterTarget  = self.frameHandler.heaterTarget[self.handler.heater]
+            heaterCurrent = self.frameHandler.heaterCurrent[self.handler.heater]
+            heaterLast    = self.frameHandler.heaterLast[self.handler.heater]
 
-                if self.frameHandler.heaterCurrent[self.handler.heater] <= \
-                   self.frameHandler.heaterTarget[self.handler.heater]-2:
-
-                    s = int((self.frameHandler.
-                                heaterCurrent[self.handler.heater] / 
-                                self.frameHandler.
-                                heaterTarget[self.handler.heater]) * 200)
-                    s = min(len(self.thisFrame)-1,s)
-                    return self.thisFrame[s]
-                elif self.effectCutoff > 0:
-                    return None
+            if heaterTarget > 0.0 and heaterCurrent > 0.0:
+                if (heaterCurrent >= self.effectRate):
+                    if (heaterCurrent <= heaterTarget-2):
+                        s = int(((heaterCurrent - self.effectRate) / heaterTarget) * 200)
+                        s = min(len(self.thisFrame)-1,s)
+                        return self.thisFrame[s]
+                    elif self.effectCutoff > 0:
+                        return None
+                    else:
+                        return self.thisFrame[-1]
                 else:
-                    return self.thisFrame[-1]
-            elif self.effectRate > 0 and \
-                 self.frameHandler.heaterCurrent[self.handler.heater] > 0.0:
-                if self.frameHandler.heaterCurrent[self.handler.heater] >= \
-                    self.effectRate and \
-                    self.frameHandler.heaterLast[self.handler.heater] > 0:
+                    return None
 
-                    s = int(((self.frameHandler.
-                                heaterCurrent[self.handler.heater] - 
-                                self.effectRate) / 
-                                self.frameHandler.
-                                heaterLast[self.handler.heater]) * 200)
+            elif self.effectRate > 0 and heaterCurrent > 0.0:
+                if heaterCurrent >= self.effectRate and heaterLast > 0:
+                    s = int(((heaterCurrent - self.effectRate) / heaterLast) * 200)
                     s = min(len(self.thisFrame)-1,s)
                     return self.thisFrame[s]
 
