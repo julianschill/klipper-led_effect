@@ -342,7 +342,7 @@ class ledEffect:
         self.frame = [0.0] * COLORS * self.ledCount
 
         #enumerate all effects from the subclasses of _layerBase...
-        availableLayers = {str(c).rpartition('.layer')[2]\
+        self.availableLayers = {str(c).rpartition('.layer')[2]\
                                  .replace("'>", "")\
                                  .lower() : c
                                    for c in self._layerBase.__subclasses__()
@@ -354,7 +354,7 @@ class ledEffect:
             parms = [parameter.strip() for parameter \
                 in layer.split() if parameter.strip()]
 
-            if not parms[0] in availableLayers:
+            if not parms[0] in self.availableLayers:
                 raise self.printer\
                     .config_error("LED Effect '%s' in section '%s' is not a " \
                         "valid effect layer" % (parms[0], self.name))
@@ -364,7 +364,7 @@ class ledEffect:
                      "'%s' is not a valid blending mode"\
                          % (parms[3], self.name))
 
-            layer = availableLayers[parms[0]]
+            layer = self.availableLayers[parms[0]]
 
             pad = lambda x: x + [0.0] * (COLORS - len(x))
             convert = lambda s: float(s)
