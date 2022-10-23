@@ -2,6 +2,7 @@ import wx
 import simulator.simgui as simgui
 from simulator.klippermock import *
 import time
+import math
 
 USE_BUFFERED_DC = True
 
@@ -9,9 +10,11 @@ class Simulator( simgui.SimFrame ):
     def __init__( self, parent ):
         simgui.SimFrame.__init__( self, parent )
         self.config = mockConfig()
-        self.config.setint("ledcount",self.m_spinLED.GetValue())
+        self.setLedCount(self.m_spinLED.GetValue())
+        self.config.setint("ledcount",self.led_count)
         self.config.set("layers", "gradient 1 1 top (1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0) ")
         self.init_printer()
+        self._calc_coordinates()
 
         effect_list=list(self.printer.led_effect.availableLayers)
         blend_list=list(self.printer.led_effect.blendingModes)
@@ -19,8 +22,7 @@ class Simulator( simgui.SimFrame ):
         self.m_cbEffect.Set(effect_list)
         self.m_cbBlending.Set(blend_list)
 
-        self.led_count = 0
-        self.leds = [wx.Colour("black")] * self.led_count
+        
 
         self.m_ledpanel.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
 
@@ -62,7 +64,17 @@ class Simulator( simgui.SimFrame ):
         self.m_txtSettings.SetValue(layer_str)
         self.config.set("layers",layer_str)
         self.init_printer()
+
+    def _insert_in_list(self, list_ctrl, row, item):
+        r = list_ctrl.InsertItem(row,"")
+        for c,v in enumerate(item):
+            list_ctrl.SetItem(r,c,v)
         
+    def _remove_from_list(self, list_ctrl, index):
+        list_ctrl.DeleteItem(index)
+        index=min(index, list_ctrl.GetItemCount()-1)
+        list_ctrl.Select(index)
+
     def OnLed_ctrl_changed(self, event):
         self.config.setint("ledcount",self.m_spinLED.GetValue())
         self.init_printer()
@@ -86,16 +98,6 @@ class Simulator( simgui.SimFrame ):
             self.settingsgrid.DeleteRows(self.settingsgrid.GetNumberRows()-1)
         self.configureGrid()
         self.parse_layers_from_grid()
-    
-    def _insert_in_list(self, list_ctrl, row, item):
-        r = list_ctrl.InsertItem(row,"")
-        for c,v in enumerate(item):
-            list_ctrl.SetItem(r,c,v)
-        
-    def _remove_from_list(self, list_ctrl, index):
-        list_ctrl.DeleteItem(index)
-        index=min(index, list_ctrl.GetItemCount()-1)
-        list_ctrl.Select(index)
 
     def OnBtnAddClicked(self, event):
         i = self.m_lcEffectsList.GetFirstSelected()
@@ -118,7 +120,6 @@ class Simulator( simgui.SimFrame ):
         self.m_lcEffectsList.Select(r-1)
         self.parse_layers_from_list()
 
-
     def OnBtnDownClicked(self, event):
         r = self.m_lcEffectsList.GetFirstSelected()
         if r >= self.m_lcEffectsList.GetItemCount()-1: return
@@ -132,7 +133,6 @@ class Simulator( simgui.SimFrame ):
         self.parse_layers_from_list()
 
     def OnEffectsListItemSelected(self, event):
-
         r = self.m_lcEffectsList.GetFirstSelected()
         if r < 0: 
             self.m_cbActive.Enable(False)
@@ -193,7 +193,6 @@ class Simulator( simgui.SimFrame ):
             selected_colour=[int(255.0 * float(v)) for v in selected_colour]
             self.m_cpColor.SetColour(wx.Colour(selected_colour))
         self.parse_layers_from_list()
-        
     
     def OnColourChanged(self, event):
         colour=self.m_cpColor.GetColour()
@@ -236,7 +235,6 @@ class Simulator( simgui.SimFrame ):
         self.m_lbPalette.Select(i+1)
         self._update_colors()
 
-
     def OnExit(self, event):
         self.Close(True)
 
@@ -250,11 +248,11 @@ class Simulator( simgui.SimFrame ):
                     int(255.0*ledframe[led_index * 4]),
                     int(255.0*ledframe[led_index * 4 + 1]),
                     int(255.0*ledframe[led_index * 4 + 2]))
-    
 
     def setLedCount(self, count):
         self.led_count = count
         self.leds=[wx.Colour("black")] * self.led_count
+        self._calc_coordinates()
         
     def setLeds(self,index, r,g,b):
         self.leds[index]=wx.Colour(r,g,b)
@@ -264,15 +262,97 @@ class Simulator( simgui.SimFrame ):
         event.Skip()
         self.Refresh()
 
+    def OnLayoutChanged(self, event):
+        self._calc_coordinates()
+
+    def _calc_coordinates(self):
+        self.led_coordinates=[]
+        size = int(self.m_spinLEDSize.GetTextValue())
+        distance = int(self.m_spinDistance.GetTextValue())
+        lines = int(self.m_spinLines.GetValue())
+        leds_per_line = math.ceil(self.led_count/lines)
+        
+        if self.m_cbLayout.GetValue()=="Rectangle":
+            self.m_spinLines.Enable(True)
+            for l in range(lines):
+                for i in range(leds_per_line):
+                    x = int(size + i*(distance) - (0.5 * leds_per_line * distance) )
+                    y = l*distance - (0.5 * lines * distance)
+                    self.led_coordinates += [(x,y,size)]
+
+        elif self.m_cbLayout.GetValue()=="Circle":
+            self.m_spinLines.Enable(False)
+            r = distance * self.led_count/(2*math.pi)
+            for i in range(self.led_count):
+                a = 2 * math.pi/self.led_count * i
+                x = r * math.sin(a)
+                y = r * math.cos(a)
+                self.led_coordinates += [(x,y,size)]
+
+        elif self.m_cbLayout.GetValue()=="Triangle":
+            self.m_spinLines.Enable(False)
+            leds_per_side = math.ceil(self.led_count/3)
+            side_length=(leds_per_side+1)*distance
+            height=((side_length)-distance) * math.sin(math.radians(60))
+            for i in range(leds_per_side):
+                x = math.cos(math.radians(60)) * i * side_length/(leds_per_side+1) 
+                y = math.sin(math.radians(60)) * i * side_length/(leds_per_side+1) - height/2
+                self.led_coordinates += [(x,y,size)]            
+            for i in range(leds_per_side):
+                x = -i * side_length/(leds_per_side+1) + (side_length-distance)/2
+                y = 0 + height/2
+                self.led_coordinates += [(x,y,size)]
+            for i in range(leds_per_side):
+                x = math.cos(math.radians(-60)) * i * side_length/(leds_per_side+1 ) - (side_length-distance)/2
+                y = math.sin(math.radians(-60)) * i * side_length/(leds_per_side+1) + height/2
+                self.led_coordinates += [(x,y,size)]
+
+        elif self.m_cbLayout.GetValue()=="Voron Logo":
+            sln = math.ceil(self.led_count / 2)
+            fln = tln = math.ceil(self.led_count / 4)
+
+            s = distance * (sln-1) * math.sin(math.radians(60))
+            xy_ratio = 1/math.tan(math.radians(60))
+
+            fls = ( (-1/2 + (xy_ratio/3)), -1/2 )
+            flg = ( -1/2,                  (1/3 - 1/2) )
+
+            sls = ( xy_ratio/2,            -1/2 )
+            slg = ( -xy_ratio/2,           1/2 )
+
+            tls = ( 1/2,                   (2/3 - 1/2) )
+            tlg = ( (-xy_ratio/3 + 1/2),   1/2)
+
+            for i in range(fln):
+                x = s * (fls[0] + i/(fln-1) * (flg[0]-fls[0]))
+                y = s * (fls[1] + i/(fln-1) * (flg[1]-fls[1]))
+                self.led_coordinates += [(x,y,size)]
+
+            for i in range(sln):
+                x = s *( sls[0] + i/(sln-1) * (slg[0]-sls[0]))
+                y = s * (sls[1] + i/(sln-1) * (slg[1]-sls[1]))
+                self.led_coordinates += [(x,y,size)]
+
+            for i in range(tln):
+                x = s * (tls[0] + i/(tln-1) * (tlg[0]-tls[0]))
+                y = s * (tls[1] + i/(tln-1) * (tlg[1]-tls[1]))
+                self.led_coordinates += [(x,y,size)]
+
+
     def OnLedPanelPaint(self, event):
         dc = wx.AutoBufferedPaintDC(self.m_ledpanel)
         dc.Clear()
-        size = int(self.m_spinLEDSize.GetTextValue())
-        distance = int(self.m_spinDistance.GetTextValue())
-        offset= self.m_ledpanel.GetClientSize()[0]/2 - (0.5 * self.led_count * (2* size + distance)) 
+        offset_x= self.m_ledpanel.GetClientSize()[0]/2 
+        offset_y= self.m_ledpanel.GetClientSize()[1]/2 
+
         for i, led in enumerate(self.leds):
             dc.SetPen(wx.Pen(led, 1, wx.PENSTYLE_SOLID))
             dc.SetBrush(wx.Brush(led))
-            dc.DrawCircle(int(size + i*(2*size+distance) + offset),int(self.m_ledpanel.GetClientSize()[1]/2), int(size))
+            if self.m_cbShape.GetValue() == "Circle":
+                dc.DrawCircle(self.led_coordinates[i][0] + offset_x, self.led_coordinates[i][1] + offset_y, self.led_coordinates[i][2]/2 )
+            elif self.m_cbShape.GetValue() == "Square":
+                dc.DrawRectangle(self.led_coordinates[i][0] + offset_x, self.led_coordinates[i][1] + offset_y, self.led_coordinates[i][2], self.led_coordinates[i][2])
+
+
 
 

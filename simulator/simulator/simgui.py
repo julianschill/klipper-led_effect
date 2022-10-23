@@ -41,7 +41,7 @@ class SimFrame ( wx.Frame ):
 
 		bChainSettingsSizer.Add( self.m_lblLEDs, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 
-		self.m_spinLED = wx.SpinCtrl( self.m_panel4, wx.ID_ANY, u"32", wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, 0, 10000, 25 )
+		self.m_spinLED = wx.SpinCtrl( self.m_panel4, wx.ID_ANY, u"32", wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, 1, 10000, 25 )
 		bChainSettingsSizer.Add( self.m_spinLED, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 
 		self.m_lblShape = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Shape:", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -49,21 +49,9 @@ class SimFrame ( wx.Frame ):
 
 		bChainSettingsSizer.Add( self.m_lblShape, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 
-		m_cbShapeChoices = [ u"Rectangle", u"Circle", u"Stealthburner", u"Rainbow Barf" ]
-		self.m_cbShape = wx.ComboBox( self.m_panel4, wx.ID_ANY, u"Rectangle", wx.DefaultPosition, wx.DefaultSize, m_cbShapeChoices, wx.CB_READONLY )
-		self.m_cbShape.Enable( False )
-
+		m_cbShapeChoices = [ u"Circle", u"Square" ]
+		self.m_cbShape = wx.ComboBox( self.m_panel4, wx.ID_ANY, u"Circle", wx.DefaultPosition, wx.DefaultSize, m_cbShapeChoices, wx.CB_READONLY )
 		bChainSettingsSizer.Add( self.m_cbShape, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
-
-		self.m_lblLines = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Lines:", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.m_lblLines.Wrap( -1 )
-
-		bChainSettingsSizer.Add( self.m_lblLines, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
-
-		self.m_spinLines = wx.SpinCtrl( self.m_panel4, wx.ID_ANY, u"1", wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, 0, 10, 0 )
-		self.m_spinLines.Enable( False )
-
-		bChainSettingsSizer.Add( self.m_spinLines, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 
 		self.m_lblLEDSize = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Size:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_lblLEDSize.Wrap( -1 )
@@ -73,12 +61,30 @@ class SimFrame ( wx.Frame ):
 		self.m_spinLEDSize = wx.SpinCtrl( self.m_panel4, wx.ID_ANY, u"15", wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, 0, 1000, 0 )
 		bChainSettingsSizer.Add( self.m_spinLEDSize, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 
+		self.m_lblLayout = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Layout: ", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_lblLayout.Wrap( -1 )
+
+		bChainSettingsSizer.Add( self.m_lblLayout, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+		m_cbLayoutChoices = [ u"Rectangle", u"Circle", u"Triangle", u"Voron Logo" ]
+		self.m_cbLayout = wx.ComboBox( self.m_panel4, wx.ID_ANY, u"Rectangle", wx.DefaultPosition, wx.DefaultSize, m_cbLayoutChoices, wx.CB_READONLY )
+		self.m_cbLayout.SetSelection( 0 )
+		bChainSettingsSizer.Add( self.m_cbLayout, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+		self.m_lblLines = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Lines:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_lblLines.Wrap( -1 )
+
+		bChainSettingsSizer.Add( self.m_lblLines, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+		self.m_spinLines = wx.SpinCtrl( self.m_panel4, wx.ID_ANY, u"1", wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, 0, 1000, 0 )
+		bChainSettingsSizer.Add( self.m_spinLines, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
 		self.m_lblDistance = wx.StaticText( self.m_panel4, wx.ID_ANY, u"Distance:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_lblDistance.Wrap( -1 )
 
 		bChainSettingsSizer.Add( self.m_lblDistance, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 
-		self.m_spinDistance = wx.SpinCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, -1000, 1000, 0 )
+		self.m_spinDistance = wx.SpinCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, -1000, 1000, 15 )
 		bChainSettingsSizer.Add( self.m_spinDistance, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 
 
@@ -281,6 +287,13 @@ class SimFrame ( wx.Frame ):
 		self.m_spinLED.Bind( wx.EVT_SPINCTRL, self.OnLed_ctrl_changed )
 		self.m_spinLED.Bind( wx.EVT_TEXT, self.OnLed_ctrl_changed )
 		self.m_spinLED.Bind( wx.EVT_TEXT_ENTER, self.OnLed_ctrl_changed )
+		self.m_cbLayout.Bind( wx.EVT_COMBOBOX, self.OnLayoutChanged )
+		self.m_spinLines.Bind( wx.EVT_SPINCTRL, self.OnLayoutChanged )
+		self.m_spinLines.Bind( wx.EVT_TEXT, self.OnLayoutChanged )
+		self.m_spinLines.Bind( wx.EVT_TEXT_ENTER, self.OnLayoutChanged )
+		self.m_spinDistance.Bind( wx.EVT_SPINCTRL, self.OnLayoutChanged )
+		self.m_spinDistance.Bind( wx.EVT_TEXT, self.OnLayoutChanged )
+		self.m_spinDistance.Bind( wx.EVT_TEXT_ENTER, self.OnLayoutChanged )
 		self.m_cbActive.Bind( wx.EVT_CHECKBOX, self.OnEffectSettingChanged )
 		self.m_cbEffect.Bind( wx.EVT_COMBOBOX, self.OnEffectSettingChanged )
 		self.m_spinEffectRate.Bind( wx.EVT_SPINCTRLDOUBLE, self.OnEffectSettingChanged )
@@ -320,6 +333,15 @@ class SimFrame ( wx.Frame ):
 
 	def OnLed_ctrl_changed( self, event ):
 		event.Skip()
+
+
+
+	def OnLayoutChanged( self, event ):
+		event.Skip()
+
+
+
+
 
 
 
