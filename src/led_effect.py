@@ -266,7 +266,7 @@ class ledEffect:
             'darken'    : (lambda t, b: t * (t < b) +  b * (t >= b)),
             'overlay'   : (lambda t, b: \
                                 2.0 * t * b if t > 0.5 else \
-                                1.0 - (2.0 * (1.0-t) * (1.0-b))),
+                                1.0 - (2.0 * (1.0-t) * (1.0-b)))
            }
 
         self.name         = config.get_name().split()[1]

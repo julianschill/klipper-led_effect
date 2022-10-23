@@ -22,8 +22,6 @@ class Simulator( simgui.SimFrame ):
         self.m_cbEffect.Set(effect_list)
         self.m_cbBlending.Set(blend_list)
 
-        
-
         self.m_ledpanel.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
 
         self.m_lcEffectsList.AppendColumn("Active")
@@ -338,7 +336,6 @@ class Simulator( simgui.SimFrame ):
                 y = s * (tls[1] + i/(tln-1) * (tlg[1]-tls[1]))
                 self.led_coordinates += [(x,y,size)]
 
-
     def OnLedPanelPaint(self, event):
         dc = wx.AutoBufferedPaintDC(self.m_ledpanel)
         dc.Clear()
@@ -352,7 +349,3 @@ class Simulator( simgui.SimFrame ):
                 dc.DrawCircle(self.led_coordinates[i][0] + offset_x, self.led_coordinates[i][1] + offset_y, self.led_coordinates[i][2]/2 )
             elif self.m_cbShape.GetValue() == "Square":
                 dc.DrawRectangle(self.led_coordinates[i][0] + offset_x, self.led_coordinates[i][1] + offset_y, self.led_coordinates[i][2], self.led_coordinates[i][2])
-
-
-
-

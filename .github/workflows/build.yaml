@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches:
-      - 'julianschill/issue41'
+      - 'develop'
 
 jobs:
   build:
