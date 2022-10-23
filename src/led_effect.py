@@ -408,7 +408,7 @@ class ledEffect:
                 update = False
         else:
             update = True
-            if eventtime > self.nextEventTime:
+            if eventtime >= self.nextEventTime:
                 self.nextEventTime = eventtime + self.frameRate
 
                 self.frame = [0.0] * COLORS * self.ledCount
@@ -429,22 +429,26 @@ class ledEffect:
         return self.frame, update
 
     def set_enabled(self, state):
-        self.enabled = state
-        if self.enabled:
+        if self.enabled != state:
+            self.enabled = state
             self.nextEventTime = self.handler.reactor.NOW
+            self.handler._getFrames(self.handler.reactor.NOW)
     
     def set_fade_time(self, fadetime):
         self.fadeTime = fadetime
         self.fadeEndTime = self.handler.reactor.monotonic() + fadetime
+        if self.fadeTime == 0.0:
+            self.fadeValue = 0.0
 
     def cmd_SET_LED_EFFECT(self, gcmd):
-        self.set_fade_time(gcmd.get_float('FADETIME', 0.0))
+        parm_fade_time = gcmd.get_float('FADETIME', 0.0)
+        self.set_fade_time(parm_fade_time)
         if gcmd.get_int('STOP', 0) == 1:
             if self.enabled:
-                self.set_fade_time(gcmd.get_float('FADETIME', 0.0))
+                self.set_fade_time(parm_fade_time)
             self.set_enabled(False)
         else:
-            self.set_fade_time(gcmd.get_float('FADETIME', 0.0))
+            self.set_fade_time(parm_fade_time)
             self.set_enabled(True)
 
     def _handle_shutdown(self):
