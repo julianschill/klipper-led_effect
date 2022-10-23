@@ -6,9 +6,10 @@ authors = ["Julian Schill <j.schill@web.de>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "<3.11,>=3.7"
+python = "<3.11,>=3.8"
 wxPython = "^4.2.0"
 pyinstaller = "^5.4.1"
+numpy = ">1.22"
 
 
 [tool.poetry.group.dev.dependencies]
