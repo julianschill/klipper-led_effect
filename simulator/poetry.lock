@@ -56,6 +56,7 @@ optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
+
 name = "macholib"
 version = "1.16.2"
 description = "Mach-O header analysis and editing"
@@ -135,6 +136,7 @@ python-versions = "<3.12,>=3.7"
 
 [package.dependencies]
 altgraph = "*"
+
 macholib = {version = ">=1.8", markers = "sys_platform == \"darwin\""}
 pefile = {version = ">=2022.5.30", markers = "sys_platform == \"win32\""}
 pyinstaller-hooks-contrib = ">=2021.4"
@@ -376,6 +378,7 @@ pyinstaller = [
     {file = "pyinstaller-5.5-py3-none-win32.whl", hash = "sha256:c7326298be50adcdf799e9b3f880543b925be7341cb1ac2a1e5b1a47b9dc3183"},
     {file = "pyinstaller-5.5-py3-none-win_amd64.whl", hash = "sha256:d06378354b8d3d08309fddb230c813fc750848d71156274c15afdfedd56f57cf"},
     {file = "pyinstaller-5.5.tar.gz", hash = "sha256:88993dfc6429dce8dd1f9a73c08e259af71dd3a227d3002ccb8e959151757dc3"},
+
 ]
 pyinstaller-hooks-contrib = [
     {file = "pyinstaller-hooks-contrib-2022.10.tar.gz", hash = "sha256:e5edd4094175e78c178ef987b61be19efff6caa23d266ade456fc753e847f62e"},
