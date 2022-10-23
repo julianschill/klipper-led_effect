@@ -216,12 +216,55 @@ class ledFrameHandler:
         # run at least with 10Hz
         next_eventtime=min(next_eventtime, eventtime + 0.1) 
         return next_eventtime
+    
+    def parse_chain(self, chain):
+        chain = chain.strip()
+        leds=[]
+        parms = [parameter.strip() for parameter in chain.split()
+                    if parameter.strip()]
+        if parms:
+            chainName=parms[0].replace(':',' ')
+            ledIndices   = ''.join(parms[1:]).strip('()').split(',')
+            for led in ledIndices:
+                if led:
+                    if '-' in led:
+                        start, stop = map(int,led.split('-'))
+                        if stop == start:
+                            ledList = [start-1]
+                        elif stop > start:
+                            ledList = list(range(start-1, stop))
+                        else:
+                            ledList = list(reversed(range(stop-1, start)))
+                        for i in ledList:
+                            leds.append(int(i))
+                    else:
+                        for i in led.split(','):
+                            leds.append(int(i)-1)
+
+            return chainName, leds
+        else:
+            return None, None
 
     def cmd_STOP_LED_EFFECTS(self, gcmd):
         led_param = gcmd.get('LEDS', "")
+        disable = (led_param == "")
 
         for effect in self.effects:
-            if led_param in effect.configChains or led_param == "":
+            if not disable:
+                try:
+                    chainName, ledIndices = self.parse_chain(led_param)
+                    chain = self.printer.lookup_object(chainName)
+                except Exception as e:
+                    raise gcmd.error("Unknown LED '%s'" % (led_param,))
+
+                if ledIndices == [] and chain in effect.ledChains: 
+                    disable = True
+                else:
+                    for index in ledIndices:
+                        if (chain,index) in effect.leds: 
+                            disable=True
+
+            if disable == True:
                 if effect.enabled:
                     effect.set_fade_time(gcmd.get_float('FADETIME', 0.0))
                 effect.set_enabled(False)
@@ -304,39 +347,20 @@ class ledEffect:
                                     self._handle_shutdown)
         #map each LED from the chains to the "pixels" in the effect frame
         for chain in self.configChains:
-            chain = chain.strip()
-            parms = [parameter.strip() for parameter in chain.split()
-                        if parameter.strip()]
-
-            if parms:
-                ledChain     = self.printer.lookup_object(parms[0]\
-                                                .replace(':',' '))
-                ledIndices   = ''.join(parms[1:]).strip('()').split(',')
+            chainName, ledIndices = self.handler.parse_chain(chain)
+            if chainName is not None:
+                ledChain = self.printer.lookup_object(chainName)
 
                 #Add each discrete chain to the collection
                 if ledChain not in self.ledChains:
                     self.ledChains.append(ledChain)
 
-
-                for led in ledIndices:
-                    if led:
-                        if '-' in led:
-                            start, stop = map(int,led.split('-'))
-                            if stop == start:
-                                ledList = [start-1]
-                            elif stop > start:
-                                ledList = list(range(start-1, stop))
-                            else:
-                                ledList = list(reversed(range(stop-1, start)))
-                            for i in ledList:
-                                self.leds.append((ledChain, int(i)))
-                        else:
-                            for i in led.split(','):
-                                self.leds.append((ledChain, \
-                                                (int(i)-1)))
-                    else:
-                        for i in range(ledChain.led_helper.get_led_count()):
-                            self.leds.append((ledChain, int(i)))
+                if ledIndices == [] :
+                    for i in range(ledChain.led_helper.get_led_count()):
+                        self.leds.append((ledChain, int(i)))
+                else:
+                    for led in ledIndices:
+                        self.leds.append((ledChain, led))
 
         self.ledCount = len(self.leds)
         self.frame = [0.0] * COLORS * self.ledCount
