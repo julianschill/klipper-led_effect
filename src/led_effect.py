@@ -111,7 +111,7 @@ class ledFrameHandler:
 
         if effect.heater:
             effect.heater=effect.heater.strip('\"\'')
-            if effect.heater.startswith("temperature_fan "):
+            if effect.heater.startswith("temperature_fan ") or effect.heater.startswith("temperature_sensor "):
                 self.heaters[effect.heater] = self.printer.lookup_object(effect.heater)
             else:
                 pheater = self.printer.lookup_object('heaters')
@@ -142,7 +142,7 @@ class ledFrameHandler:
             self.heaterTarget[heater]  = target
             if target > 0:
                 self.heaterLast[heater] = target
-        return eventtime + 1
+        return eventtime + 0.3 #sensors get updated every 300ms
 
     def _pollStepper(self, eventtime):
 
@@ -823,6 +823,29 @@ class ledEffect:
 
             return None
 
+    #Responds to heater temperature
+    class layerTemperature(_layerBase):
+        def __init__(self,  **kwargs):
+
+            super(ledEffect.layerTemperature, self).__init__(**kwargs)
+            if len(self.paletteColors) == 1:
+                self.paletteColors = colorArray(COLORS, ([0.0]*COLORS)) + self.paletteColors
+            gradient = colorArray(COLORS, self._gradient(self.paletteColors, 200))
+            for i in range(len(gradient)):
+                self.thisFrame.append(gradient[i] * self.ledCount)
+            self.frameCount = len(self.thisFrame)
+        def nextFrame(self, eventtime):
+            if self.effectCutoff == self.effectRate:
+                s = 200 if self.frameHandler.heaterCurrent[self.handler.heater] >= self.effectRate else 0
+            else:
+                s = int(((self.frameHandler.heaterCurrent[self.handler.heater] - 
+                            self.effectRate) / 
+                            (self.effectCutoff - self.effectRate)) * 200)
+                
+            s = min(len(self.thisFrame)-1,s)
+            s = max(0,s)
+            return self.thisFrame[s]
+            
     #Responds to analog pin voltage
     class layerAnalogPin(_layerBase):
         def __init__(self,  **kwargs):
