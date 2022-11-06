@@ -296,6 +296,13 @@ length of the gradient in relation to the chain length. The bigger the value,
 the shorter the gradient (e.g. the value 2 means 2 gradients on the length of 
 the chain)
 
+#### Pattern
+    Effect Rate:  1   Time between pattern shifts
+    Cutoff:       1   How far the pattern gets shifted
+The palette is applied as a recurring pattern on the chain and shifted along the
+chain. The effect rate determines the time between the shifts in seconds, the 
+cutoff determines the amount of LED positions the pattern gets shifted.
+
 #### Comet
     Effect Rate:  1   How fast the comet moves, negative values change direction
     Cutoff:       1   Length of tail (somewhat arbitrary)

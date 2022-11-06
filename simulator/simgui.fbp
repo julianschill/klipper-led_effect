@@ -1636,11 +1636,11 @@
                                 <property name="name">bEffectSettingsSizer</property>
                                 <property name="orient">wxHORIZONTAL</property>
                                 <property name="permission">none</property>
-                                <object class="sizeritem" expanded="0">
+                                <object class="sizeritem" expanded="1">
                                     <property name="border">5</property>
                                     <property name="flag">wxALL</property>
                                     <property name="proportion">0</property>
-                                    <object class="wxPanel" expanded="0">
+                                    <object class="wxPanel" expanded="1">
                                         <property name="BottomDockable">1</property>
                                         <property name="LeftDockable">1</property>
                                         <property name="RightDockable">1</property>
@@ -1692,7 +1692,7 @@
                                         <property name="window_extra_style"></property>
                                         <property name="window_name"></property>
                                         <property name="window_style">wxBORDER_SIMPLE|wxTAB_TRAVERSAL</property>
-                                        <object class="wxFlexGridSizer" expanded="0">
+                                        <object class="wxFlexGridSizer" expanded="1">
                                             <property name="cols">2</property>
                                             <property name="flexible_direction">wxBOTH</property>
                                             <property name="growablecols"></property>
@@ -2063,7 +2063,7 @@
                                                     <property name="max_size"></property>
                                                     <property name="maximize_button">0</property>
                                                     <property name="maximum_size"></property>
-                                                    <property name="min">0</property>
+                                                    <property name="min">-100</property>
                                                     <property name="min_size"></property>
                                                     <property name="minimize_button">0</property>
                                                     <property name="minimum_size"></property>
@@ -2193,7 +2193,7 @@
                                                     <property name="max_size"></property>
                                                     <property name="maximize_button">0</property>
                                                     <property name="maximum_size"></property>
-                                                    <property name="min">0</property>
+                                                    <property name="min">-100</property>
                                                     <property name="min_size"></property>
                                                     <property name="minimize_button">0</property>
                                                     <property name="minimum_size"></property>
