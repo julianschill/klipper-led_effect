@@ -724,32 +724,33 @@ class ledEffect:
                 self.direction = False
                 self.effectRate *= -1
 
+            if len(self.paletteColors) == 1:
+                self.paletteColors += colorArray(COLORS,COLORS*[0])
+
             decayTable = self._decayTable(factor=len(self.paletteColors) * \
                             self.effectCutoff, rate=1)
 
             gradient   = self.paletteColors[0] + \
                 self._gradient(self.paletteColors[1:], len(decayTable)+1)
 
-            decayTable = [c for b in zip(decayTable, decayTable, decayTable) \
+            decayTable = [c for b in zip(decayTable, decayTable, decayTable, decayTable) \
                 for c in b]
             gradient  = colorArray(COLORS, [a * b
                             for a, b in zip(gradient,decayTable)])
 
-            chase = gradient
-
-            for i in range(int(self.ledCount/len(gradient))):
-                chase += gradient
+            k=int(self.ledCount/len(gradient))+1
+            chase = colorArray(COLORS,k*gradient)
 
             if self.direction: chase.reverse()
             if self.effectRate == 0:
                 self.thisFrame.append(chase[0:self.ledCount])
             else:                                                   
-                for i in range(len(chase)):
+                for _ in range(len(chase)):
                     chase.shift(int(self.effectRate+(self.effectRate < 1)), 
                                 self.direction)
                     self.thisFrame.append(chase[0:self.ledCount])
 
-                    for x in range(int((1/self.effectRate)-(self.effectRate <= 1))):
+                    for _ in range(int((1/self.effectRate)-(self.effectRate <= 1))):
                         self.thisFrame.append(chase[0:self.ledCount])
 
             self.frameCount = len(self.thisFrame)
