@@ -39,6 +39,10 @@ class Simulator( simgui.SimFrame ):
         self.printer = mockPrinter(self.config)
         self.printer._handle_ready()
         self.printer.led_effect.set_enabled(True)
+        self.OnStepperSlider(None)
+        self.OnHeaterSlider(None)
+        self.OnProgressSlider(None)
+        self.OnAnalogSlider(None)
 
     def parse_layers_from_text(self):
         self.m_lcEffectsList.DeleteAllItems()
@@ -232,6 +236,18 @@ class Simulator( simgui.SimFrame ):
         self.m_lbPalette.Delete(i)
         self.m_lbPalette.Select(i+1)
         self._update_colors()
+    
+    def OnStepperSlider(self, event):
+        self.printer.set_stepper_pos(self.m_slStepper.GetValue())
+
+    def OnHeaterSlider(self, event):
+        self.printer.set_heater(self.m_slHeater.GetMin(), self.m_slHeater.GetMax(), self.m_slHeater.GetValue())
+    
+    def OnProgressSlider(self, event):
+        self.printer.set_progress(self.m_slProgress.GetValue())
+        
+    def OnAnalogSlider(self, event):
+        self.printer.set_analog(self.m_slAnalog.GetValue())
 
     def OnExit(self, event):
         self.Close(True)
@@ -253,6 +269,9 @@ class Simulator( simgui.SimFrame ):
         self._calc_coordinates()
         
     def setLeds(self,index, r,g,b):
+        r = min(r,255)
+        g = min(g,255)
+        b = min(b,255)
         self.leds[index]=wx.Colour(r,g,b)
         self.Refresh()
 
