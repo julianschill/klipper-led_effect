@@ -937,7 +937,31 @@ class ledEffect:
             if p > 100 : p=100
             return self.thisFrame[int((p - 1) * (p > 0))]
 
-     #Shameless port of Fire2012 by Mark Kriegsman
+    class layerStepperColor(_layerBase):
+        def __init__(self,  **kwargs):
+            super(ledEffect.layerStepperColor, self).__init__(**kwargs)
+
+            if len(self.paletteColors) == 1:
+                self.paletteColors = [0.0]*COLORS + self.paletteColors
+
+            gradient   = colorArray(COLORS, self._gradient(self.paletteColors, 101))
+
+            for i in range(len(gradient)):
+                self.thisFrame.append(gradient[i] * self.ledCount)
+
+        def nextFrame(self, eventtime):
+            if self.handler.stepper == 'x': axis = 0
+            elif self.handler.stepper == 'y': axis = 1
+            else: axis = 2
+
+            p = self.frameHandler.stepperPositions[int(axis)]*self.effectRate+self.effectCutoff
+                        
+            if p < 0 : p=0
+            if p > 100 : p=100
+
+            return self.thisFrame[int(p)]
+
+    #Shameless port of Fire2012 by Mark Kriegsman
 
     #Shamelessly appropriated from the Arduino FastLED example files
     #Fire2012.ino by Daniel Garcia
