@@ -299,6 +299,7 @@ the chain)
 #### Pattern
     Effect Rate:  1   Time between pattern shifts
     Cutoff:       1   How far the pattern gets shifted
+    Palette:          The pattern to be shifted
 The palette is applied as a recurring pattern on the chain and shifted along the
 chain. The effect rate determines the time between the shifts in seconds, the 
 cutoff determines the amount of LED positions the pattern gets shifted.
@@ -387,6 +388,15 @@ itself updates stepper position every half second based on the reported position
 of the stepper similar to the GET_POSITION gcode command. It will not be realtime.
 A negative value in effect rate will fill the entire strip leading up to the stepper
 position, a negative value in cutoff will fill the entire strip after the stepper position.
+
+#### StepperColor
+    Effect Rate:  1   Scaling of position
+    Cutoff:       0   Offset of position
+    Palette:          Color values to blend
+The color of the LEDs are determined by the position of the stepper motor. The 
+position is determined between 0 and 100 and is multiplied with the effect rate
+and the cutoff is added as offset. This then determines the value in the 
+palette, that is calculated as a gradient over the specified color values.
 
 #### Progress
     Effect Rate:  4   Number of trailing LEDs
