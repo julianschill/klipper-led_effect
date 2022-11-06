@@ -493,10 +493,10 @@ class ledEffect:
 
             for s in range(0, int((rate<1)+rate)):
                 frame.append(1.0)
-                for x in range(2, int(p / rate)+COLORS):
+                for x in range(2, int(p / rate)):
                     b = exp(1)**-(x/r)
-                    frame.append(b*(b>.01))
-
+                    if b>.004:
+                        frame.append(b)
             return frame
 
         def _gradient(self, palette, steps, reverse=False, toFirst=False):
@@ -698,6 +698,7 @@ class ledEffect:
             comet.padRight([0.0]*COLORS, self.ledCount - len(comet))
 
             if self.direction: comet.reverse()
+            else: comet.shift(self.ledCount - len(comet))
 
             if self.effectRate == 0:
                 self.thisFrame.append(comet[0:self.ledCount])
