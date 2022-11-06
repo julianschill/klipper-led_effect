@@ -48,11 +48,8 @@ class colorArray(list):
                         for c in self[cl]])
     def shift(self, shift=1, direction=True):
         if direction:
-            #shift array to the right
-            self.__init__(self.n, self[-shift:] + self[:-shift])
-        else:
-            #shift array to the left
-            self.__init__(self.n, self[shift:] + self[:shift])
+            shift *= -1
+        self.__init__(self.n, self[shift:] + self[:shift])
     def padLeft(self, v, a):
         self.__init__(self.n, v * a + self)
     def padRight(self, v, a):
@@ -693,7 +690,7 @@ class ledEffect:
             gradient   = self.paletteColors[0] + \
                 self._gradient(self.paletteColors[1:], len(decayTable)+1)
 
-            decayTable = [c for b in zip(decayTable, decayTable, decayTable) \
+            decayTable = [c for b in zip(decayTable, decayTable, decayTable, decayTable) \
                 for c in b]
 
             comet = colorArray(COLORS, [a * b for a, b in zip(gradient,decayTable)])
@@ -708,10 +705,10 @@ class ledEffect:
                 for i in range(len(comet)):
                     comet.shift(int(self.effectRate+(self.effectRate < 1)), 
                                 self.direction)
-                    self.thisFrame.append(comet[0:self.ledCount])
+                    self.thisFrame.append(comet[:self.ledCount])
 
                     for x in range(int((1/self.effectRate)-(self.effectRate <= 1))):
-                        self.thisFrame.append(comet[0:self.ledCount])
+                        self.thisFrame.append(comet[:self.ledCount])
 
             self.frameCount = len(self.thisFrame)
 
