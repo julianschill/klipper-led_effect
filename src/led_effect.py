@@ -654,15 +654,15 @@ class ledEffect:
             super(ledEffect.layerStrobe, self).__init__(**kwargs)
 
             frameRate  = int(1.0 / self.frameRate)
-            frameCount = int(frameRate * self.effectRate)
+            frameCount = int(frameRate / self.effectRate)
 
             decayTable = self._decayTable(factor=1 / self.effectCutoff,
-                                          rate=self.effectRate)
+                                          rate=1)
 
-            if len(decayTable) > frameRate:
-                decayTable = decayTable[:frameRate]
+            if len(decayTable) > frameCount:
+                decayTable = decayTable[:frameCount]
             else:
-                decayTable += [0.0] * (self.frameRate - len(decayTable))
+                decayTable += [0.0] * (frameCount - len(decayTable))
 
             for c in range(0, len(self.paletteColors)):
                 color = self.paletteColors[c]
