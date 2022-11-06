@@ -18,6 +18,10 @@ class mockPrinter:
         self.objects={}
         self.led_effect=ledEffect(config)
         self.objects["myeffect"] = self.led_effect
+        
+        self.axes_max = [100,100,100]
+        self.axes_min = [0,0,0]
+        self.stepper_pos = 0
 
     def _handle_ready(self):
         for o in self.objects.values():
@@ -31,6 +35,8 @@ class mockPrinter:
             if o == "led_effect":
                 self.objects[o]=ledFrameHandler(config)
                 return self.objects[o]
+            elif o == "query_adc":
+                return self
         return None
     def register_event_handler(self, event, callback):
         pass
@@ -38,10 +44,36 @@ class mockPrinter:
         pass
     def register_command(self, cmd, callback, desc):
         pass
+    def register_timer(self, callback, time):
+        pass
     def get_reactor(self):
         return self
     def register_timer(self, callback, time):
         pass
+    def get_temp(self, time):
+        return self.temp
+    def get_kinematics(self):
+        return self
+    def set_stepper_pos(self, pos):
+        self.led_effect.handler.stepperPositions=[pos,pos,pos]
+    def setup_pin(self, name, pin):
+        return self
+    def setup_minmax(self, min, max):
+        pass
+    def setup_adc_callback(self, time, adcCallback):
+        pass
+    def register_adc(self, name, mcu):
+        pass
+    def lookup_heater(self, name):
+        return self
+    def set_heater(self, min, max, temp):
+        self.led_effect.handler.heaterLast["bed"]  = self.led_effect.handler.heaterCurrent["bed"]
+        self.led_effect.handler.heaterCurrent["bed"] = temp
+        self.led_effect.handler.heaterTarget["bed"]  = max
+    def set_progress (self, progress):
+        self.led_effect.handler.printProgress=progress
+    def set_analog(self, value):
+        self.led_effect.analogValue=value
 
 class mockConfig:
     def __init__(self):
@@ -49,9 +81,9 @@ class mockConfig:
             "frame_rate" : "24.0",
             "autostart" : "False",
             "run_on_error" : "False",
-            "heater" : None,
-            "analog_pin" : None,
-            "stepper" : None,
+            "heater" : "bed",
+            "analog_pin" : "PA0",
+            "stepper" : "x",
             "layers"  : """gradient       1 1 top  (1, 0.0, 0.0),(0, 1, 0.0),(0.0, 0.0, 1)""",
             "leds" : "leds:leds",
        }
