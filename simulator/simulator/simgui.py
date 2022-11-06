@@ -130,7 +130,7 @@ class SimFrame ( wx.Frame ):
 
 		fg_effectSettingsSizer.Add( self.m_lblEffectRate, 0, wx.ALL, 5 )
 
-		self.m_spinEffectRate = wx.SpinCtrlDouble( self.m_effectSettingsPanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, 0, 100, 0.000000, 0.1 )
+		self.m_spinEffectRate = wx.SpinCtrlDouble( self.m_effectSettingsPanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, -100, 100, 0.000000, 0.1 )
 		self.m_spinEffectRate.SetDigits( 2 )
 		self.m_spinEffectRate.Enable( False )
 
@@ -141,7 +141,7 @@ class SimFrame ( wx.Frame ):
 
 		fg_effectSettingsSizer.Add( self.m_lblCutOff, 0, wx.ALL, 5 )
 
-		self.m_spinCutOff = wx.SpinCtrlDouble( self.m_effectSettingsPanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, 0, 100, 0, 0.1 )
+		self.m_spinCutOff = wx.SpinCtrlDouble( self.m_effectSettingsPanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, -100, 100, 0, 0.1 )
 		self.m_spinCutOff.SetDigits( 2 )
 		self.m_spinCutOff.Enable( False )
 
