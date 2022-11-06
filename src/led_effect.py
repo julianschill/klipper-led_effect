@@ -776,6 +776,26 @@ class ledEffect:
                 self.thisFrame.append(frame)
 
             self.frameCount = len(self.thisFrame)
+
+    class layerPattern(_layerBase):
+        def __init__(self,  **kwargs):
+            super(ledEffect.layerPattern, self).__init__(**kwargs)
+
+            self.paletteColors = colorArray(COLORS, self.paletteColors)
+            frame = colorArray(COLORS, [])
+
+            for i in range(int(self.ledCount/len(self.paletteColors))+1):
+                frame+=(self.paletteColors)
+
+            if int(self.effectRate/self.frameRate) == 0:
+                self.thisFrame.append(frame)
+            else:
+                for _ in range(len(self.paletteColors) * (self.ledCount-1)):
+                    for _ in range(int(self.effectRate/self.frameRate)):
+                        self.thisFrame.append(frame.copy()[:COLORS*self.ledCount])
+                    frame.shift(int(self.effectCutoff))
+                
+            self.frameCount = len(self.thisFrame)
             
     #Responds to heater temperature
     class layerHeater(_layerBase):
