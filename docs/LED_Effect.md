@@ -142,17 +142,20 @@ frame_rate:
 Sets the frame rate in frames per second for the effect
 
 run_on_error:
-Keeps the last color on a shutdown. (Currently not working)
+(Needs patched MCU firmware. Currently not supported.)
 
 heater:
-Specifies the heater to use for a heater effect. For a temperature fan put 
-temperature_fan and use quotes: `heater: "temperature_fan myfan"`
+Specifies the heater to use for a heater effect. Use `extruder` for the
+extruder and `heater_bed` for the bed. For temperature fans or  sensors add the
+type and use quotes. 
+Example: `heater: "temperature_fan myfan"`
 
 analog_pin:
 Specifies the pin to use for effects using an analog signal.
 
 stepper:
-Specifies the stepper motor to use for the stepper effect.
+Specifies the stepper motor to use for the stepper effect. Possible values are:
+`x`, `y` and `z`. Example: `stepper: x`
 
 ## Defining LEDs
 
@@ -170,8 +173,9 @@ leds:
 
 Additionally, one may decide to only have certain LEDs displaying the
 effect. This is accomplished by providing the index of the LEDs to be
-used after the strip name. The index can be a list or a range. If the
-indices are omitted, the entire strip is used.
+used after the strip name. The index can be a list or a range. The range can
+also be inversed to invert the effect. If the indices are omitted, the entire
+strip is used.
 
 As well, if for some reason you needed to, the same strip can be used
 twice in an effect with different emitters being specified.
@@ -180,7 +184,7 @@ twice in an effect with different emitters being specified.
 leds:
     neopixel:tool_lights
     neopixel:panel_ring  (1-7)
-    neopixel:panel_ring  (9-16)
+    neopixel:panel_ring  (16-9)
     dotstar:bed_lights   (1,3,5)
 ```
 
@@ -255,7 +259,6 @@ Colors fade in and out. If a palette of multiple colors is provided, it will
 cycle through those colors in the order they are specified in the palette.
 The effect rate parameter controls how long it takes to "breathe" one time.
 
-
 #### Blink
     Effect Rate:  1   Duration of a complete cycle
     Cutoff:       0.5 Ratio of the time the LEDs are on (between 0 and 1)
@@ -293,6 +296,14 @@ length of the gradient in relation to the chain length. The bigger the value,
 the shorter the gradient (e.g. the value 2 means 2 gradients on the length of 
 the chain)
 
+#### Pattern
+    Effect Rate:  1   Time between pattern shifts
+    Cutoff:       1   How far the pattern gets shifted
+    Palette:          The pattern to be shifted
+The palette is applied as a recurring pattern on the chain and shifted along the
+chain. The effect rate determines the time between the shifts in seconds, the 
+cutoff determines the amount of LED positions the pattern gets shifted.
+
 #### Comet
     Effect Rate:  1   How fast the comet moves, negative values change direction
     Cutoff:       1   Length of tail (somewhat arbitrary)
@@ -322,6 +333,14 @@ disabled once the target temperature is met. If the heater is turned off,
 the colors will follow this pattern in reverse until the temperature falls
 below the minimum temperature specified in the config. This can be used to
 indicate the hotend or bed is in a safe state to touch.
+
+#### Temperature
+    Effect Rate:  20  Cold Temperature
+    Cutoff:       80  Hot Temperature
+    Palette:          Color values to blend from Cold to Hot
+The temperature of the configured heater determines the color in a gradient over
+the palette. When only one color is defined in the palette, the brightness of
+that color is defined by the temperature.
 
 #### Fire
     Effect Rate:  45  Probability of "sparking"
@@ -369,6 +388,15 @@ itself updates stepper position every half second based on the reported position
 of the stepper similar to the GET_POSITION gcode command. It will not be realtime.
 A negative value in effect rate will fill the entire strip leading up to the stepper
 position, a negative value in cutoff will fill the entire strip after the stepper position.
+
+#### StepperColor
+    Effect Rate:  1   Scaling of position
+    Cutoff:       0   Offset of position
+    Palette:          Color values to blend
+The color of the LEDs are determined by the position of the stepper motor. The 
+position is determined between 0 and 100 and is multiplied with the effect rate
+and the cutoff is added as offset. This then determines the value in the 
+palette, that is calculated as a gradient over the specified color values.
 
 #### Progress
     Effect Rate:  4   Number of trailing LEDs
@@ -481,7 +509,7 @@ of increasing contrast.
 In the event of critical error, all LED strips breath red in unison to
 provide a visible indicator of an error condition with the printer. This
 effect is disabled during normal operation and only starts when the MCU
-enters a shutdown state.
+enters a shutdown state (currently not supported).
 
 ```
 [led_effect critical_error]

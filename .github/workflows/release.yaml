@@ -37,16 +37,16 @@ jobs:
           - os: macos-latest
             TARGET: macos
             CMD_BUILD: >
-                pyinstaller -F -w -n ledeffect-simulator -p .. app.py &&
+                pyinstaller -F -w -n ledeffect-simulator-macos -p .. app.py &&
                 cd dist/ &&
-                zip -r9 ledeffect-simulator ledeffect-simulator.app
-            OUT_FILE_NAME: ledeffect-simulator.zip
+                zip -r9 ledeffect-simulator-macos ledeffect-simulator-macos.app
+            OUT_FILE_NAME: ledeffect-simulator-macos.zip
             ASSET_MIME: application/zip
             POETRY_FOLDER: ~/.local
           - os: windows-latest
             TARGET: windows
-            CMD_BUILD: pyinstaller -F -w -n ledeffect-simulator -p .. app.py
-            OUT_FILE_NAME: ledeffect-simulator.exe
+            CMD_BUILD: pyinstaller -F -w -n ledeffect-simulator-win -p .. app.py
+            OUT_FILE_NAME: ledeffect-simulator-win.exe
             ASSET_MIME: application/vnd.microsoft.portable-executable
             POETRY_FOLDER: C:\Users\runneradmin\.local
     steps:

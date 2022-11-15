@@ -93,6 +93,84 @@ class SimFrame ( wx.Frame ):
 		bChainSettingsSizer.Fit( self.m_panel4 )
 		bSizer15.Add( self.m_panel4, 0, wx.ALL, 5 )
 
+		self.m_panel41 = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.BORDER_SIMPLE|wx.TAB_TRAVERSAL )
+		bHeaterStepperSizer = wx.BoxSizer( wx.HORIZONTAL )
+
+		bStepperSizer = wx.BoxSizer( wx.VERTICAL )
+
+		self.m_lblStepper = wx.StaticText( self.m_panel41, wx.ID_ANY, u"Stepper: ", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_lblStepper.Wrap( -1 )
+
+		bStepperSizer.Add( self.m_lblStepper, 0, wx.ALL, 5 )
+
+		self.m_slStepper = wx.Slider( self.m_panel41, wx.ID_ANY, 0, 0, 100, wx.DefaultPosition, wx.DefaultSize, wx.SL_HORIZONTAL|wx.SL_LABELS|wx.SL_SELRANGE )
+		self.m_slStepper.SetMinSize( wx.Size( 200,-1 ) )
+
+		bStepperSizer.Add( self.m_slStepper, 0, wx.ALL, 5 )
+
+
+		bHeaterStepperSizer.Add( bStepperSizer, 1, wx.EXPAND, 5 )
+
+
+		bHeaterStepperSizer.Add( ( 50, 0), 0, wx.EXPAND, 5 )
+
+		bHeaterSizer = wx.BoxSizer( wx.VERTICAL )
+
+		self.h_lblHeater = wx.StaticText( self.m_panel41, wx.ID_ANY, u"Heater:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.h_lblHeater.Wrap( -1 )
+
+		bHeaterSizer.Add( self.h_lblHeater, 0, wx.ALL, 5 )
+
+		self.m_slHeater = wx.Slider( self.m_panel41, wx.ID_ANY, 0, 0, 100, wx.DefaultPosition, wx.DefaultSize, wx.SL_HORIZONTAL|wx.SL_LABELS|wx.SL_SELRANGE )
+		self.m_slHeater.SetMinSize( wx.Size( 200,-1 ) )
+
+		bHeaterSizer.Add( self.m_slHeater, 0, wx.ALL, 5 )
+
+
+		bHeaterStepperSizer.Add( bHeaterSizer, 1, wx.EXPAND, 5 )
+
+
+		bHeaterStepperSizer.Add( ( 50, 0), 0, wx.EXPAND, 5 )
+
+		bProgressSizer = wx.BoxSizer( wx.VERTICAL )
+
+		self.h_lblProgress = wx.StaticText( self.m_panel41, wx.ID_ANY, u"Progress:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.h_lblProgress.Wrap( -1 )
+
+		bProgressSizer.Add( self.h_lblProgress, 0, wx.ALL, 5 )
+
+		self.m_slProgress = wx.Slider( self.m_panel41, wx.ID_ANY, 0, 0, 100, wx.DefaultPosition, wx.DefaultSize, wx.SL_HORIZONTAL|wx.SL_LABELS|wx.SL_SELRANGE )
+		self.m_slProgress.SetMinSize( wx.Size( 200,-1 ) )
+
+		bProgressSizer.Add( self.m_slProgress, 0, wx.ALL, 5 )
+
+
+		bHeaterStepperSizer.Add( bProgressSizer, 1, wx.EXPAND, 5 )
+
+
+		bHeaterStepperSizer.Add( ( 50, 0), 0, wx.EXPAND, 5 )
+
+		bAnalogSizer = wx.BoxSizer( wx.VERTICAL )
+
+		self.h_lblAnalog = wx.StaticText( self.m_panel41, wx.ID_ANY, u"Analog:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.h_lblAnalog.Wrap( -1 )
+
+		bAnalogSizer.Add( self.h_lblAnalog, 0, wx.ALL, 5 )
+
+		self.m_slAnalog = wx.Slider( self.m_panel41, wx.ID_ANY, 0, 0, 100, wx.DefaultPosition, wx.DefaultSize, wx.SL_HORIZONTAL|wx.SL_LABELS|wx.SL_SELRANGE )
+		self.m_slAnalog.SetMinSize( wx.Size( 200,-1 ) )
+
+		bAnalogSizer.Add( self.m_slAnalog, 0, wx.ALL, 5 )
+
+
+		bHeaterStepperSizer.Add( bAnalogSizer, 1, wx.EXPAND, 5 )
+
+
+		self.m_panel41.SetSizer( bHeaterStepperSizer )
+		self.m_panel41.Layout()
+		bHeaterStepperSizer.Fit( self.m_panel41 )
+		bSizer15.Add( self.m_panel41, 0, wx.EXPAND |wx.ALL, 5 )
+
 
 		bSettingsSizer.Add( bSizer15, 0, wx.ALL, 5 )
 
@@ -130,7 +208,7 @@ class SimFrame ( wx.Frame ):
 
 		fg_effectSettingsSizer.Add( self.m_lblEffectRate, 0, wx.ALL, 5 )
 
-		self.m_spinEffectRate = wx.SpinCtrlDouble( self.m_effectSettingsPanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, 0, 100, 0.000000, 0.1 )
+		self.m_spinEffectRate = wx.SpinCtrlDouble( self.m_effectSettingsPanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, -100, 100, 0.000000, 0.1 )
 		self.m_spinEffectRate.SetDigits( 2 )
 		self.m_spinEffectRate.Enable( False )
 
@@ -141,7 +219,7 @@ class SimFrame ( wx.Frame ):
 
 		fg_effectSettingsSizer.Add( self.m_lblCutOff, 0, wx.ALL, 5 )
 
-		self.m_spinCutOff = wx.SpinCtrlDouble( self.m_effectSettingsPanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, 0, 100, 0, 0.1 )
+		self.m_spinCutOff = wx.SpinCtrlDouble( self.m_effectSettingsPanel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.SP_ARROW_KEYS, -100, 100, 0, 0.1 )
 		self.m_spinCutOff.SetDigits( 2 )
 		self.m_spinCutOff.Enable( False )
 
@@ -294,6 +372,10 @@ class SimFrame ( wx.Frame ):
 		self.m_spinDistance.Bind( wx.EVT_SPINCTRL, self.OnLayoutChanged )
 		self.m_spinDistance.Bind( wx.EVT_TEXT, self.OnLayoutChanged )
 		self.m_spinDistance.Bind( wx.EVT_TEXT_ENTER, self.OnLayoutChanged )
+		self.m_slStepper.Bind( wx.EVT_SLIDER, self.OnStepperSlider )
+		self.m_slHeater.Bind( wx.EVT_SLIDER, self.OnHeaterSlider )
+		self.m_slProgress.Bind( wx.EVT_SLIDER, self.OnProgressSlider )
+		self.m_slAnalog.Bind( wx.EVT_SLIDER, self.OnAnalogSlider )
 		self.m_cbActive.Bind( wx.EVT_CHECKBOX, self.OnEffectSettingChanged )
 		self.m_cbEffect.Bind( wx.EVT_COMBOBOX, self.OnEffectSettingChanged )
 		self.m_spinEffectRate.Bind( wx.EVT_SPINCTRLDOUBLE, self.OnEffectSettingChanged )
@@ -344,6 +426,18 @@ class SimFrame ( wx.Frame ):
 
 
 
+
+	def OnStepperSlider( self, event ):
+		event.Skip()
+
+	def OnHeaterSlider( self, event ):
+		event.Skip()
+
+	def OnProgressSlider( self, event ):
+		event.Skip()
+
+	def OnAnalogSlider( self, event ):
+		event.Skip()
 
 	def OnEffectSettingChanged( self, event ):
 		event.Skip()
