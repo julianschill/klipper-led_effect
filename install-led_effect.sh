@@ -2,6 +2,15 @@
 KLIPPER_PATH="${HOME}/klipper"
 SYSTEMDDIR="/etc/systemd/system"
 
+set_config_dir()
+{
+    if [-d "${HOME}/printer_data/config"]; then
+        KLIPPER_CONFIG_DIR="${HOME}/printer_data/config"
+    else
+        KLIPPER_CONFIG_DIR="${HOME}/klipper_config"
+     fi
+}
+
 # Step 1:  Verify Klipper has been installed
 check_klipper()
 {
@@ -26,13 +35,13 @@ link_extension()
 echo -e "Adding update manager to moonraker.conf"
 
 update_section=$(grep -c '\[update_manager led_effect\]' \
-${HOME}/klipper_config/moonraker.conf || true)
+${KLIPPER_CONFIG_DIR}/moonraker.conf || true)
 if [ "${update_section}" -eq 0 ]; then
-  echo -e "\n" >> ${HOME}/klipper_config/moonraker.conf
+  echo -e "\n" >> ${KLIPPER_CONFIG_DIR}/moonraker.conf
   while read -r line; do
-    echo -e "${line}" >> ${HOME}/klipper_config/moonraker.conf
+    echo -e "${line}" >> ${KLIPPER_CONFIG_DIR}/moonraker.conf
   done < "$PWD/file_templates/moonraker_update.txt"
-  echo -e "\n" >> ${HOME}/klipper_config/moonraker.conf
+  echo -e "\n" >> ${KLIPPER_CONFIG_DIR}/moonraker.conf
 else
   echo -e "[update_manager led_effect] already exist in moonraker.conf [SKIPPED]"
 fi
