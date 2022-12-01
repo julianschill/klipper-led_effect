@@ -1,15 +1,14 @@
 #!/bin/bash
 KLIPPER_PATH="${HOME}/klipper"
 SYSTEMDDIR="/etc/systemd/system"
+KLIPPER_CONFIG_DIR="${HOME}/printer_data/config"
 
-set_config_dir()
-{
-    if [-d "${HOME}/printer_data/config"]; then
-        KLIPPER_CONFIG_DIR="${HOME}/printer_data/config"
-    else
+if [ ! -d "${KLIPPER_CONFIG_DIR}" ]; then
         KLIPPER_CONFIG_DIR="${HOME}/klipper_config"
-     fi
-}
+        echo  "Config Path Set to ~/klipper_config"
+fi
+
+
 
 # Step 1:  Verify Klipper has been installed
 check_klipper()
