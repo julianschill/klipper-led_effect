@@ -657,7 +657,7 @@ class ledEffect:
             if self.effectRate==0: 
                 frameCount = 1
             else:
-                frameCount = int(frameRate / self.effectRate)
+                frameCount = max(1,int(frameRate / self.effectRate))
             if self.effectCutoff==0: self.effectCutoff=0.001
             decayTable = self._decayTable(factor=1 / self.effectCutoff,
                                           rate=1)
