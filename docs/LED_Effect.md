@@ -86,7 +86,7 @@ chain_count:             16
 pin:                     ar15
 chain_count:             6
 
-[neopixel bed_lights]
+[dotstar bed_lights]
 data_pin:                ar21
 clock_pin                ar22
 chain_count:             5
@@ -109,19 +109,20 @@ This has defined an effect called `panel_idle`.
 
 ### Controlling the effects
 Effects can be active or inactive. Inactive effects don't output any color 
-data, while active effects return color data, that is added up for each LED 
+data, while active effects return color data, that is summed up for each LED 
 they run on.
 
 #### Activating and deactivating effects
 Our example effect can be activated by running the GCode command 
-`SET_LED_EFFECT EFFECT=panel_idle`.
+`SET_LED_EFFECT EFFECT=panel_idle`. To stop all effects which are currently 
+running on the LEDs the new effect is using, set the `REPLACE` parameter to 1: 
+`SET_LED_EFFECT EFFECT=panel_idle REPLACE=1`
 Running the command `SET_LED_EFFECT EFFECT=panel_idle STOP=1` deactivates this 
-particular effect again.
+particular effect again. 
 To deactivate all effects we can use the GCode command `STOP_LED_EFFECTS`.
 To only deactivate effects for certain LEDs we can specify the LEDS parameter:
-`STOP_LED_EFFECTS LEDS="neopixel:panel_ring"` The parameter has match exactly 
-the line defined in the "leds" section of the effect, including the indices 
-(see below): `STOP_LED_EFFECTS LEDS="neopixel:panel_ring (1-7)"`. Only one 
+`STOP_LED_EFFECTS LEDS="neopixel:panel_ring"` You can also specify indeces (see 
+below): `STOP_LED_EFFECTS LEDS="neopixel:panel_ring (1-7)"`. Only one 
 LED parameter can be specified at a time. To stop the effects for multiple LEDs 
 we have to run the command multiple times.
 
@@ -131,7 +132,8 @@ Effects can be faded in and out by specifying the `FADETIME` parameter:
 second. Running `SET_LED_EFFECT EFFECT=panel_idle STOP=1 FADETIME=1.0` fades it 
 out in one second. We can also fade out all effects by running 
 `STOP_LED_EFFECTS FADETIME=1.0`. It is also possible to crossfade effects by 
-running a fade in command and a fade out command successively.
+using the `REPLACE` parameter with `SET_LED_EFFECT` (see above): 
+`SET_LED_EFFECT EFFECT=panel_idle REPLACE=1 FADETIME=1.0`
 
 ### Additional effect level parameters
 
