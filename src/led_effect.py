@@ -465,14 +465,23 @@ class ledEffect:
             self.fadeValue = 0.0
 
     def cmd_SET_LED_EFFECT(self, gcmd):
-        parm_fade_time = gcmd.get_float('FADETIME', 0.0)
-        self.set_fade_time(parm_fade_time)
-        if gcmd.get_int('STOP', 0) == 1:
+        parmFadeTime = gcmd.get_float('FADETIME', 0.0)
+
+        if gcmd.get_int('STOP', 0) >= 1:
             if self.enabled:
-                self.set_fade_time(parm_fade_time)
+                self.set_fade_time(parmFadeTime)
             self.set_enabled(False)
         else:
-            self.set_fade_time(parm_fade_time)
+            if gcmd.get_int('REPLACE',0) >= 1:
+                for led in self.leds:
+                    for effect in self.handler.effects:
+                        if effect is not self and led in effect.leds:
+                            if effect.enabled:
+                                effect.set_fade_time(parmFadeTime)
+                            effect.set_enabled(False)
+
+            if not self.enabled:
+                self.set_fade_time(parmFadeTime)
             self.set_enabled(True)
 
     def _handle_shutdown(self):
