@@ -246,25 +246,26 @@ class ledFrameHandler:
             return None, None
 
     def cmd_STOP_LED_EFFECTS(self, gcmd):
-        led_param = gcmd.get('LEDS', "")
-        disable = (led_param == "")
+        ledParam = gcmd.get('LEDS', "")
+        stopAll = (ledParam == "")
 
         for effect in self.effects:
-            if not disable:
+            stopEffect = stopAll
+            if not stopAll:
                 try:
-                    chainName, ledIndices = self.parse_chain(led_param)
+                    chainName, ledIndices = self.parse_chain(ledParam)
                     chain = self.printer.lookup_object(chainName)
                 except Exception as e:
-                    raise gcmd.error("Unknown LED '%s'" % (led_param,))
+                    raise gcmd.error("Unknown LED '%s'" % (ledParam,))
 
                 if ledIndices == [] and chain in effect.ledChains: 
-                    disable = True
+                    stopEffect = True
                 else:
                     for index in ledIndices:
                         if (chain,index) in effect.leds: 
-                            disable=True
+                            stopEffect=True
 
-            if disable == True:
+            if stopEffect:
                 if effect.enabled:
                     effect.set_fade_time(gcmd.get_float('FADETIME', 0.0))
                 effect.set_enabled(False)
