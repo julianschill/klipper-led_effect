@@ -85,7 +85,7 @@ restart_klipper()
 restart_moonraker()
 {
     echo "Restarting Moonraker..."
-    sudo systemctl restart Moonraker
+    sudo systemctl restart moonraker
     echo "done"
 }
 
