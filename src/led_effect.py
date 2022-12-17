@@ -797,7 +797,7 @@ class ledEffect:
             else:
                 for _ in range(len(self.paletteColors) * (self.ledCount-1)):
                     for _ in range(int(self.effectRate/self.frameRate)):
-                        self.thisFrame.append(frame.copy()[:COLORS*self.ledCount])
+                        self.thisFrame.append(colorArray(COLORS, frame)[:COLORS*self.ledCount])
                     frame.shift(int(self.effectCutoff))
                 
             self.frameCount = len(self.thisFrame)
