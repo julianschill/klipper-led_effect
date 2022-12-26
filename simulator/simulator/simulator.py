@@ -249,6 +249,13 @@ class Simulator( simgui.SimFrame ):
     def OnAnalogSlider(self, event):
         self.printer.set_analog(self.m_slAnalog.GetValue())
 
+    def OnBtnEndstopClick(self, event):
+        if "x" in self.printer.led_effect.handler.homing_end_flag: 
+            self.printer.led_effect.handler.homing_end_flag["x"] += 1
+        else:
+            self.printer.led_effect.handler.homing_end_flag["x"]  = 0
+        
+
     def OnExit(self, event):
         self.Close(True)
 
