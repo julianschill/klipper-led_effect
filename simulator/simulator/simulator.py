@@ -294,7 +294,7 @@ class Simulator( simgui.SimFrame ):
             for l in range(lines):
                 for i in range(leds_per_line):
                     x = int(size + i*(distance) - (0.5 * leds_per_line * distance) )
-                    y = l*distance - (0.5 * lines * distance)
+                    y = int(l*distance - (0.5 * lines * distance))
                     self.led_coordinates += [(x,y,size)]
 
         elif self.m_cbLayout.GetValue()=="Circle":
@@ -358,13 +358,13 @@ class Simulator( simgui.SimFrame ):
     def OnLedPanelPaint(self, event):
         dc = wx.AutoBufferedPaintDC(self.m_ledpanel)
         dc.Clear()
-        offset_x= self.m_ledpanel.GetClientSize()[0]/2 
-        offset_y= self.m_ledpanel.GetClientSize()[1]/2 
+        offset_x= self.m_ledpanel.GetClientSize()[0]//2 
+        offset_y= self.m_ledpanel.GetClientSize()[1]//2 
 
         for i, led in enumerate(self.leds):
             dc.SetPen(wx.Pen(led, 1, wx.PENSTYLE_SOLID))
             dc.SetBrush(wx.Brush(led))
             if self.m_cbShape.GetValue() == "Circle":
-                dc.DrawCircle(self.led_coordinates[i][0] + offset_x, self.led_coordinates[i][1] + offset_y, self.led_coordinates[i][2]/2 )
+                dc.DrawCircle(self.led_coordinates[i][0] + offset_x, self.led_coordinates[i][1] + offset_y, self.led_coordinates[i][2]//2 )
             elif self.m_cbShape.GetValue() == "Square":
                 dc.DrawRectangle(self.led_coordinates[i][0] + offset_x, self.led_coordinates[i][1] + offset_y, self.led_coordinates[i][2], self.led_coordinates[i][2])
