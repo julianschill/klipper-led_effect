@@ -159,6 +159,11 @@ stepper:
 Specifies the stepper motor to use for the stepper effect. Possible values are:
 `x`, `y` and `z`. Example: `stepper: x`
 
+endstops:
+Specifies the endstops the homing effect triggers on. Multiple endstops can be
+specified as a comma seprated list. Possible values are: `x`, `y` and `z`. 
+Example: `endstops: x, y`
+
 ## Defining LEDs
 
 The `leds:` section is a list of Neopixel or Dotstar strips that will
@@ -406,6 +411,15 @@ palette, that is calculated as a gradient over the specified color values.
     Palette:          Color values to blend
 Exact same configuration as Stepper but instead of reporting stepper position, this
 layer reports print progress.
+
+#### Homing
+    Effect Rate:  1   Determines decay rate. A higher number yields slower decay
+    Cutoff:       0   Not used, but must be provided
+    Palette:          Colors are cycled in order
+
+LEDs turn on during homing when the endstop is triggered and fade out again. The 
+effect rate determines the time for the fade out. If a palette of multiple colors 
+is provided, it will cycle through those colors in order.
 
 ## Effect Layer Blending
 If you have ever used image editing software you may be familiar with
