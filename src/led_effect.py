@@ -1194,12 +1194,15 @@ class ledEffect:
             gradient = colorArray(COLORS, self._gradient(self.paletteColors, 
                                                 gradientLength))
 
-            self.thisFrame.append(gradient[0:self.ledCount])
+            for c in range(0, len(self.paletteColors)):
+                color = self.paletteColors[c]
+                self.thisFrame.append(colorArray(COLORS,color*self.ledCount))
 
             self.decayTable = self._decayTable(factor=self.effectRate)
             self.decayTable.append(0.0)
             self.decayLen = len(self.decayTable)
-            self.counter=0
+            self.counter=self.decayLen-1
+            self.coloridx=-1
             self.my_flag={}
             for endstop in self.handler.endstops:
                 logging.info(endstop)
@@ -1211,9 +1214,10 @@ class ledEffect:
 
                 if self.my_flag[endstop] != self.frameHandler.homing_end_flag[endstop]:
                     self.counter = 0
+                    self.coloridx = (self.coloridx + 1) % len(self.paletteColors)
                     self.my_flag[endstop] = self.frameHandler.homing_end_flag[endstop]
 
-            frame = [self.decayTable[self.counter] * i for i in self.thisFrame[0]]
+            frame = [self.decayTable[self.counter] * i for i in self.thisFrame[self.coloridx ]]
             if self.counter < self.decayLen-1:
                 self.counter += 1 
             
