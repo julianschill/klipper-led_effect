@@ -26,13 +26,13 @@ link_extension()
 echo -e "Adding update manager to moonraker.conf"
 
 update_section=$(grep -c '\[update_manager led_effect\]' \
-${HOME}/klipper_config/moonraker.conf || true)
+${HOME}/printer_data/config/moonraker.conf || true)
 if [ "${update_section}" -eq 0 ]; then
-  echo -e "\n" >> ${HOME}/klipper_config/moonraker.conf
+  echo -e "\n" >> ${HOME}/printer_data/config/moonraker.conf
   while read -r line; do
-    echo -e "${line}" >> ${HOME}/klipper_config/moonraker.conf
+    echo -e "${line}" >> ${HOME}/printer_data/config/moonraker.conf
   done < "$PWD/file_templates/moonraker_update.txt"
-  echo -e "\n" >> ${HOME}/klipper_config/moonraker.conf
+  echo -e "\n" >> ${HOME}/printer_data/config/moonraker.conf
 else
   echo -e "[update_manager led_effect] already exist in moonraker.conf [SKIPPED]"
 fi
