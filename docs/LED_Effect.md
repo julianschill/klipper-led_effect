@@ -156,12 +156,12 @@ analog_pin:
 Specifies the pin to use for effects using an analog signal.
 
 stepper:
-Specifies the stepper motor to use for the stepper effect. Possible values are:
+Specifies the axis to use for the stepper effect. Possible values are:
 `x`, `y` and `z`. Example: `stepper: x`
 
 endstops:
 Specifies the endstops the homing effect triggers on. Multiple endstops can be
-specified as a comma seprated list. Possible values are: `x`, `y` and `z`. 
+specified as a comma seprated list. Possible values are: `x`, `y`, `z` and `probe`. 
 Example: `endstops: x, y`
 
 ## Defining LEDs
