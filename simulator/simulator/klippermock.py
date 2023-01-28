@@ -86,6 +86,7 @@ class mockConfig:
             "stepper" : "x",
             "layers"  : """gradient       1 1 top  (1, 0.0, 0.0),(0, 1, 0.0),(0.0, 0.0, 1)""",
             "leds" : "leds:leds",
+            "endstops" : "x"
        }
     def set_printer(self, printer):
         self.printer=printer

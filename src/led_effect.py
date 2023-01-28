@@ -8,6 +8,7 @@
 
 from math import cos, exp, pi
 from random import randint
+import logging
 
 ANALOG_SAMPLE_TIME  = 0.001
 ANALOG_SAMPLE_COUNT = 5
@@ -73,7 +74,14 @@ class ledFrameHandler:
         self.heaterTarget    = {}
         self.heaterLast      = {}
         self.heaterTimer     = None
+        self.homing          = {}
+        self.homing_start_flag = {}
+        self.homing_end_flag = {}
         self.printer.register_event_handler('klippy:ready', self._handle_ready)
+        self.printer.register_event_handler("homing:homing_move_begin",
+                                            self._handle_homing_move_begin)
+        self.printer.register_event_handler("homing:homing_move_end",
+                                            self._handle_homing_move_end)
         self.ledChains=[]
         self.gcode.register_command('STOP_LED_EFFECTS',
                                     self.cmd_STOP_LED_EFFECTS,
@@ -103,6 +111,28 @@ class ledFrameHandler:
                     chain.led_helper.update_func(chain.led_helper.led_state, None)
 
         pass
+    
+    def _handle_homing_move_begin(self, hmove):
+        endstops_being_homed = [name for es,name in hmove.endstops]
+        logging.info(endstops_being_homed)
+
+        for endstop in endstops_being_homed:
+            if endstop in self.homing_start_flag: 
+                self.homing_start_flag[endstop] += 1
+            else:
+                self.homing_start_flag[endstop] = 0
+                
+            self.homing[endstop]=True
+        
+    def _handle_homing_move_end(self, hmove):
+        endstops_being_homed = [name for es,name in hmove.endstops]
+
+        for endstop in endstops_being_homed:
+            if endstop in self.homing_end_flag: 
+                self.homing_end_flag[endstop] += 1
+            else:
+                self.homing_end_flag[endstop] = 0
+            self.homing[endstop]=False
 
     def addEffect(self, effect):
 
@@ -317,6 +347,7 @@ class ledEffect:
         self.heater       = config.get('heater', None)
         self.analogPin    = config.get('analog_pin', None)
         self.stepper      = config.get('stepper', None)
+        self.endstops     = [x.strip() for x in config.get('endstops','').split(',')]
         self.configLayers = config.get('layers')
         self.configLeds   = config.get('leds')
 
@@ -1152,6 +1183,46 @@ class ledEffect:
         def nextFrame(self, eventtime):
             p = self.frameHandler.printProgress
             return self.thisFrame[p] #(p - 1) * (p > 0)]
+
+    class layerHoming(_layerBase):
+        def __init__(self,  **kwargs):
+            super(ledEffect.layerHoming, self).__init__(**kwargs)
+
+            self.paletteColors = colorArray(COLORS, self.paletteColors)
+
+            gradientLength = int(self.ledCount)
+            gradient = colorArray(COLORS, self._gradient(self.paletteColors, 
+                                                gradientLength))
+
+            for c in range(0, len(self.paletteColors)):
+                color = self.paletteColors[c]
+                self.thisFrame.append(colorArray(COLORS,color*self.ledCount))
+
+            self.decayTable = self._decayTable(factor=self.effectRate)
+            self.decayTable.append(0.0)
+            self.decayLen = len(self.decayTable)
+            self.counter=self.decayLen-1
+            self.coloridx=-1
+            self.my_flag={}
+            for endstop in self.handler.endstops:
+                logging.info(endstop)
+                self.frameHandler.homing_end_flag[endstop] = 0
+                self.my_flag[endstop] = self.frameHandler.homing_end_flag[endstop]
+
+        def nextFrame(self, eventtime):
+            for endstop in self.handler.endstops:
+
+                if self.my_flag[endstop] != self.frameHandler.homing_end_flag[endstop]:
+                    self.counter = 0
+                    self.coloridx = (self.coloridx + 1) % len(self.paletteColors)
+                    self.my_flag[endstop] = self.frameHandler.homing_end_flag[endstop]
+
+            frame = [self.decayTable[self.counter] * i for i in self.thisFrame[self.coloridx ]]
+            if self.counter < self.decayLen-1:
+                self.counter += 1 
+            
+            return frame
+
 
 def load_config_prefix(config):
     return ledEffect(config)
