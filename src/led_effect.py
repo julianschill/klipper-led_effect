@@ -8,6 +8,7 @@
 
 from math import cos, exp, pi
 from random import randint
+import logging
 
 ANALOG_SAMPLE_TIME  = 0.001
 ANALOG_SAMPLE_COUNT = 5
@@ -73,7 +74,14 @@ class ledFrameHandler:
         self.heaterTarget    = {}
         self.heaterLast      = {}
         self.heaterTimer     = None
+        self.homing          = {}
+        self.homing_start_flag = {}
+        self.homing_end_flag = {}
         self.printer.register_event_handler('klippy:ready', self._handle_ready)
+        self.printer.register_event_handler("homing:homing_move_begin",
+                                            self._handle_homing_move_begin)
+        self.printer.register_event_handler("homing:homing_move_end",
+                                            self._handle_homing_move_end)
         self.ledChains=[]
         self.gcode.register_command('STOP_LED_EFFECTS',
                                     self.cmd_STOP_LED_EFFECTS,
@@ -103,6 +111,28 @@ class ledFrameHandler:
                     chain.led_helper.update_func(chain.led_helper.led_state, None)
 
         pass
+    
+    def _handle_homing_move_begin(self, hmove):
+        endstops_being_homed = [name for es,name in hmove.endstops]
+        logging.info(endstops_being_homed)
+
+        for endstop in endstops_being_homed:
+            if endstop in self.homing_start_flag: 
+                self.homing_start_flag[endstop] += 1
+            else:
+                self.homing_start_flag[endstop] = 0
+                
+            self.homing[endstop]=True
+        
+    def _handle_homing_move_end(self, hmove):
+        endstops_being_homed = [name for es,name in hmove.endstops]
+
+        for endstop in endstops_being_homed:
+            if endstop in self.homing_end_flag: 
+                self.homing_end_flag[endstop] += 1
+            else:
+                self.homing_end_flag[endstop] = 0
+            self.homing[endstop]=False
 
     def addEffect(self, effect):
 
@@ -213,12 +243,56 @@ class ledFrameHandler:
         # run at least with 10Hz
         next_eventtime=min(next_eventtime, eventtime + 0.1) 
         return next_eventtime
+    
+    def parse_chain(self, chain):
+        chain = chain.strip()
+        leds=[]
+        parms = [parameter.strip() for parameter in chain.split()
+                    if parameter.strip()]
+        if parms:
+            chainName=parms[0].replace(':',' ')
+            ledIndices   = ''.join(parms[1:]).strip('()').split(',')
+            for led in ledIndices:
+                if led:
+                    if '-' in led:
+                        start, stop = map(int,led.split('-'))
+                        if stop == start:
+                            ledList = [start-1]
+                        elif stop > start:
+                            ledList = list(range(start-1, stop))
+                        else:
+                            ledList = list(reversed(range(stop-1, start)))
+                        for i in ledList:
+                            leds.append(int(i))
+                    else:
+                        for i in led.split(','):
+                            leds.append(int(i)-1)
+
+            return chainName, leds
+        else:
+            return None, None
 
     def cmd_STOP_LED_EFFECTS(self, gcmd):
-        led_param = gcmd.get('LEDS', "")
+        ledParam = gcmd.get('LEDS', "")
+        stopAll = (ledParam == "")
 
         for effect in self.effects:
-            if led_param in effect.configChains or led_param == "":
+            stopEffect = stopAll
+            if not stopAll:
+                try:
+                    chainName, ledIndices = self.parse_chain(ledParam)
+                    chain = self.printer.lookup_object(chainName)
+                except Exception as e:
+                    raise gcmd.error("Unknown LED '%s'" % (ledParam,))
+
+                if ledIndices == [] and chain in effect.ledChains: 
+                    stopEffect = True
+                else:
+                    for index in ledIndices:
+                        if (chain,index) in effect.leds: 
+                            stopEffect=True
+
+            if stopEffect:
                 if effect.enabled:
                     effect.set_fade_time(gcmd.get_float('FADETIME', 0.0))
                 effect.set_enabled(False)
@@ -273,6 +347,7 @@ class ledEffect:
         self.heater       = config.get('heater', None)
         self.analogPin    = config.get('analog_pin', None)
         self.stepper      = config.get('stepper', None)
+        self.endstops     = [x.strip() for x in config.get('endstops','').split(',')]
         self.configLayers = config.get('layers')
         self.configLeds   = config.get('leds')
 
@@ -301,39 +376,20 @@ class ledEffect:
                                     self._handle_shutdown)
         #map each LED from the chains to the "pixels" in the effect frame
         for chain in self.configChains:
-            chain = chain.strip()
-            parms = [parameter.strip() for parameter in chain.split()
-                        if parameter.strip()]
-
-            if parms:
-                ledChain     = self.printer.lookup_object(parms[0]\
-                                                .replace(':',' '))
-                ledIndices   = ''.join(parms[1:]).strip('()').split(',')
+            chainName, ledIndices = self.handler.parse_chain(chain)
+            if chainName is not None:
+                ledChain = self.printer.lookup_object(chainName)
 
                 #Add each discrete chain to the collection
                 if ledChain not in self.ledChains:
                     self.ledChains.append(ledChain)
 
-
-                for led in ledIndices:
-                    if led:
-                        if '-' in led:
-                            start, stop = map(int,led.split('-'))
-                            if stop == start:
-                                ledList = [start-1]
-                            elif stop > start:
-                                ledList = list(range(start-1, stop))
-                            else:
-                                ledList = list(reversed(range(stop-1, start)))
-                            for i in ledList:
-                                self.leds.append((ledChain, int(i)))
-                        else:
-                            for i in led.split(','):
-                                self.leds.append((ledChain, \
-                                                (int(i)-1)))
-                    else:
-                        for i in range(ledChain.led_helper.get_led_count()):
-                            self.leds.append((ledChain, int(i)))
+                if ledIndices == [] :
+                    for i in range(ledChain.led_helper.get_led_count()):
+                        self.leds.append((ledChain, int(i)))
+                else:
+                    for led in ledIndices:
+                        self.leds.append((ledChain, led))
 
         self.ledCount = len(self.leds)
         self.frame = [0.0] * COLORS * self.ledCount
@@ -438,14 +494,23 @@ class ledEffect:
             self.fadeValue = 0.0
 
     def cmd_SET_LED_EFFECT(self, gcmd):
-        parm_fade_time = gcmd.get_float('FADETIME', 0.0)
-        self.set_fade_time(parm_fade_time)
-        if gcmd.get_int('STOP', 0) == 1:
+        parmFadeTime = gcmd.get_float('FADETIME', 0.0)
+
+        if gcmd.get_int('STOP', 0) >= 1:
             if self.enabled:
-                self.set_fade_time(parm_fade_time)
+                self.set_fade_time(parmFadeTime)
             self.set_enabled(False)
         else:
-            self.set_fade_time(parm_fade_time)
+            if gcmd.get_int('REPLACE',0) >= 1:
+                for led in self.leds:
+                    for effect in self.handler.effects:
+                        if effect is not self and led in effect.leds:
+                            if effect.enabled:
+                                effect.set_fade_time(parmFadeTime)
+                            effect.set_enabled(False)
+
+            if not self.enabled:
+                self.set_fade_time(parmFadeTime)
             self.set_enabled(True)
 
     def _handle_shutdown(self):
@@ -657,7 +722,7 @@ class ledEffect:
             if self.effectRate==0: 
                 frameCount = 1
             else:
-                frameCount = int(frameRate / self.effectRate)
+                frameCount = max(1,int(frameRate / self.effectRate))
             if self.effectCutoff==0: self.effectCutoff=0.001
             decayTable = self._decayTable(factor=1 / self.effectCutoff,
                                           rate=1)
@@ -797,7 +862,7 @@ class ledEffect:
             else:
                 for _ in range(len(self.paletteColors) * (self.ledCount-1)):
                     for _ in range(int(self.effectRate/self.frameRate)):
-                        self.thisFrame.append(frame.copy()[:COLORS*self.ledCount])
+                        self.thisFrame.append(colorArray(COLORS, frame)[:COLORS*self.ledCount])
                     frame.shift(int(self.effectCutoff))
                 
             self.frameCount = len(self.thisFrame)
@@ -1118,6 +1183,46 @@ class ledEffect:
         def nextFrame(self, eventtime):
             p = self.frameHandler.printProgress
             return self.thisFrame[p] #(p - 1) * (p > 0)]
+
+    class layerHoming(_layerBase):
+        def __init__(self,  **kwargs):
+            super(ledEffect.layerHoming, self).__init__(**kwargs)
+
+            self.paletteColors = colorArray(COLORS, self.paletteColors)
+
+            gradientLength = int(self.ledCount)
+            gradient = colorArray(COLORS, self._gradient(self.paletteColors, 
+                                                gradientLength))
+
+            for c in range(0, len(self.paletteColors)):
+                color = self.paletteColors[c]
+                self.thisFrame.append(colorArray(COLORS,color*self.ledCount))
+
+            self.decayTable = self._decayTable(factor=self.effectRate)
+            self.decayTable.append(0.0)
+            self.decayLen = len(self.decayTable)
+            self.counter=self.decayLen-1
+            self.coloridx=-1
+            self.my_flag={}
+            for endstop in self.handler.endstops:
+                logging.info(endstop)
+                self.frameHandler.homing_end_flag[endstop] = 0
+                self.my_flag[endstop] = self.frameHandler.homing_end_flag[endstop]
+
+        def nextFrame(self, eventtime):
+            for endstop in self.handler.endstops:
+
+                if self.my_flag[endstop] != self.frameHandler.homing_end_flag[endstop]:
+                    self.counter = 0
+                    self.coloridx = (self.coloridx + 1) % len(self.paletteColors)
+                    self.my_flag[endstop] = self.frameHandler.homing_end_flag[endstop]
+
+            frame = [self.decayTable[self.counter] * i for i in self.thisFrame[self.coloridx ]]
+            if self.counter < self.decayLen-1:
+                self.counter += 1 
+            
+            return frame
+
 
 def load_config_prefix(config):
     return ledEffect(config)

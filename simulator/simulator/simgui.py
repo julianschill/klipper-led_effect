@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version 3.10.1-e2e4764)
+## Python code generated with wxFormBuilder (version 3.10.1-0-g8feb16b3)
 ## http://www.wxformbuilder.org/
 ##
 ## PLEASE DO *NOT* EDIT THIS FILE!
@@ -112,7 +112,7 @@ class SimFrame ( wx.Frame ):
 		bHeaterStepperSizer.Add( bStepperSizer, 1, wx.EXPAND, 5 )
 
 
-		bHeaterStepperSizer.Add( ( 50, 0), 0, wx.EXPAND, 5 )
+		bHeaterStepperSizer.Add( ( 20, 0), 0, wx.EXPAND, 5 )
 
 		bHeaterSizer = wx.BoxSizer( wx.VERTICAL )
 
@@ -130,7 +130,7 @@ class SimFrame ( wx.Frame ):
 		bHeaterStepperSizer.Add( bHeaterSizer, 1, wx.EXPAND, 5 )
 
 
-		bHeaterStepperSizer.Add( ( 50, 0), 0, wx.EXPAND, 5 )
+		bHeaterStepperSizer.Add( ( 20, 0), 0, wx.EXPAND, 5 )
 
 		bProgressSizer = wx.BoxSizer( wx.VERTICAL )
 
@@ -148,7 +148,7 @@ class SimFrame ( wx.Frame ):
 		bHeaterStepperSizer.Add( bProgressSizer, 1, wx.EXPAND, 5 )
 
 
-		bHeaterStepperSizer.Add( ( 50, 0), 0, wx.EXPAND, 5 )
+		bHeaterStepperSizer.Add( ( 20, 0), 0, wx.EXPAND, 5 )
 
 		bAnalogSizer = wx.BoxSizer( wx.VERTICAL )
 
@@ -164,6 +164,19 @@ class SimFrame ( wx.Frame ):
 
 
 		bHeaterStepperSizer.Add( bAnalogSizer, 1, wx.EXPAND, 5 )
+
+
+		bHeaterStepperSizer.Add( ( 20, 0), 1, wx.EXPAND, 5 )
+
+		bEndstopSizer = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_btnEndstop = wx.Button( self.m_panel41, wx.ID_ANY, u"Endstop", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_btnEndstop.SetMinSize( wx.Size( 60,-1 ) )
+
+		bEndstopSizer.Add( self.m_btnEndstop, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+
+		bHeaterStepperSizer.Add( bEndstopSizer, 1, wx.EXPAND, 5 )
 
 
 		self.m_panel41.SetSizer( bHeaterStepperSizer )
@@ -376,6 +389,7 @@ class SimFrame ( wx.Frame ):
 		self.m_slHeater.Bind( wx.EVT_SLIDER, self.OnHeaterSlider )
 		self.m_slProgress.Bind( wx.EVT_SLIDER, self.OnProgressSlider )
 		self.m_slAnalog.Bind( wx.EVT_SLIDER, self.OnAnalogSlider )
+		self.m_btnEndstop.Bind( wx.EVT_BUTTON, self.OnBtnEndstopClick )
 		self.m_cbActive.Bind( wx.EVT_CHECKBOX, self.OnEffectSettingChanged )
 		self.m_cbEffect.Bind( wx.EVT_COMBOBOX, self.OnEffectSettingChanged )
 		self.m_spinEffectRate.Bind( wx.EVT_SPINCTRLDOUBLE, self.OnEffectSettingChanged )
@@ -437,6 +451,9 @@ class SimFrame ( wx.Frame ):
 		event.Skip()
 
 	def OnAnalogSlider( self, event ):
+		event.Skip()
+
+	def OnBtnEndstopClick( self, event ):
 		event.Skip()
 
 	def OnEffectSettingChanged( self, event ):
