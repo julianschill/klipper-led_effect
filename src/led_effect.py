@@ -487,6 +487,10 @@ class ledEffect:
             self.nextEventTime = self.handler.reactor.NOW
             self.handler._getFrames(self.handler.reactor.NOW)
     
+    def reset_frame(self):
+        for layer in self.layers:
+            layer.frameNumber = 0
+
     def set_fade_time(self, fadetime):
         self.fadeTime = fadetime
         self.fadeEndTime = self.handler.reactor.monotonic() + fadetime
@@ -511,6 +515,8 @@ class ledEffect:
 
             if not self.enabled:
                 self.set_fade_time(parmFadeTime)
+            if gcmd.get_int('RESTART', 0) >= 1:
+                self.reset_frame()
             self.set_enabled(True)
 
     def _handle_shutdown(self):

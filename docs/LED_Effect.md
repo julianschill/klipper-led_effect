@@ -135,6 +135,11 @@ out in one second. We can also fade out all effects by running
 using the `REPLACE` parameter with `SET_LED_EFFECT` (see above): 
 `SET_LED_EFFECT EFFECT=panel_idle REPLACE=1 FADETIME=1.0`
 
+#### Restarting Effects
+When an effect is stopped and then started again, it resumes from the frame where 
+it last left off.  To restart the effect from the beginning, specify the `RESTART` 
+parameter: `SET_LED_EFFECT EFFECT=panel_idle RESTART=1`.
+
 ### Additional effect level parameters
 
 autostart: true
