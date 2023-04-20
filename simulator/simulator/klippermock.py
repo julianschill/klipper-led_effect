@@ -74,6 +74,11 @@ class mockPrinter:
         self.led_effect.handler.printProgress=progress
     def set_analog(self, value):
         self.led_effect.analogValue=value
+    def load_template(self, config, name):
+        self.template = config.get(name)
+        return self
+    def render(self):
+        return self.template
 
 class mockConfig:
     def __init__(self):
@@ -81,6 +86,7 @@ class mockConfig:
             "frame_rate" : "24.0",
             "autostart" : "False",
             "run_on_error" : "False",
+            "dynamic": "False",
             "heater" : "bed",
             "analog_pin" : "PA0",
             "stepper" : "x",
