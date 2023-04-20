@@ -309,6 +309,7 @@ class ledEffect:
         self.config       = config
         self.printer      = config.get_printer()
         self.gcode        = self.printer.lookup_object('gcode')
+        self.gcode_macro  = self.printer.lookup_object('gcode_macro')
         self.handler      = self.printer.load_object(config, 'led_effect')
         self.frameRate    = 1.0 / config.getfloat('frame_rate', 
                                         default=24, minval=1, maxval=60)
@@ -347,8 +348,10 @@ class ledEffect:
         self.heater       = config.get('heater', None)
         self.analogPin    = config.get('analog_pin', None)
         self.stepper      = config.get('stepper', None)
+        self.recalculate  = config.get('recalculate', False)
         self.endstops     = [x.strip() for x in config.get('endstops','').split(',')]
-        self.configLayers = config.get('layers')
+        self.layerTempl   = self.gcode_macro.load_template(config, 'layers')
+        self.configLayers = []
         self.configLeds   = config.get('leds')
 
         self.nextEventTime = 0
@@ -400,7 +403,11 @@ class ledEffect:
                                  .lower() : c
                                    for c in self._layerBase.__subclasses__()
                                    if str(c).startswith("<class")}
+        self._generateLayers()
 
+    def _generateLayers(self):
+        self.layers = []
+        self.configLayers = self.layerTempl.render()
         for layer in [line for line \
             in self.configLayers.split('\n') if line.strip()]:
 
@@ -505,6 +512,8 @@ class ledEffect:
                 self.set_fade_time(parmFadeTime)
             self.set_enabled(False)
         else:
+            if self.recalculate:
+                self._generateLayers()
             if gcmd.get_int('REPLACE',0) >= 1:
                 for led in self.leds:
                     for effect in self.handler.effects:
