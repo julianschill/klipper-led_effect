@@ -7,15 +7,15 @@ It allows Klipper to run effects and animations on addressable LEDs, such as Neo
 
 Check out Paul's printer:
 
-[![Hello Friend. -International Edition-](https://yt-embed.live/embed?v=-VpZTDSu1-8&img=0)](https://www.youtube.com/watch?v=-VpZTDSu1-8)
+[![Hello Friend. -International Edition-](https://i3.ytimg.com/vi/-VpZTDSu1-8/hqdefault.jpg)](https://www.youtube.com/watch?v=-VpZTDSu1-8)
 
 See the chapter in this video from Vector3D what it can do and how to set it up (start from the beginning to learn how to connect the LEDs):
 
-[![The 3D Printer Upgrade You didn’t know you needed](https://yt-embed.live/embed?v=14LC8Tcd_JQ)](https://youtu.be/14LC8Tcd_JQ?t=779)
+[![The 3D Printer Upgrade You didn’t know you needed](https://i3.ytimg.com/vi/14LC8Tcd_JQ/hqdefault.jpg)](https://youtu.be/14LC8Tcd_JQ?t=779)
 
 And this one (in french) from Tom's Basement:
 
-[![Klipper LED EFFECTS : C'est Noël avant l'heure dans votre imprimante 3D ! (Tuto Leds)](https://yt-embed.live/embed?v=6rGjlBjFhss)](https://www.youtube.com/watch?v=6rGjlBjFhss)
+[![Klipper LED EFFECTS : C'est Noël avant l'heure dans votre imprimante 3D ! (Tuto Leds)](http://i3.ytimg.com/vi/6rGjlBjFhss/hqdefault.jpg)](https://www.youtube.com/watch?v=6rGjlBjFhss)
 
 ## Disclaimer
 **This is work in progress and currently in "alpha" state.**
