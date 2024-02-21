@@ -104,7 +104,7 @@ start_klipper()
 stop_klipper()
 {
     echo -n "Stopping Klipper... "
-    sudo systemctl start klipper
+    sudo systemctl stop klipper
     echo "[OK]"
 }
 
