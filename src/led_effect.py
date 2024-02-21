@@ -405,9 +405,12 @@ class ledEffect:
                                    if str(c).startswith("<class")}
         self._generateLayers()
 
-    def _generateLayers(self):
+    def _generateLayers(self, context=None):
         self.layers = []
-        self.configLayers = self.layerTempl.render()
+        if context is None:
+            context = self.gcode_macro.create_template_context()
+            context.update({'params': {}, 'rawparams': ''})
+        self.configLayers = self.layerTempl.render(context)
         for layer in [line for line \
             in self.configLayers.split('\n') if line.strip()]:
 
@@ -513,7 +516,10 @@ class ledEffect:
             self.set_enabled(False)
         else:
             if self.recalculate:
-                self._generateLayers()
+                kwargs = self.layerTempl.create_template_context()
+                kwargs['params'] = gcmd.get_command_parameters()
+                kwargs['rawparams'] = gcmd.get_raw_command_parameters()
+                self._generateLayers(kwargs)
             if gcmd.get_int('REPLACE',0) >= 1:
                 for led in self.leds:
                     for effect in self.handler.effects:

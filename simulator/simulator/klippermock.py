@@ -77,8 +77,11 @@ class mockPrinter:
     def load_template(self, config, name):
         self.template = config.get(name)
         return self
-    def render(self):
+    def render(self, context=None):
         return self.template
+    def create_template_context(self):
+        return {'printer': self}
+
 
 class mockConfig:
     def __init__(self):

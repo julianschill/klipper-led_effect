@@ -141,14 +141,41 @@ it last left off.  To restart the effect from the beginning, specify the `RESTAR
 parameter: `SET_LED_EFFECT EFFECT=panel_idle RESTART=1`.
 
 #### Template processing
-The effect layers are processed as templates. That means that they can contain
-the same control logic that Klipper macros do. However, processing layers can
-be computationally intensive, which may affect the performance of the Raspberry
-Pi host. Therefore, layers are only evaluated as templates on effect creation
-(when the config is read in).
+The effect layers are processed as (templates)[https://www.klipper3d.org/Command_Templates.html#template-expansion].
+That means that they can contain the same control logic that Klipper macros do.
+However, processing layers can be computationally intensive, which may affect the
+performance of the Raspberry Pi host. Therefore, layers are only evaluated as
+templates on effect creation (when the config is read in).
 
 If there is a need to evaluate the layers everytime the effect is activated,
 set the `recalculate` effect-level parameter to `true`.
+
+Setting the `recalculate` setting to `true` will also allow the effect to accept
+parameters just like `gcode_macro`. Parameters can be passed through the
+`SET_LED_EFFECT` command.
+
+The following is an example of a layer that accepts parameters:
+
+```
+[led_effect param_effect]
+autostart: false
+recalculate: true
+leds:
+    neopixel:leds
+layers:
+    blink {params.DURATION|default(1)|float} {params.CYCLE|default(0.5)|float} top (1.0, 0.0, 0.0)
+```
+
+To activate the effect with different values for both the effect rate and cutoff,
+use the following commend:
+
+`SET_LED_EFFECT EFFECT=param_effect DURATION=3 CYCLE=0.2`
+
+It is important to note that because effects are pre-evaluated when they are
+first processed, each parameter that is used in the `layers` should have a
+default value set. This is required because the initial evaluation of the effect
+is not done in the context of a GCode command and, therefore, there is no way
+to pass any parameters.
 
 ### Additional effect level parameters
 
