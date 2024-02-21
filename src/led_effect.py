@@ -548,6 +548,8 @@ class ledEffect:
             self.lastAnalog      = 0
 
         def nextFrame(self, eventtime):
+            if not self.frameCount:
+                return [0] * COLORS * self.ledCount
             self.frameNumber += 1
             self.frameNumber = self.frameNumber * \
                 ( self.frameNumber < self.frameCount )
