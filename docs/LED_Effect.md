@@ -30,9 +30,9 @@ the Neopixel chain back to the MCU board in addition to the GND to
 the power source. This will ensure the board can communicate with
 the strips.
 
-The number of discrete emitters per IO pin is limited. It is possible 
-to wire two strips to the same data pin and have them show the same colors. 
-It is also possible to specify multiple LED chains on different IO pins 
+The number of discrete emitters per IO pin is limited. It is possible
+to wire two strips to the same data pin and have them show the same colors.
+It is also possible to specify multiple LED chains on different IO pins
 in the LED Effects configuration settings.
 
 ## Wiring APA102 compatible (Dotstar) LEDs
@@ -46,10 +46,10 @@ data line.
 # Configuring the strips
 
 In your config file, each strip or chain connected to an IO pin must
-have a definition. Each strips data pin (and clock pin if applicable) 
-is defined along with the number of LEDs in the chain. The LED Effect 
-instances are capable of using multiple strips of different types and 
-color orders concurrently, but each strip must first be defined by its 
+have a definition. Each strips data pin (and clock pin if applicable)
+is defined along with the number of LEDs in the chain. The LED Effect
+instances are capable of using multiple strips of different types and
+color orders concurrently, but each strip must first be defined by its
 type.
 
 ```
@@ -108,37 +108,74 @@ layers:
 This has defined an effect called `panel_idle`.
 
 ### Controlling the effects
-Effects can be active or inactive. Inactive effects don't output any color 
-data, while active effects return color data, that is summed up for each LED 
+Effects can be active or inactive. Inactive effects don't output any color
+data, while active effects return color data, that is summed up for each LED
 they run on.
 
 #### Activating and deactivating effects
-Our example effect can be activated by running the GCode command 
-`SET_LED_EFFECT EFFECT=panel_idle`. To stop all effects which are currently 
-running on the LEDs the new effect is using, set the `REPLACE` parameter to 1: 
+Our example effect can be activated by running the GCode command
+`SET_LED_EFFECT EFFECT=panel_idle`. To stop all effects which are currently
+running on the LEDs the new effect is using, set the `REPLACE` parameter to 1:
 `SET_LED_EFFECT EFFECT=panel_idle REPLACE=1`
-Running the command `SET_LED_EFFECT EFFECT=panel_idle STOP=1` deactivates this 
-particular effect again. 
+Running the command `SET_LED_EFFECT EFFECT=panel_idle STOP=1` deactivates this
+particular effect again.
 To deactivate all effects we can use the GCode command `STOP_LED_EFFECTS`.
 To only deactivate effects for certain LEDs we can specify the LEDS parameter:
-`STOP_LED_EFFECTS LEDS="neopixel:panel_ring"` You can also specify indeces (see 
-below): `STOP_LED_EFFECTS LEDS="neopixel:panel_ring (1-7)"`. Only one 
-LED parameter can be specified at a time. To stop the effects for multiple LEDs 
+`STOP_LED_EFFECTS LEDS="neopixel:panel_ring"` You can also specify indeces (see
+below): `STOP_LED_EFFECTS LEDS="neopixel:panel_ring (1-7)"`. Only one
+LED parameter can be specified at a time. To stop the effects for multiple LEDs
 we have to run the command multiple times.
 
 #### Fading in and out
 Effects can be faded in and out by specifying the `FADETIME` parameter:
-`SET_LED_EFFECT EFFECT=panel_idle FADETIME=1.0` fades the effect in during one 
-second. Running `SET_LED_EFFECT EFFECT=panel_idle STOP=1 FADETIME=1.0` fades it 
-out in one second. We can also fade out all effects by running 
-`STOP_LED_EFFECTS FADETIME=1.0`. It is also possible to crossfade effects by 
-using the `REPLACE` parameter with `SET_LED_EFFECT` (see above): 
+`SET_LED_EFFECT EFFECT=panel_idle FADETIME=1.0` fades the effect in during one
+second. Running `SET_LED_EFFECT EFFECT=panel_idle STOP=1 FADETIME=1.0` fades it
+out in one second. We can also fade out all effects by running
+`STOP_LED_EFFECTS FADETIME=1.0`. It is also possible to crossfade effects by
+using the `REPLACE` parameter with `SET_LED_EFFECT` (see above):
 `SET_LED_EFFECT EFFECT=panel_idle REPLACE=1 FADETIME=1.0`
 
 #### Restarting Effects
-When an effect is stopped and then started again, it resumes from the frame where 
-it last left off.  To restart the effect from the beginning, specify the `RESTART` 
+When an effect is stopped and then started again, it resumes from the frame where
+it last left off.  To restart the effect from the beginning, specify the `RESTART`
 parameter: `SET_LED_EFFECT EFFECT=panel_idle RESTART=1`.
+
+#### Template processing
+The effect layers are processed as (templates)[https://www.klipper3d.org/Command_Templates.html#template-expansion].
+That means that they can contain the same control logic that Klipper macros do.
+However, processing layers can be computationally intensive, which may affect the
+performance of the Raspberry Pi host. Therefore, layers are only evaluated as
+templates on effect creation (when the config is read in).
+
+If there is a need to evaluate the layers everytime the effect is activated,
+set the `recalculate` effect-level parameter to `true`.
+
+Setting the `recalculate` setting to `true` will also allow the effect to accept
+parameters just like `gcode_macro`. Parameters can be passed through the
+`SET_LED_EFFECT` command.
+
+The following is an example of a layer that accepts parameters:
+
+```
+[led_effect param_effect]
+autostart: false
+recalculate: true
+leds:
+    neopixel:leds
+layers:
+    blink {params.DURATION|default(1)|float} {params.CYCLE|default(0.5)|float} top (1.0, 0.0, 0.0)
+```
+
+To activate the effect with different values for both the effect rate and cutoff,
+use the following commend:
+
+`SET_LED_EFFECT EFFECT=param_effect DURATION=3 CYCLE=0.2`
+
+It is important to note that because effects are pre-evaluated when they are
+first processed, each parameter that is used in the `layers` should have a
+default value set. This is required because the initial evaluation of the effect
+is not done in the context of a GCode command and, therefore, there is no way
+to pass any parameters.
 
 ### Additional effect level parameters
 
@@ -151,10 +188,13 @@ Sets the frame rate in frames per second for the effect
 run_on_error:
 (Needs patched MCU firmware. Currently not supported.)
 
+recalculate:
+Enable layer template recalculation on effect activation.
+
 heater:
 Specifies the heater to use for a heater effect. Use `extruder` for the
 extruder and `heater_bed` for the bed. For temperature fans or  sensors add the
-type and use quotes. 
+type and use quotes.
 Example: `heater: "temperature_fan myfan"`
 
 analog_pin:
@@ -166,7 +206,7 @@ Specifies the axis to use for the stepper effect. Possible values are:
 
 endstops:
 Specifies the endstops the homing effect triggers on. Multiple endstops can be
-specified as a comma seprated list. Possible values are: `x`, `y`, `z` and `probe`. 
+specified as a comma seprated list. Possible values are: `x`, `y`, `z` and `probe`.
 Example: `endstops: x, y`
 
 ## Defining LEDs
@@ -224,10 +264,10 @@ Each layer is defined with the following parameters
 Each layer must be on a single line and each line must be indented.
 Color palettes can be of unlimited length but may be compressed depending
 on the size of the frame or number of LEDs on a strip. Colors are defined
-as groups of Red, Green, Blue and (optional) White. The white channel only used 
-on RGBW LEDs and ignored on RGB LEDs. The range for each color is a decimal 
-number from 0.0 to 1.0. So for yellow, you would use ( 1.0, 1.0, 0.0 ). For 
-white you would use ( 1.0, 1.0, 1.0 ) on an RGB LED or ( 0.0, 0.0, 0.0, 1.0 ) 
+as groups of Red, Green, Blue and (optional) White. The white channel only used
+on RGBW LEDs and ignored on RGB LEDs. The range for each color is a decimal
+number from 0.0 to 1.0. So for yellow, you would use ( 1.0, 1.0, 0.0 ). For
+white you would use ( 1.0, 1.0, 1.0 ) on an RGB LED or ( 0.0, 0.0, 0.0, 1.0 )
 on an RGBW LED.
 
 Individual colors must be wrapped in parentheses and separated by commas.
@@ -258,7 +298,7 @@ difference in hue.
     Cutoff:       0   Not used but must be provided
     Palette:          Colors are cycled in order
 
-LEDs fade through the colors. If a palette of multiple colors is provided, it 
+LEDs fade through the colors. If a palette of multiple colors is provided, it
 will cycle through those colors in the order they are specified in the palette.
 The effect rate parameter controls how long it takes to go through all colors.
 
@@ -304,8 +344,8 @@ Colors from the palette are blended into a linear gradient across the length
 of the strip. The effect rate parameter controls the speed at which the colors
 are cycled through. A negative value for the effect rate changes the direction
 the gradient cycles (right to left vs left to right). The Cutoff determines the
-length of the gradient in relation to the chain length. The bigger the value, 
-the shorter the gradient (e.g. the value 2 means 2 gradients on the length of 
+length of the gradient in relation to the chain length. The bigger the value,
+the shorter the gradient (e.g. the value 2 means 2 gradients on the length of
 the chain)
 
 #### Pattern
@@ -313,7 +353,7 @@ the chain)
     Cutoff:       1   How far the pattern gets shifted
     Palette:          The pattern to be shifted
 The palette is applied as a recurring pattern on the chain and shifted along the
-chain. The effect rate determines the time between the shifts in seconds, the 
+chain. The effect rate determines the time between the shifts in seconds, the
 cutoff determines the amount of LED positions the pattern gets shifted.
 
 #### Comet
@@ -405,9 +445,9 @@ position, a negative value in cutoff will fill the entire strip after the steppe
     Effect Rate:  1   Scaling of position
     Cutoff:       0   Offset of position
     Palette:          Color values to blend
-The color of the LEDs are determined by the position of the stepper motor. The 
+The color of the LEDs are determined by the position of the stepper motor. The
 position is determined between 0 and 100 and is multiplied with the effect rate
-and the cutoff is added as offset. This then determines the value in the 
+and the cutoff is added as offset. This then determines the value in the
 palette, that is calculated as a gradient over the specified color values.
 
 #### Progress
@@ -422,8 +462,8 @@ layer reports print progress.
     Cutoff:       0   Not used, but must be provided
     Palette:          Colors are cycled in order
 
-LEDs turn on during homing when the endstop is triggered and fade out again. The 
-effect rate determines the time for the fade out. If a palette of multiple colors 
+LEDs turn on during homing when the endstop is triggered and fade out again. The
+effect rate determines the time for the fade out. If a palette of multiple colors
 is provided, it will cycle through those colors in order.
 
 ## Effect Layer Blending
@@ -629,7 +669,7 @@ data signal at 3.3V.
 
 Signal integrity can also be deteriorated by ringing and reflections on
 the data line. Especially, when the cable to the first LED is rather long.
-This can be reduced by adding a 700 Ohm resistor in line to the data line 
+This can be reduced by adding a 700 Ohm resistor in line to the data line
 directly in front of the first LED.
 
 Another source of flickering is voltage drop. Addressable LEDs consume
@@ -653,7 +693,7 @@ to power LEDs like this from a separate 5V source from the board.
 Different chip manufacturers and chip styles use slightly different
 protocols for color data. Some specify the color order be Red, Green,
 then Blue others specify Green, Red, Blue. The configuration for the
-LED strip has an optional parameter that can be set in the 'neopixel' 
+LED strip has an optional parameter that can be set in the 'neopixel'
 section to change the color order.
 
 ``
