@@ -416,6 +416,7 @@ layer reports print progress.
     Effect Rate:  1   Determines decay rate. A higher number yields slower decay
     Cutoff:       0   Not used, but must be provided
     Palette:          Colors are cycled in order
+    endstops:         Which endstops trigger the effect (x,y,z,probe)
 
 LEDs turn on during homing when the endstop is triggered and fade out again. The 
 effect rate determines the time for the fade out. If a palette of multiple colors 
