@@ -330,7 +330,7 @@ effect rate controls how many times per second the lights will strobe. The cutof
 parameter controls the decay rate. A good decay rate is 1.5.
 
 #### Twinkle
-    Effect Rate:  1   Increases the probability that an LED will illuminate.
+    Effect Rate:  1   Increases the probability that an LED will illuminate. (0 = never, 254 = always)
     Cutoff:       .25 Determines decay rate. A higher number yields quicker decay
     Palette:          Random color chosen
 Random flashes of light with decay along a strip. If a palette is specified,
