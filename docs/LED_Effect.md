@@ -406,7 +406,7 @@ of heat to accumulate at the base of the strip resulting a more intense flame.
 Changing the rate of cooling results in longer or shorter overall flames.
 
 #### HeaterFire
-    Effect Rate:  1   Minimum temperature to activate effect
+    Effect Rate:  0   Not used, but must be provided
     Cutoff:       0   Disable effect once temp is reached
     Palette:          Color values to blend from "Cold" to "Hot"
 The fire effect but responsive to the temperature of the specified heater.
