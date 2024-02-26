@@ -1107,7 +1107,6 @@ class ledEffect:
             self.frameLen   = len(self.gradient)
             self.heatLen    = len(self.heatMap)
             self.heatSource = int(self.ledCount / 10.0)
-            self.effectRate = 0
 
             if self.heatSource < 1:
                 self.heatSource = 1
@@ -1120,7 +1119,8 @@ class ledEffect:
             heaterLast    = self.frameHandler.heaterLast[self.handler.heater]
 
             if heaterTarget > 0.0 and heaterCurrent > 0.0:
-                if heaterCurrent <= heaterTarget-2:
+                if heaterCurrent <= heaterTarget-2 \
+                        and heaterCurrent >= self.effectRate:
                     spark = int((heaterCurrent / heaterTarget) * 80)
                     brightness = int((heaterCurrent / heaterTarget) * 100)
                 elif self.effectCutoff > 0:
@@ -1128,7 +1128,7 @@ class ledEffect:
                 else:
                     spark = 80
                     brightness = 100
-            elif self.effectRate > 0 and heaterCurrent > 0.0:
+            elif self.effectRate > 0 and heaterCurrent > 0.0 and heaterLast != 0.0:
                 if heaterCurrent >= self.effectRate:
                     spark = int(((heaterCurrent - self.effectRate)
                                       / heaterLast) * 80)
@@ -1136,7 +1136,10 @@ class ledEffect:
                                       / heaterLast) * 100)
 
             if spark > 0:
-                cooling = int((heaterCurrent / heaterTarget) * 20)
+                if heaterTarget > 0.0:
+                    cooling = int((heaterCurrent / heaterTarget) * 20)
+                else:
+                    cooling = int((heaterCurrent / heaterLast) * 20)
 
                 for h in range(self.heatLen):
                     c = randint(0, cooling)
