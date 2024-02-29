@@ -1,6 +1,7 @@
 {
   "name": "Python3",
   "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "postCreateCommand": "sudo apt update && sudo apt install -y libgtk-3-dev && pip install poetry",
   "customizations": {
     "vscode": {
       "settings": {
