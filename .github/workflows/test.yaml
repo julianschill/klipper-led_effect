@@ -1,0 +1,24 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+    - name: Install dependencies
+      working-directory: ./packages/led_effect_tests
+      run: poetry install
+    - name: Run tests
+      working-directory: ./packages/led_effect_tests
+      run: poetry run pytest -s -v
