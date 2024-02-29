@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "klippermock"
+version = "0.1.0"
+authors = ["Julian Schill <j.schill@web.de>"]
+description = ""
+
+[tool.poetry.dependencies]
+python = "<3.12,>=3.8"
+led_effect = {path = "../led_effect", develop = true}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

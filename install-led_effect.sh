@@ -24,7 +24,7 @@ while getopts "k:c:uh" arg; do
 done
 
 # Find SRCDIR from the pathname of this script
-SRCDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/src/ && pwd )"
+SRCDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/ && pwd )"
 
 # Verify Klipper has been installed
 check_klipper()
@@ -56,7 +56,7 @@ check_folders()
 link_extension()
 {
     echo -n "Linking extension to Klipper... "
-    ln -sf "${SRCDIR}/led_effect.py" "${KLIPPER_PATH}/klippy/extras/led_effect.py"
+    ln -sf "${SRCDIR}/packages/led_effect" "${KLIPPER_PATH}/klippy/extras/led_effect"
     echo "[OK]"
 }
 
@@ -110,13 +110,13 @@ stop_klipper()
 
 uninstall()
 {
-    if [ -f "${KLIPPER_PATH}/klippy/extras/led_effect.py" ]; then
+    if [ -d "${KLIPPER_PATH}/klippy/extras/led_effect" ]; then
         echo -n "Uninstalling... "
-        rm -f "${KLIPPER_PATH}/klippy/extras/led_effect.py"
+        rm -f "${KLIPPER_PATH}/klippy/extras/led_effect"
         echo "[OK]"
         echo "You can now remove the [update_manager led_effect] section in your moonraker.conf and delete this directory. Also remove all led_effect configurations from your Klipper configuration."
     else
-        echo "led_effect.py not found in \"${KLIPPER_PATH}/klippy/extras/\". Is it installed?"
+        echo "led_effect not found in \"${KLIPPER_PATH}/klippy/extras/\". Is it installed?"
         echo "[FAILED]"
     fi
 }

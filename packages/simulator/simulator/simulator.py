@@ -1,6 +1,6 @@
 import wx
 import simulator.simgui as simgui
-from simulator.klippermock import *
+from klippermock import *
 import time
 import math
 

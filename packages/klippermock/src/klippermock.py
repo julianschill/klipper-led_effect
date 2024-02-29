@@ -7,7 +7,7 @@ parent, root = file.parent, file.parents[2]
 print(root)
 sys.path.append(str(root))
 from pathlib import Path
-from src.led_effect import ledEffect, ledFrameHandler
+from led_effect import ledEffect, ledFrameHandler
 
 class mockPrinter:
     NOW = 0

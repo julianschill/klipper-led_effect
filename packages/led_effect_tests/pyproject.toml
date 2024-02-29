@@ -1,18 +1,17 @@
 [tool.poetry]
-name = "simulator"
+name = "led-effect-tests"
 version = "0.1.0"
-description = ""
 authors = ["Julian Schill <j.schill@web.de>"]
-readme = "README.md"
+description = ""
+package-mode = false
 
 [tool.poetry.dependencies]
-python = "<3.11,>=3.8"
-wxPython = "^4.2.0"
-pyinstaller = "^5.4.1"
-numpy = ">1.22"
+python = "<3.12,>=3.8"
+klippermock = {path = "../klippermock", develop = true}
 
 [tool.poetry.group.dev.dependencies]
-black = {version = "^22.8.0", allow-prereleases = true}
+pytest = "^8.0.1"
+pytest-golden = "^0.2.2"
 
 [build-system]
 requires = ["poetry-core"]
