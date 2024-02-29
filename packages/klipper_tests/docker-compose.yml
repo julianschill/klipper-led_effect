@@ -1,0 +1,43 @@
+services:
+  klipper:
+    image: mkuf/klipper:latest
+    privileged: true
+    entrypoint:
+      - tail
+      - -f
+      - /dev/null
+    volumes:
+      - /dev:/dev
+      - ../../:/app
+      - ./config:/opt/printer_data/config
+      - log:/opt/printer_data/logs
+      - run:/opt/printer_data/run
+  hostmcu:
+    image: mkuf/klipper:latest-hostmcu
+    privileged: true
+    volumes:
+      - /dev:/dev
+      - run:/opt/printer_data/run
+  log:
+    image: busybox
+    volumes:
+      - log:/opt/printer_data/logs
+      - run:/opt/printer_data/run
+    entrypoint: 
+      - /bin/sh
+      - -c
+      - |
+        while true; do
+          tail -f /opt/printer_data/logs/klippy.log || true; 
+          sleep 1;
+        done
+
+volumes:
+  run:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+  log:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
