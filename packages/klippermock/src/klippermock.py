@@ -1,12 +1,3 @@
-from distutils.command.config import config
-import sys
-
-from pathlib import Path # if you haven't already done so
-file = Path(__file__).resolve()
-parent, root = file.parent, file.parents[2]
-print(root)
-sys.path.append(str(root))
-from pathlib import Path
 from led_effect import ledEffect, ledFrameHandler
 
 class mockPrinter:
