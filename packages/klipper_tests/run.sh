@@ -12,7 +12,7 @@ run() {
     docker-compose up -d 
     docker-compose exec -T klipper bash -c '
         cd /app
-        ./install-led_effect.sh -k /opt/klipper/
+        ./install-led_effect.sh --no-moonraker --no-service -k /opt/klipper/
         cd /opt
         /opt/venv/bin/python klipper/klippy/klippy.py \
             -v \
@@ -21,9 +21,28 @@ run() {
             printer_data/config/printer.cfg \
             -l printer_data/logs/klippy.log          
 ' &
-    sleep 5
+    
     set +e
-    ! docker-compose logs log 2>&1 | tee /dev/stderr | grep -q "Config error"
+    # shellcheck disable=SC2034
+    for i in {1..100}; do
+        INFO=$(docker-compose exec -T moonraker curl http://localhost:7125/printer/info)
+        # shellcheck disable=SC2181
+        if [ $? -ne 0 ]; then
+            sleep 1s
+            continue;
+        fi
+
+        if [[ "$INFO" =~ \"state\":\ *\"ready\" ]]; then
+            exit 0
+        fi
+        if [[ "$INFO" =~ \"state\":\ *\"error\" ]]; then
+            exit 1
+        fi
+        sleep 0.5s
+        
+    done
+    set -e
+    exit 1
 }
 
 

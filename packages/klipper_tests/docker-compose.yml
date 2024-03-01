@@ -31,6 +31,18 @@ services:
           tail -f /opt/printer_data/logs/klippy.log || true; 
           sleep 1;
         done
+  moonraker:
+      image: mkuf/moonraker:latest
+      restart: unless-stopped
+      pid: host
+      depends_on:
+        klipper:
+          condition: service_started
+      volumes:
+        - /dev/null:/opt/klipper/config/null
+        - /dev/null:/opt/klipper/docs/null
+        - run:/opt/printer_data/run
+        - ./config:/opt/printer_data/config    
 
 volumes:
   run:
