@@ -33,29 +33,47 @@
 
   let currentLeds = new Array(ledCount).fill([0, 0, 0]);
   let currentFrame = 0;
+  let heaterTarget = 250;
+  let heaterCurrent = 10;
+  let fps = 24;
 
   const drawLeds = () => {
     if (!printer) {
       return;
     }
     const [frame, shouldUpdate] = printer.led_effect.getFrame(currentFrame++);
-    
+    if (!shouldUpdate) return;
     currentLeds = [];
     for (let i = 0; i < frame.length; i += 4) {
       currentLeds[i / 4] = [frame[i], frame[i + 1], frame[i + 2]].map(
-        (i) => i * 255
+        (i) => i * 255,
       );
     }
   };
 
   $: {
+    if (printer) {
+      printer.set_heater(0, heaterTarget, heaterCurrent);
+    }
+  }
+
+  $: {
     try {
+      console.log("Resetting printer");
       printer = initPrinter(layers, ledCount, kmock);
     } catch (e) {}
   }
 
+  let interval: number | undefined = undefined;
+
+  const updateInterval = (fps: number) => {
+    window.clearInterval(interval);
+    interval = window.setInterval(drawLeds, 1000 / fps);
+  };
+  $: updateInterval(fps);
+  
   onMount(() => {
-    const interval = window.setInterval(drawLeds, 1000 / 24);
+    updateInterval(fps);
     return () => {
       window.clearInterval(interval);
     };
@@ -69,12 +87,40 @@
   ></script>
 </svelte:head>
 <main>
-  <textarea bind:value={layers} rows="10" cols="50"></textarea>
-  <input type="number" bind:value={ledCount} />
+  <table style="margin: 0 auto">
+    <tr>
+      <th>Layers</th>
+      <td><textarea bind:value={layers} rows="10" cols="50"></textarea></td>
+    </tr>
+    <tr>
+      <th>LED Count</th>
+      <td><input type="number" bind:value={ledCount} /></td>
+    </tr>
+    <tr>
+      <th>FPS</th>
+      <td><input type="number" bind:value={fps} /></td>
+    </tr>
+    <tr>
+      <th>Temperature</th>
+      <td>
+        <label for="current">Current: </label><input
+          type="number"
+          bind:value={heaterCurrent}
+          id="current"
+        /><br />
+        <label for="target">Target: </label><input
+          type="number"
+          bind:value={heaterTarget}
+          id="target"
+        /><br />
+      </td>
+    </tr>
+  </table>
+
   <div>
     {#each currentLeds as led, i}
       <div
-        style={`background-color: rgb(${led.join(",")}); width: 50px; height: 50px; display: inline-block;`}
+        style={`background-color: rgb(${led.join(",")}); width: 50px; height: 50px; border-radius: 25px; margin: 5px; display: inline-block;`}
       ></div>
     {/each}
   </div>
