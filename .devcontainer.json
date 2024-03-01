@@ -25,7 +25,8 @@
         "ms-python.python",
         "ms-python.vscode-pylance",
         "MS-vsliveshare.vsliveshare",
-        "ms-python.autopep8"
+        "ms-python.autopep8",
+        "svelte.svelte-vscode"
       ]
     }
   }
