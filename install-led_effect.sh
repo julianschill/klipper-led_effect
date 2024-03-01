@@ -5,23 +5,68 @@ set -e
 KLIPPER_PATH="${HOME}/klipper"
 SYSTEMDDIR="/etc/systemd/system"
 MOONRAKER_CONFIG_DIR="${HOME}/printer_data/config"
+RESTART_SERVICE=1
+UPDATE_MOONRAKER=1
+IGNORE_ROOT=0
+
+
+
+
+usage(){ echo "Usage: $0 [-k <klipper path>] [-c <moonraker config path>]" 1>&2; exit 1; }
+
+args=$(getopt -a -o k:c:uh --long klipper:,moonraker:,uninstall,help,no-moonraker,no-service,ignore-root -- "$@")
+# shellcheck disable=SC2181
+if [[ $? -gt 0 ]]; then
+    usage
+fi
+eval set -- "${args}"
+while :; do
+    case $1 in
+    -k | --klipper)
+        shift
+        KLIPPER_PATH=$1
+        shift
+        ;;
+    -c | --moonraker)
+        shift
+        MOONRAKER_CONFIG_DIR=$1
+        shift
+        ;;
+    --no-moonraker)
+        UPDATE_MOONRAKER=0
+        shift
+        ;;
+    --no-service)
+        RESTART_SERVICE=0
+        shift
+        ;;
+    --ignore-root)
+        IGNORE_ROOT=1
+        shift
+        ;;
+    -u | --uninstall)
+        UNINSTALL=1
+        shift
+        ;;
+    -h | --help)
+        usage
+        ;;
+    --) 
+        shift
+        break
+        ;;
+    *)
+        echo >&2 Unsupported option: "$1"
+        usage
+        ;;
+    esac
+done
 
 # Fall back to old directory for configuration as default
-if [ ! -d "${MOONRAKER_CONFIG_DIR}" ]; then
+if [ $UPDATE_MOONRAKER -ne 0 ] && [ ! -d "${MOONRAKER_CONFIG_DIR}" ]; then
     echo "\"$MOONRAKER_CONFIG_DIR\" does not exist. Falling back to "${HOME}/klipper_config" as default."
     MOONRAKER_CONFIG_DIR="${HOME}/klipper_config"
 fi
-
-usage(){ echo "Usage: $0 [-k <klipper path>] [-c <configuration path>]" 1>&2; exit 1; }
-# Parse command line arguments
-while getopts "k:c:uh" arg; do
-    case $arg in
-        k) KLIPPER_PATH=$OPTARG;;
-        c) MOONRAKER_CONFIG_DIR=$OPTARG;;
-        u) UNINSTALL=1;;
-        h) usage;;
-    esac
-done
 
 # Find SRCDIR from the pathname of this script
 SRCDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/ && pwd )"
@@ -45,7 +90,7 @@ check_folders()
     fi
     echo "Klipper installation found at $KLIPPER_PATH"
 
-    if [ ! -f "${MOONRAKER_CONFIG_DIR}/moonraker.conf" ]; then
+    if [ $UPDATE_MOONRAKER -ne 0 ] && [ ! -f "${MOONRAKER_CONFIG_DIR}/moonraker.conf" ]; then
         echo "[ERROR] Moonraker configuration not found in directory \"$MOONRAKER_CONFIG_DIR\". Exiting"
         exit -1
     fi
@@ -126,20 +171,20 @@ verify_ready()
 {
     if [ "$EUID" -eq 0 ]; then
         echo "[ERROR] This script must not run as root. Exiting."
-        exit -1
+        exit 1
     fi
 }
 
 # Run steps
-#verify_ready
-#check_klipper
-#check_folders
-#stop_klipper
+[ $IGNORE_ROOT -ne 0 ] && verify_ready
+[ $RESTART_SERVICE -eq 1 ] && check_klipper
+check_folders
+[ $RESTART_SERVICE -eq 1 ] && stop_klipper
 if [ ! $UNINSTALL ]; then
-    link_extension
-#    add_updater
+   link_extension
+   [ $UPDATE_MOONRAKER -eq 1 ] && add_updater
 else
     uninstall
 fi
-#start_klipper
+[ $RESTART_SERVICE -eq 1 ] && start_klipper
 
