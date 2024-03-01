@@ -5,13 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "run-s build:whl build:vite",
+    "build:vite": "vite build",
     "preview": "vite preview",
-    "check": "svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "build:whl": "rm src/*.whl || true; run-p build:whl:*",
+    "build:whl:klippermock": "cd ../klippermock; poetry build -f wheel -o ../web_simulator/src",
+    "build:whl:led_effect": "cd ../led_effect; poetry build -f wheel -o ../web_simulator/src"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.0.2",
     "@tsconfig/svelte": "^5.0.2",
+    "npm-run-all": "^4.1.5",
     "svelte": "^4.2.11",
     "svelte-check": "^3.6.4",
     "tslib": "^2.6.2",
