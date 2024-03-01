@@ -1,0 +1,62 @@
+name: pages
+on:
+  push:
+
+env:
+  PYTHON_VERSION: 3.x
+  NODE_VERSION: latest
+
+permissions:
+  contents: write
+  id-token: write
+  pages: write
+
+jobs:
+  pages:
+    name: Build pages
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: packages/web_simulator/package-lock.json
+
+      - name: Install poetry
+        run: pip install poetry
+
+      - name: Set up Python runtime
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: poetry
+
+      - name: Install python dependencies
+        run: |
+          cd ${{ github.workspace }}/packages/led_effect
+          poetry install
+          cd ${{ github.workspace }}/packages/klippermock
+          poetry install
+      
+      - name: Install node dependencies
+        working-directory: packages/web_simulator
+        run: npm ci
+
+      - name: Build web_simulator
+        working-directory: packages/web_simulator
+        run: npm run build
+
+      - name: Upload to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: packages/web_simulator/dist/
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
