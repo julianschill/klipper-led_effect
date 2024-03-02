@@ -6,7 +6,6 @@ on:
 
 jobs:
   test:
-    name: Test
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -24,7 +23,6 @@ jobs:
       run: poetry run pytest -s -v
   
   klipper-test:
-    name: Test klipper installation
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
