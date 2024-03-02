@@ -107,7 +107,7 @@ check_folders()
 link_extension()
 {
     echo -n "Linking extension to Klipper... "
-    ln -sf "${SRCDIR}/packages/led_effect/src/led_effect/" "${KLIPPER_PATH}/klippy/extras/led_effect"
+    ln -sf "${SRCDIR}/packages/led_effect/src/" "${KLIPPER_PATH}/klippy/extras/led_effect"
     echo "[OK]"
 }
 
