@@ -12,7 +12,10 @@ run() {
     docker-compose up -d 
     docker-compose exec -T klipper bash -c '
         cd /app
-        ./install-led_effect.sh --no-moonraker --no-service -k /opt/klipper/
+        ./install-led_effect.sh --no-moonraker --no-service -k /opt/klipper/ --venv /opt/venv/
+        exit 0
+';
+    docker-compose exec -T klipper bash -c '
         cd /opt
         /opt/venv/bin/python klipper/klippy/klippy.py \
             -v \

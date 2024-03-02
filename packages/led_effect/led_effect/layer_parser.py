@@ -1,4 +1,4 @@
-import layer_parser_lark
+from . import layer_parser_lark
 
 
 
