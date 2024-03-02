@@ -1,6 +1,8 @@
 name: pages
 on:
   push:
+    branches:
+      - main
 
 env:
   PYTHON_VERSION: 3.x

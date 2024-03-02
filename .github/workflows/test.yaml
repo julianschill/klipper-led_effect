@@ -17,10 +17,10 @@ jobs:
     - name: Install Poetry
       uses: snok/install-poetry@v1
     - name: Install dependencies
-      working-directory: ./packages/led_effect_tests
+      working-directory: ./packages/led_effect
       run: poetry install
     - name: Run tests
-      working-directory: ./packages/led_effect_tests
+      working-directory: ./packages/led_effect
       run: poetry run pytest -s -v
   
   klipper-test:

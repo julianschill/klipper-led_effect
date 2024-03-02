@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import colormath from "./colormath-3.0.0-py3-none-any.whl?url";
   import led_effect from "./led_effect-0.1.0-py3-none-any.whl?url";
   import klippermock from "./klippermock-0.1.0-py3-none-any.whl?url";
 
@@ -9,7 +10,7 @@
     const pyodide = await (window as any).loadPyodide();
     await pyodide.loadPackage("micropip");
     const micropip = pyodide.pyimport("micropip");
-    await micropip.install([led_effect, klippermock]);
+    await micropip.install([colormath, led_effect, klippermock]);
 
     kmock = pyodide.pyimport("klippermock");
   };

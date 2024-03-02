@@ -1,5 +1,5 @@
 import pytest
-import layer_parser
+from led_effect import layer_parser
 
 legacy_format_data = [
     ("breathing  .5 0 screen (0,.1,1), (0,1,.5), (0, 1,1), (0,.1,.5)", "breathing",

@@ -1,4 +1,4 @@
-from led_effect import ledEffect, ledFrameHandler
+from led_effect.led_effect_plugin import ledEffect, ledFrameHandler
 
 class mockPrinter:
     NOW = 0
@@ -57,10 +57,10 @@ class mockPrinter:
         pass
     def lookup_heater(self, name):
         return self
-    def set_heater(self, min, max, temp):
-        self.led_effect.handler.heaterLast["bed"]  = self.led_effect.handler.heaterCurrent["bed"]
-        self.led_effect.handler.heaterCurrent["bed"] = temp
-        self.led_effect.handler.heaterTarget["bed"]  = max
+    def set_heater(self, min, max, temp, heater = "bed"):
+        self.led_effect.handler.heaterLast[heater]  = self.led_effect.handler.heaterCurrent[heater]
+        self.led_effect.handler.heaterCurrent[heater] = temp
+        self.led_effect.handler.heaterTarget[heater]  = max
     def set_progress (self, progress):
         self.led_effect.handler.printProgress=progress
     def set_analog(self, value):
@@ -68,6 +68,8 @@ class mockPrinter:
     def load_template(self, config, name):
         self.template = config.get(name)
         return self
+    def config_error(self, msg):
+        raise Exception(msg)
     def render(self, context=None):
         return self.template
     def create_template_context(self):

@@ -9,9 +9,9 @@
     "build:vite": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "build:whl": "rm src/*.whl || true; run-p build:whl:*",
-    "build:whl:klippermock": "cd ../klippermock; poetry build -f wheel -o ../web_simulator/src",
-    "build:whl:led_effect": "cd ../led_effect; poetry build -f wheel -o ../web_simulator/src"
+    "build:whl": "run-p build:whl:*",
+    "build:whl:klippermock": "rm src/klippermock*.whl || true; cd ../klippermock; poetry build -f wheel -o ../web_simulator/src",
+    "build:whl:led_effect": "rm src/led_effect*.whl || true; cd ../led_effect; poetry build -f wheel -o ../web_simulator/src"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.0.2",
