@@ -1,11 +1,17 @@
 [tool.poetry]
-name = "led-effect"
+name = "led_effect"
 version = "0.1.0"
 authors = ["Julian Schill <j.schill@web.de>"]
 description = ""
 
 [tool.poetry.dependencies]
 python = "<3.12,>=3.8"
+
+[tool.poetry.group.dev.dependencies]
+lark = "^1.1.9"
+pytest = "^8.0.1"
+pytest-golden = "^0.2.2"
+klippermock = {path = "../klippermock", develop = true}
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,0 +1,25 @@
+line: legacy_line | parameterized_line
+
+legacy_line: LAYER_NAME RATE CUTOFF BLEND palette
+LAYER_NAME: WORD
+RATE: NUMBER
+CUTOFF: NUMBER
+BLEND: WORD
+
+parameterized_line: LAYER_NAME "(" parameters ")" BLEND palette
+parameters: (parameter ("," parameter)*)?
+parameter: CNAME "=" (NUMBER | string)
+NUMBER: (FLOAT | INT)
+
+palette: palette_entry ("," palette_entry)*
+palette_entry: "(" (NUMBER) "," (NUMBER) "," (NUMBER) ["," (NUMBER)] ")"
+?string: CNAME | ESCAPED_STRING
+
+%import common.CNAME  
+%import common.WORD
+%import common.FLOAT
+%import common.INT
+%import common.WS
+%import common.ESCAPED_STRING
+
+%ignore WS
