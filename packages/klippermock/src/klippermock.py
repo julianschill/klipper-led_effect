@@ -1,7 +1,6 @@
 from led_effect.led_effect_plugin import ledEffect, ledFrameHandler
 
 class mockPrinter:
-    NOW = 0
     def __init__(self, config):
         self.config = config
         self.config.set_printer(self)

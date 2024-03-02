@@ -6,6 +6,7 @@
 
   let kmock: any = undefined;
   let printer: any = undefined;
+  let error: string | undefined = undefined
   const init = async () => {
     const pyodide = await (window as any).loadPyodide();
     await pyodide.loadPackage("micropip");
@@ -22,13 +23,13 @@
     if (kmock === undefined) {
       return;
     }
-    currentFrame = 0;
     const config = kmock.mockConfig();
     config.setint("ledcount", ledCount);
     config.set("layers", layers);
     const printer = kmock.mockPrinter(config);
     printer._handle_ready();
     printer.led_effect.set_enabled(true);
+    currentFrame = 0;
     return printer;
   };
 
@@ -60,9 +61,11 @@
 
   $: {
     try {
-      console.log("Resetting printer");
       printer = initPrinter(layers, ledCount, kmock);
-    } catch (e) {}
+      error = undefined;
+    } catch (e: any) {
+      error = e;
+    }
   }
 
   let interval: number | undefined = undefined;
@@ -117,7 +120,6 @@
       </td>
     </tr>
   </table>
-
   <div>
     {#each currentLeds as led, i}
       <div
@@ -125,4 +127,9 @@
       ></div>
     {/each}
   </div>
+  {#if error}
+    <pre style="color: red; font-weight: bold">{error}</pre>
+  {/if}
+
+
 </main>
