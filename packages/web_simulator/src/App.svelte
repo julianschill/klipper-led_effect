@@ -3,18 +3,20 @@
   import colormath from "./colormath-3.0.0-py3-none-any.whl?url";
   import led_effect from "./led_effect-0.1.0-py3-none-any.whl?url";
   import klippermock from "./klippermock-0.1.0-py3-none-any.whl?url";
+  import { PrintSimulator } from "./printSimulator";
 
   let kmock: any = undefined;
   let printer: any = undefined;
   let pythonOutput: string = "";
   let error: string | undefined = undefined;
+  let pyodide: any = undefined;
   const init = async () => {
     const _log = console.log;
-    console.log = (msg: string) => {
-      pythonOutput += msg + "\n";
-      _log.call(console, msg);
+    console.log = (...args) => {
+      pythonOutput += args.join(" ") + "\n";
+      _log(...args);
     };
-    const pyodide = await (window as any).loadPyodide();
+    pyodide = await (window as any).loadPyodide();
 
     await pyodide.loadPackage("micropip");
     const micropip = pyodide.pyimport("micropip");
@@ -38,17 +40,54 @@
     config.setint("ledcount", ledCount);
     config.set("layers", layers);
     const printer = kmock.mockPrinter(config);
+
     printer._handle_ready();
     printer.led_effect.set_enabled(true);
+    printer.led_effect.handler.heaterCurrent = pyodide.toPy({
+      hotend: heaterHotendCurrent,
+      heater_bed: heaterBedCurrent,
+    });
+    printer.led_effect.handler.heaterTarget = pyodide.toPy({
+      hotend: heaterHotendTarget,
+      heater_bed: heaterBedTarget,
+    });
+    printer.led_effect.handler.heaterLast = pyodide.toPy({
+      hotend: heaterHotendCurrent,
+      heater_bed: heaterBedCurrent,
+    });
     currentFrame = 0;
     return printer;
   };
 
   let currentLeds = new Array(ledCount).fill([0, 0, 0]);
   let currentFrame = 0;
-  let heaterTarget = 250;
-  let heaterCurrent = 10;
+  let heaterHotendTarget = 250;
+  let heaterHotendCurrent = 10;
+  let heaterBedTarget = 60;
+  let heaterBedCurrent = 10;
+  let printProgress = 0;
   let fps = 24;
+
+  $: {
+    printer?.set_heater(0, heaterHotendTarget, heaterHotendCurrent, "hotend");
+  }
+  $: {
+    printer?.set_heater(0, heaterBedTarget, heaterBedCurrent, "heater_bed");
+  }
+
+  let simulationStatus: string = "not running";
+  let printSimulator: PrintSimulator = new PrintSimulator(
+    { heater_bed: 60, hotend: 250 },
+    (heater, temp) => {
+      if (heater == "heater_bed") {
+        heaterBedCurrent = temp;
+      } else {
+        heaterHotendCurrent = temp;
+      }
+    },
+    (pct) => (printProgress = pct),
+    (status) => (simulationStatus = status),
+  );
 
   const drawLeds = () => {
     if (!printer) {
@@ -63,12 +102,6 @@
       );
     }
   };
-
-  $: {
-    if (printer) {
-      printer.set_heater(0, heaterTarget, heaterCurrent);
-    }
-  }
 
   $: {
     try {
@@ -116,18 +149,47 @@
       <td><input type="number" bind:value={fps} /></td>
     </tr>
     <tr>
-      <th>Temperature</th>
+      <th>Temperature (<code>heater_bed</code>)</th>
       <td>
         <label for="current">Current: </label><input
           type="number"
-          bind:value={heaterCurrent}
+          bind:value={heaterBedCurrent}
           id="current"
         /><br />
         <label for="target">Target: </label><input
           type="number"
-          bind:value={heaterTarget}
+          bind:value={heaterBedTarget}
           id="target"
         /><br />
+      </td>
+    </tr>
+    <tr>
+      <th>Temperature (<code>hotend</code>)</th>
+      <td>
+        <label for="current">Current: </label><input
+          type="number"
+          bind:value={heaterHotendCurrent}
+          id="current"
+        /><br />
+        <label for="target">Target: </label><input
+          type="number"
+          bind:value={heaterHotendTarget}
+          id="target"
+        /><br />
+      </td>
+    </tr>
+    <tr>
+      <th><label for="progress">Progress: </label></th>
+      <td>
+        <input type="number" bind:value={printProgress} id="progress" />
+      </td>
+    </tr>
+    <tr>
+      <th>Print Simulation</th>
+      <td
+        >Status: {simulationStatus}<br />
+        <button on:click={() => printSimulator.run()}>Start</button>
+        <button on:click={() => printSimulator.stop()}>Stop</button>
       </td>
     </tr>
   </table>

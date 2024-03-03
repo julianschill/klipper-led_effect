@@ -57,7 +57,7 @@ class mockPrinter:
         pass
     def lookup_heater(self, name):
         return self
-    def set_heater(self, min, max, temp, heater = "bed"):
+    def set_heater(self, min, max, temp, heater = "heater_bed"):
         self.led_effect.handler.heaterLast[heater]  = self.led_effect.handler.heaterCurrent[heater]
         self.led_effect.handler.heaterCurrent[heater] = temp
         self.led_effect.handler.heaterTarget[heater]  = max
@@ -83,7 +83,7 @@ class mockConfig:
             "autostart" : "False",
             "run_on_error" : "False",
             "recalculate": "False",
-            "heater" : "bed",
+            "heater" : "heater_bed",
             "analog_pin" : "PA0",
             "stepper" : "x",
             "layers"  : """gradient       1 1 top  (1, 0.0, 0.0),(0, 1, 0.0),(0.0, 0.0, 1)""",
