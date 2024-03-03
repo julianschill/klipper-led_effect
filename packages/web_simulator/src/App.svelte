@@ -6,14 +6,25 @@
 
   let kmock: any = undefined;
   let printer: any = undefined;
-  let error: string | undefined = undefined
+  let pythonOutput: string = "";
+  let error: string | undefined = undefined;
   const init = async () => {
+    const _log = console.log;
+    console.log = (msg: string) => {
+      pythonOutput += msg + "\n";
+      _log.call(console, msg);
+    };
     const pyodide = await (window as any).loadPyodide();
+
     await pyodide.loadPackage("micropip");
     const micropip = pyodide.pyimport("micropip");
     await micropip.install([colormath, led_effect, klippermock]);
 
     kmock = pyodide.pyimport("klippermock");
+    console.log = _log;
+    setTimeout(() => {
+      pythonOutput = "";
+    }, 2000);
   };
 
   let layers = "gradient 1 1 top (1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0) ";
@@ -75,7 +86,7 @@
     interval = window.setInterval(drawLeds, 1000 / fps);
   };
   $: updateInterval(fps);
-  
+
   onMount(() => {
     updateInterval(fps);
     return () => {
@@ -127,9 +138,8 @@
       ></div>
     {/each}
   </div>
+  <pre style="font-weight: bold">{pythonOutput}</pre>
   {#if error}
     <pre style="color: red; font-weight: bold">{error}</pre>
   {/if}
-
-
 </main>

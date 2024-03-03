@@ -12,6 +12,7 @@ class mockPrinter:
         self.axes_max = [100,100,100]
         self.axes_min = [0,0,0]
         self.stepper_pos = 0
+        self.NOW = 0
 
     def _handle_ready(self):
         for o in self.objects.values():
