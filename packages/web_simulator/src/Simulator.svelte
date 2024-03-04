@@ -5,6 +5,7 @@
     import klippermock from "./klippermock-0.1.0-py3-none-any.whl?url";
     import {
         Accordion,
+        Row,
         AccordionHeader,
         AccordionItem,
         Alert,
@@ -13,6 +14,12 @@
         CardHeader,
         CardTitle,
         Container,
+        Col,
+        Input,
+        InputGroup,
+        InputGroupText,
+        FormGroup,
+        Button,
     } from "@sveltestrap/sveltestrap";
     import LedPreview from "./LedPreview.svelte";
 
@@ -29,11 +36,16 @@
             pythonOutput += args.join(" ") + "\n";
             _log(...args);
         };
-        pyodide = await (window as any).loadPyodide();
 
-        await pyodide.loadPackage("micropip");
-        const micropip = pyodide.pyimport("micropip");
-        await micropip.install([colormath, led_effect, klippermock]);
+        if ((window as any).pyodide) {
+            pyodide = (window as any).pyodide;
+        } else {
+            pyodide = await (window as any).loadPyodide();
+            await pyodide.loadPackage("micropip");
+            const micropip = pyodide.pyimport("micropip");
+            await micropip.install([colormath, led_effect, klippermock]);
+            (window as any).pyodide = pyodide;
+        }
 
         kmock = pyodide.pyimport("klippermock");
         console.log = _log;
@@ -42,7 +54,7 @@
         }, 2000);
     };
 
-    let layers = "gradient 1 1 top (1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0) ";
+    let layers = "gradient 1 1  top (1.0,0.0,0.0),(0.0,1.0,0.0),(0.0,0.0,1.0) ";
     let ledCount = 10;
 
     const initPrinter = (layers: string, ledCount: number, kmock: any) => {
@@ -161,75 +173,135 @@
     <Card>
         <CardHeader><CardTitle>LED Effect Simulator</CardTitle></CardHeader>
         <CardBody>
-            <table style="margin: 0 auto">
-                <tr>
-                    <th>Layers</th>
-                    <td
-                        ><textarea bind:value={layers} rows="10" cols="50"
-                        ></textarea></td
-                    >
-                </tr>
-                <tr>
-                    <th>LED Count</th>
-                    <td><input type="number" bind:value={ledCount} /></td>
-                </tr>
-                <tr>
-                    <th>FPS</th>
-                    <td><input type="number" bind:value={fps} /></td>
-                </tr>
-                <tr>
-                    <th>Temperature (<code>heater_bed</code>)</th>
-                    <td>
-                        <label for="current">Current: </label><input
-                            type="number"
-                            bind:value={heaterBedCurrent}
-                            id="current"
-                        /><br />
-                        <label for="target">Target: </label><input
-                            type="number"
-                            bind:value={heaterBedTarget}
-                            id="target"
-                        /><br />
-                    </td>
-                </tr>
-                <tr>
-                    <th>Temperature (<code>hotend</code>)</th>
-                    <td>
-                        <label for="current">Current: </label><input
-                            type="number"
-                            bind:value={heaterHotendCurrent}
-                            id="current"
-                        /><br />
-                        <label for="target">Target: </label><input
-                            type="number"
-                            bind:value={heaterHotendTarget}
-                            id="target"
-                        /><br />
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="progress">Progress: </label></th>
-                    <td>
-                        <input
-                            type="number"
-                            bind:value={printProgress}
-                            id="progress"
+            <Container>
+                <Row>
+                    <Col xs="2"><b>Layers</b></Col>
+                    <Col
+                        ><Input
+                            type="textarea"
+                            bind:value={layers}
+                            style="width: 100%; font-family:'Courier New', Courier, monospace"
+                            rows={10}
                         />
-                    </td>
-                </tr>
-                <tr>
-                    <th>Print Simulation</th>
-                    <td
-                        >Status: {simulationStatus}<br />
-                        <button on:click={() => printSimulator.run()}
-                            >Start</button
+                    </Col>
+                </Row>
+                <Row>
+                    <Col xs="2"><b>LED Count</b></Col>
+                    <Col>
+                        <Input
+                            placeholder="LED Count"
+                            type="number"
+                            bind:value={ledCount}
+                        />
+                    </Col>
+                </Row>
+                <Row>
+                    <Col xs="2"><b>Frame Rate</b></Col>
+                    <Col>
+                        <InputGroup>
+                            <Input type="number" bind:value={fps} />
+                            <InputGroupText>fps</InputGroupText>
+                        </InputGroup>
+                    </Col>
+                </Row>
+                <hr />
+                <Row>
+                    <Col xs="2"
+                        ><b>Temperature <code>heater_bed</code> (default)</b
+                        ></Col
+                    >
+                    <Col>
+                        <Row>
+                            <Col>
+                                <InputGroup>
+                                    <FormGroup
+                                        spacing=""
+                                        floating
+                                        label="Current"
+                                    >
+                                        <Input
+                                            type="number"
+                                            bind:value={heaterBedCurrent}
+                                        />
+                                    </FormGroup>
+                                    <InputGroupText>°C</InputGroupText>
+                                </InputGroup>
+                            </Col><Col>
+                                <InputGroup>
+                                    <FormGroup
+                                        spacing=""
+                                        floating
+                                        label="Target"
+                                    >
+                                        <Input
+                                            type="number"
+                                            bind:value={heaterBedTarget}
+                                        />
+                                    </FormGroup>
+                                    <InputGroupText>°C</InputGroupText>
+                                </InputGroup>
+                            </Col>
+                        </Row>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col xs="2"><b>Temperature <code>hotend</code></b></Col>
+                    <Col>
+                        <Row>
+                            <Col>
+                                <InputGroup>
+                                    <FormGroup
+                                        spacing=""
+                                        floating
+                                        label="Current"
+                                    >
+                                        <Input
+                                            type="number"
+                                            bind:value={heaterHotendCurrent}
+                                        />
+                                    </FormGroup>
+                                    <InputGroupText>°C</InputGroupText>
+                                </InputGroup>
+                            </Col><Col>
+                                <InputGroup>
+                                    <FormGroup
+                                        spacing=""
+                                        floating
+                                        label="Target"
+                                    >
+                                        <Input
+                                            type="number"
+                                            bind:value={heaterHotendTarget}
+                                        />
+                                    </FormGroup>
+                                    <InputGroupText>°C</InputGroupText>
+                                </InputGroup>
+                            </Col>
+                        </Row>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col xs="2"><b>Print Progress</b></Col>
+                    <Col>
+                        <InputGroup>
+                            <Input type="number" bind:value={printProgress} />
+                            <InputGroupText>%</InputGroupText>
+                        </InputGroup>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col xs="2"><b>Simulate Print</b></Col>
+                    <Col>
+                        Status: {simulationStatus}<br />
+                        <Button on:click={() => printSimulator.run()}
+                            >Start</Button
                         >
-                        <button on:click={() => printSimulator.stop()}
-                            >Stop</button
+                        <Button on:click={() => printSimulator.stop()}
+                            >Stop</Button
                         >
-                    </td>
-                </tr>
-            </table>
+                    </Col>
+                </Row>
+            </Container>
 
             <div style="padding: 50px 0px">
                 <LedPreview leds={currentLeds} />
