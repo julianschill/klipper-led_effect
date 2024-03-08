@@ -1,27 +1,27 @@
 <script lang="ts">
-    import { onMount } from "svelte";
-    import colormath from "./colormath-3.0.0-py3-none-any.whl?url";
-    import led_effect from "./led_effect-0.1.0-py3-none-any.whl?url";
-    import klippermock from "./klippermock-0.1.0-py3-none-any.whl?url";
     import {
         Accordion,
-        Row,
-        AccordionHeader,
         AccordionItem,
         Alert,
+        Button,
         Card,
         CardBody,
         CardHeader,
         CardTitle,
-        Container,
         Col,
+        Container,
+        FormGroup,
         Input,
         InputGroup,
         InputGroupText,
-        FormGroup,
-        Button,
+        NavItem,
+        Row,
     } from "@sveltestrap/sveltestrap";
+    import { onMount } from "svelte";
     import LedPreview from "./LedPreview.svelte";
+    import colormath from "./colormath-3.0.0-py3-none-any.whl?url";
+    import klippermock from "./klippermock-0.1.0-py3-none-any.whl?url";
+    import led_effect from "./led_effect-0.1.0-py3-none-any.whl?url";
 
     import { PrintSimulator } from "./printSimulator";
 
@@ -153,6 +153,17 @@
     $: updateInterval(fps);
 
     onMount(() => {
+        let params = new URL(document.location.href).searchParams;
+        if (params.has("fps")) {
+            fps = Number(params.get("fps"));
+        }
+        if (params.has("layers")) {
+            layers = params.get("layers")!;
+        }
+        if (params.has("ledCount")) {
+            ledCount = Number(params.get("ledCount"));
+        }
+
         updateInterval(fps);
         return () => {
             window.clearInterval(interval);
@@ -162,6 +173,18 @@
     let debugActive = true;
 
     let useMatchsticks = false;
+
+    let shared = false;
+    let share = () => {
+        const url = new URL(document.location.href);
+        url.searchParams.set("fps", fps.toString());
+        url.searchParams.set("layers", layers);
+        url.searchParams.set("ledCount", ledCount.toString());
+        navigator.clipboard.writeText(url.toString());
+        window.history.pushState(undefined, "", url.toString());
+        shared = true;
+        window.setTimeout(() => (shared = false), 5000);
+    };
 </script>
 
 <svelte:head>
@@ -320,8 +343,11 @@
             </Container>
 
             <div style="padding: 50px 0px">
-                <LedPreview leds={currentLeds} useMatchsticks={useMatchsticks}/>
+                <LedPreview leds={currentLeds} {useMatchsticks} />
             </div>
+            <Button on:click={share}
+                >{shared ? "Copied to Clipboard" : "Share"}</Button
+            >
             <Accordion stayOpen>
                 <AccordionItem
                     header="Debug"
