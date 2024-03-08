@@ -96,13 +96,18 @@
     $: {
         printer?.set_heater(
             0,
-            heaterHotendTarget,
-            heaterHotendCurrent,
+            Number(heaterHotendTarget),
+            Number(heaterHotendCurrent),
             "hotend",
         );
     }
     $: {
-        printer?.set_heater(0, heaterBedTarget, heaterBedCurrent, "heater_bed");
+        printer?.set_heater(
+            0,
+            Number(heaterBedTarget),
+            Number(heaterBedCurrent),
+            "heater_bed",
+        );
     }
 
     let simulationStatus: string = "not running";
