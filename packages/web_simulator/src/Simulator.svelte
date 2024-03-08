@@ -160,7 +160,8 @@
     });
 
     let debugActive = true;
-    $: console.log(debugActive);
+
+    let useMatchsticks = false;
 </script>
 
 <svelte:head>
@@ -290,6 +291,21 @@
                     </Col>
                 </Row>
                 <Row>
+                    <Col xs="2"><b>Preview</b></Col>
+                    <Col>
+                        <Button
+                            active={!useMatchsticks}
+                            on:click={() => (useMatchsticks = false)}
+                            >Circles</Button
+                        >
+                        <Button
+                            active={useMatchsticks}
+                            on:click={() => (useMatchsticks = true)}
+                            >Matchsticks</Button
+                        >
+                    </Col>
+                </Row>
+                <Row>
                     <Col xs="2"><b>Simulate Print</b></Col>
                     <Col>
                         Status: {simulationStatus}<br />
@@ -304,7 +320,7 @@
             </Container>
 
             <div style="padding: 50px 0px">
-                <LedPreview leds={currentLeds} />
+                <LedPreview leds={currentLeds} useMatchsticks={useMatchsticks}/>
             </div>
             <Accordion stayOpen>
                 <AccordionItem

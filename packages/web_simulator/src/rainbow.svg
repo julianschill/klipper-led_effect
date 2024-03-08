@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
 <svg
    width="158.10001mm"
    height="11.1mm"
    viewBox="0 0 158.10001 11.1"
    version="1.1"
    id="svg1"
+   sodipodi:docname="rainbow.svg"
    inkscape:version="1.3.2 (091e20ef0f, 2023-11-25, custom)"
-   sodipodi:docname="matchstick.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -23,20 +21,18 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="10.523568"
-     inkscape:cx="574.85253"
-     inkscape:cy="26.179333"
-     inkscape:window-width="1600"
-     inkscape:window-height="831"
+     inkscape:zoom="13.490264"
+     inkscape:cx="441.91129"
+     inkscape:cy="18.717202"
+     inkscape:window-width="2580"
+     inkscape:window-height="1011"
      inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-y="32"
      inkscape:window-maximized="1"
      inkscape:current-layer="DrawingContent" />
   <defs
      id="defs1" />
   <g
-     inkscape:label="Layer 1"
-     inkscape:groupmode="layer"
      id="layer1"
      transform="translate(-25.664583,-142.875)">
     <g
@@ -543,7 +539,7 @@
          transform="translate(1293.88,876.058)"
          font-family="Cantarell"
          font-size="38.8056px"
-         id="g51">
+         id="led1">
         <path
            fill-rule="evenodd"
            d="m -620.333,0 c 0,10.8616 -8.805,19.6667 -19.667,19.6667 -10.862,0 -19.667,-8.8051 -19.667,-19.6667 0,-10.8616 8.805,-19.6667 19.667,-19.6667 10.862,0 19.667,8.8051 19.667,19.6667"
@@ -575,8 +571,7 @@
          transform="translate(1293.88,876.058)"
          font-family="Cantarell"
          font-size="38.8056px"
-         id="g55"
-         inkscape:label="led1">
+         id="g55">
         <path
            fill-rule="evenodd"
            d="m -623.333,0 c 0,9.20475 -7.462,16.6667 -16.667,16.6667 -9.205,0 -16.667,-7.46195 -16.667,-16.6667 0,-9.20475 7.462,-16.6667 16.667,-16.6667 9.205,0 16.667,7.46195 16.667,16.6667"
@@ -593,8 +588,7 @@
          transform="translate(1293.88,876.058)"
          font-family="Cantarell"
          font-size="38.8056px"
-         id="g56"
-         inkscape:label="led7">
+         id="led7">
         <path
            fill-rule="evenodd"
            d="m 225.766,0 c 0,9.20475 -7.462,16.6667 -16.667,16.6667 -9.204,0 -16.666,-7.46195 -16.666,-16.6667 0,-9.20475 7.462,-16.6667 16.666,-16.6667 9.205,0 16.667,7.46195 16.667,16.6667"
@@ -610,8 +604,7 @@
          transform="translate(1293.88,876.058)"
          font-family="Cantarell"
          font-size="38.8056px"
-         id="g57"
-         inkscape:label="led10">
+         id="led10">
         <path
            fill-rule="evenodd"
            d="m 650.316,0 c 0,9.20475 -7.462,16.6667 -16.667,16.6667 -9.205,0 -16.666,-7.46195 -16.666,-16.6667 0,-9.20475 7.461,-16.6667 16.666,-16.6667 9.205,0 16.667,7.46195 16.667,16.6667"
@@ -627,8 +620,7 @@
          transform="translate(1293.88,876.058)"
          font-family="Cantarell"
          font-size="38.8056px"
-         id="g59"
-         inkscape:label="led6">
+         id="led6">
         <path
            fill-rule="evenodd"
            d="m 84.2496,0 c 0,9.20475 -7.462,16.6667 -16.6667,16.6667 -9.2047,0 -16.6667,-7.46195 -16.6667,-16.6667 0,-9.20475 7.462,-16.6667 16.6667,-16.6667 9.2047,0 16.6667,7.46195 16.6667,16.6667"
@@ -644,8 +636,7 @@
          transform="translate(1293.88,876.058)"
          font-family="Cantarell"
          font-size="38.8056px"
-         id="g60"
-         inkscape:label="led3">
+         id="led3">
         <path
            fill-rule="evenodd"
            d="m -340.3,0 c 0,9.20475 -7.462,16.6667 -16.667,16.6667 -9.205,0 -16.667,-7.46195 -16.667,-16.6667 0,-9.20475 7.462,-16.6667 16.667,-16.6667 9.205,0 16.667,7.46195 16.667,16.6667"
@@ -661,8 +652,7 @@
          transform="translate(1293.88,876.058)"
          font-family="Cantarell"
          font-size="38.8056px"
-         id="g61"
-         inkscape:label="led5">
+         id="led5">
         <path
            fill-rule="evenodd"
            d="m -57.267,0 c 0,9.20475 -7.4619,16.6667 -16.6667,16.6667 -9.2047,0 -16.6666,-7.46195 -16.6666,-16.6667 0,-9.20475 7.4619,-16.6667 16.6666,-16.6667 9.2048,0 16.6667,7.46195 16.6667,16.6667"
@@ -678,8 +668,7 @@
          transform="translate(1293.88,876.058)"
          font-family="Cantarell"
          font-size="38.8056px"
-         id="g63"
-         inkscape:label="led4">
+         id="led4">
         <path
            fill-rule="evenodd"
            d="m -198.784,0 c 0,9.20475 -7.462,16.6667 -16.666,16.6667 -9.205,0 -16.667,-7.46195 -16.667,-16.6667 0,-9.20475 7.462,-16.6667 16.667,-16.6667 9.204,0 16.666,7.46195 16.666,16.6667"
@@ -695,8 +684,7 @@
          transform="translate(1293.88,876.058)"
          font-family="Cantarell"
          font-size="38.8056px"
-         id="g64"
-         inkscape:label="led2">
+         id="led2">
         <path
            fill-rule="evenodd"
            d="m -481.817,0 c 0,9.20475 -7.462,16.6667 -16.666,16.6667 -9.205,0 -16.667,-7.46195 -16.667,-16.6667 0,-9.20475 7.462,-16.6667 16.667,-16.6667 9.204,0 16.666,7.46195 16.666,16.6667"
@@ -712,8 +700,7 @@
          transform="translate(1293.88,876.058)"
          font-family="Cantarell"
          font-size="38.8056px"
-         id="g65"
-         inkscape:label="led8">
+         id="led8">
         <path
            fill-rule="evenodd"
            d="m 367.283,0 c 0,9.20475 -7.462,16.6667 -16.667,16.6667 -9.205,0 -16.667,-7.46195 -16.667,-16.6667 0,-9.20475 7.462,-16.6667 16.667,-16.6667 9.205,0 16.667,7.46195 16.667,16.6667"
@@ -729,8 +716,7 @@
          transform="translate(1293.88,876.058)"
          font-family="Cantarell"
          font-size="38.8056px"
-         id="g67"
-         inkscape:label="led9">
+         id="led9">
         <path
            fill-rule="evenodd"
            d="m 508.799,0 c 0,9.20475 -7.462,16.6667 -16.666,16.6667 -9.205,0 -16.667,-7.46195 -16.667,-16.6667 0,-9.20475 7.462,-16.6667 16.667,-16.6667 9.204,0 16.666,7.46195 16.666,16.6667"
@@ -17571,13 +17557,13 @@
          font-family="Cantarell"
          font-size="38.8056px"
          id="g1062"
-         style="stroke-width:7;stroke-dasharray:none;stroke:#d87637;stroke-opacity:1">
+         style="stroke-width:7;stroke-dasharray:none;stroke:none;stroke-opacity:1">
         <path
            fill-rule="evenodd"
            d="m 437.5,-2 c 0,8.83656 -7.163,16 -16,16 -8.837,0 -16,-7.16344 -16,-16 0,-8.8366 7.163,-16 16,-16 8.837,0 16,7.1634 16,16"
            vector-effect="non-scaling-stroke"
            id="path1062"
-           style="stroke-width:7;stroke-dasharray:none;stroke:#d87637;stroke-opacity:1" />
+           style="stroke-width:7;stroke-dasharray:none;stroke:none;stroke-opacity:1" />
       </g>
       <g
          stroke-linecap="round"
@@ -17712,7 +17698,7 @@
            d="m -412.5,0 c 0,8.83656 -7.163,16 -16,16 -8.837,0 -16,-7.16344 -16,-16 0,-8.83656 7.163,-16 16,-16 8.837,0 16,7.16344 16,16"
            vector-effect="non-scaling-stroke"
            id="path1069"
-           style="stroke-width:7;stroke-dasharray:none;stroke:#d87637;stroke-opacity:1" />
+           style="stroke-width:6.99999981;stroke-dasharray:none;stroke:none;stroke-opacity:1" />
       </g>
       <g
          stroke-linecap="round"
