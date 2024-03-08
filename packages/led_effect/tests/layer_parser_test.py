@@ -12,6 +12,8 @@ legacy_format_data = [
      "breathing", 2, 0, "difference", [(0.95, 0, 0)]),
     ("static         1  0     top        (1.0,  0.0, 0.0)",
      "static", 1, 0, "top", [(1, 0, 0)]),
+    ("static         1  0     top        #FF0000",
+     "static", 1, 0, "top", [(1, 0, 0)]),
 ]
 
 parameterized_line_format_data = [
@@ -26,6 +28,8 @@ parameterized_line_format_data = [
     ("    strobe(frequency=1, decay=1.5)   add        (1.0,  1.0, 1.0)",
      "strobe", {"frequency": 1, "decay": 1.5}, "add", [(1, 1, 1)]),
     ("    heater(heater=heater_bed, decay=1.5)   add        (1.0,  1.0, 1.0)",
+     "heater", {"heater": "heater_bed", "decay": 1.5}, "add", [(1, 1, 1)]),
+    ("    heater(heater=heater_bed, decay=1.5)   add        #FFFFFF",
      "heater", {"heater": "heater_bed", "decay": 1.5}, "add", [(1, 1, 1)]),
 ]
 

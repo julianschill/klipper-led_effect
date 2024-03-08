@@ -12,7 +12,12 @@ parameter: CNAME "=" (NUMBER | string)
 NUMBER: (FLOAT | INT)
 
 palette: palette_entry ("," palette_entry)*
-palette_entry: "(" (NUMBER) "," (NUMBER) "," (NUMBER) ["," (NUMBER)] ")"
+palette_entry: float_triplet | hex
+float_triplet: "(" (NUMBER) "," (NUMBER) "," (NUMBER) ["," (NUMBER)] ")"
+hex: "#" HEX_VALUE HEX_VALUE HEX_VALUE
+HEX_VALUE: HEX_DIGIT HEX_DIGIT
+HEX_DIGIT: /[0-9a-fA-F]/
+
 ?string: CNAME | ESCAPED_STRING
 
 %import common.CNAME  
