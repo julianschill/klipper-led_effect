@@ -1,12 +1,16 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
-  ],
+  "extends": ["config:recommended"],
   "automerge": true,
   "automergeType": "branch",
   "branchConcurrentLimit": 3,
   "pip_requirements": {
     "enabled": false
-  }
+  },
+  "packageRules": [
+    {
+      "matchPackageNames": ["python"],
+      "enabled": false
+    }
+  ]
 }
