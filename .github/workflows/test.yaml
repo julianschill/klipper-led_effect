@@ -8,7 +8,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
     - name: Set up Python 3.11
       uses: actions/setup-python@v4
       with:
@@ -25,7 +25,7 @@ jobs:
   klipper-test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
     - name: Execute Klipper Test
       working-directory: ./packages/klipper_tests
       run: ./run.sh
