@@ -3,6 +3,9 @@
   "extends": [
     "config:recommended"
   ],
+  "automerge": true,
+  "automergeType": "branch",
+  "branchConcurrentLimit": 3,
   "pip_requirements": {
     "enabled": false
   }
