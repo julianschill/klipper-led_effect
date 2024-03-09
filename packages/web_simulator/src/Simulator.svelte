@@ -4,6 +4,7 @@
         AccordionItem,
         Alert,
         Button,
+        ButtonGroup,
         Card,
         CardBody,
         CardHeader,
@@ -14,6 +15,9 @@
         Input,
         InputGroup,
         InputGroupText,
+        Modal,
+        ModalBody,
+        ModalHeader,
         NavItem,
         Row,
     } from "@sveltestrap/sveltestrap";
@@ -50,7 +54,7 @@
         kmock = pyodide.pyimport("klippermock");
         console.log = _log;
         setTimeout(() => {
-            debugActive = false;
+            loading = false;
         }, 2000);
     };
 
@@ -145,6 +149,7 @@
             printer = initPrinter(layers, ledCount, kmock);
             error = undefined;
         } catch (e: any) {
+            console.log(error);
             error = e;
         }
     }
@@ -175,7 +180,7 @@
         };
     });
 
-    let debugActive = true;
+    let loading = true;
 
     let useMatchsticks = false;
 
@@ -198,35 +203,68 @@
         on:load={init}
     ></script>
 </svelte:head>
+
+<Modal bind:isOpen={loading}>
+    <ModalHeader>Loading</ModalHeader>
+    <ModalBody>
+        <p>Loading Python environment...</p>
+        <pre style="font-weight: bold">{pythonOutput}</pre>
+    </ModalBody>
+</Modal>
+
 <Container>
     <Card>
         <CardHeader><CardTitle>LED Effect Simulator</CardTitle></CardHeader>
         <CardBody>
+            <div style="padding: 50px 0px">
+                <LedPreview leds={currentLeds} {useMatchsticks} />
+            </div>
             <Container>
+                <Row style="margin: 10px 0 ">
+                    <Col xs="auto" sm={{ size: 2, offset: 5 }}>
+                        <ButtonGroup>
+                            <Button
+                                active={!useMatchsticks}
+                                on:click={() => (useMatchsticks = false)}
+                                >Circles</Button
+                            >
+                            <Button
+                                active={useMatchsticks}
+                                on:click={() => (useMatchsticks = true)}
+                                >Matchsticks</Button
+                            ></ButtonGroup
+                        >
+                    </Col>
+                </Row>
+
                 <Row>
-                    <Col xs="2"><b>Layers</b></Col>
-                    <Col
-                        ><Input
+                    <Col sm="2"><b>Layers</b></Col>
+                    <Col sm="10">
+                        <Input
                             type="textarea"
                             bind:value={layers}
                             style="width: 100%; font-family:'Courier New', Courier, monospace"
                             rows={10}
                         />
+                        {#if error}
+                            <Alert>
+                                <pre
+                                    style="color: red; font-weight: bold">{error}</pre>
+                            </Alert>
+                        {/if}
                     </Col>
                 </Row>
                 <Row>
-                    <Col xs="2"><b>LED Count</b></Col>
-                    <Col>
+                    <Col sm="2"><b>LED Count</b></Col>
+                    <Col sm="4">
                         <Input
                             placeholder="LED Count"
                             type="number"
                             bind:value={ledCount}
                         />
                     </Col>
-                </Row>
-                <Row>
-                    <Col xs="2"><b>Frame Rate</b></Col>
-                    <Col>
+                    <Col sm="2"><b>Frame Rate</b></Col>
+                    <Col sm="4">
                         <InputGroup>
                             <Input type="number" bind:value={fps} />
                             <InputGroupText>fps</InputGroupText>
@@ -235,7 +273,7 @@
                 </Row>
                 <hr />
                 <Row>
-                    <Col xs="2"
+                    <Col sm="2"
                         ><b>Temperature <code>heater_bed</code> (default)</b
                         ></Col
                     >
@@ -274,7 +312,7 @@
                     </Col>
                 </Row>
                 <Row>
-                    <Col xs="2"><b>Temperature <code>hotend</code></b></Col>
+                    <Col sm="2"><b>Temperature <code>hotend</code></b></Col>
                     <Col>
                         <Row>
                             <Col>
@@ -310,7 +348,7 @@
                     </Col>
                 </Row>
                 <Row>
-                    <Col xs="2"><b>Print Progress</b></Col>
+                    <Col sm="2"><b>Print Progress</b></Col>
                     <Col>
                         <InputGroup>
                             <Input type="number" bind:value={printProgress} />
@@ -319,54 +357,13 @@
                     </Col>
                 </Row>
                 <Row>
-                    <Col xs="2"><b>Preview</b></Col>
-                    <Col>
-                        <Button
-                            active={!useMatchsticks}
-                            on:click={() => (useMatchsticks = false)}
-                            >Circles</Button
-                        >
-                        <Button
-                            active={useMatchsticks}
-                            on:click={() => (useMatchsticks = true)}
-                            >Matchsticks</Button
-                        >
-                    </Col>
-                </Row>
-                <Row>
-                    <Col xs="2"><b>Simulate Print</b></Col>
-                    <Col>
-                        Status: {simulationStatus}<br />
-                        <Button on:click={() => printSimulator.run()}
-                            >Start</Button
-                        >
-                        <Button on:click={() => printSimulator.stop()}
-                            >Stop</Button
-                        >
-                    </Col>
+                    <Col sm={{ offset: 5, size: 2 }}>
+                        <Button on:click={share}
+                            >{shared ? "Copied to Clipboard" : "Share"}</Button
+                        ></Col
+                    >
                 </Row>
             </Container>
-
-            <div style="padding: 50px 0px">
-                <LedPreview leds={currentLeds} {useMatchsticks} />
-            </div>
-            <Button on:click={share}
-                >{shared ? "Copied to Clipboard" : "Share"}</Button
-            >
-            <Accordion stayOpen>
-                <AccordionItem
-                    header="Debug"
-                    active={debugActive}
-                    on:toggle={(e) => (debugActive = e.detail)}
-                >
-                    <pre style="font-weight: bold">{pythonOutput}</pre>
-                </AccordionItem>
-            </Accordion>
-            {#if error}
-                <Alert>
-                    <pre style="color: red; font-weight: bold">{error}</pre>
-                </Alert>
-            {/if}
         </CardBody>
     </Card>
 </Container>

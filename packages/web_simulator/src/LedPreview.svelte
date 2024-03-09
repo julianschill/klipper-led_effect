@@ -55,9 +55,8 @@
         }
     }
     .preview-container {
-        display: grid;
-        grid-template-columns: repeat(10, 1fr);
-        justify-items: center;
+        display: block;
+        text-align: center;
         max-width: 600px;
         margin: 0 auto;
     }
