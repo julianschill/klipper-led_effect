@@ -9,7 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "<3.12,>=3.8"
 wxPython = "^4.2.0"
-pyinstaller = "^5.4.1"
+pyinstaller = "^6.0.0"
 numpy = ">1.22"
 klippermock = {path = "../klippermock", develop = true}
 
