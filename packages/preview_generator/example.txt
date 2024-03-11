@@ -1,0 +1,4 @@
+heater(heater=heater_bed,minTemp=20,disableOnceReached=1,colorSpace=hsl) top #00AA00, #AAAA00, #FF0000,  #FF0000, #FF0000
+heater(heater=hotend,minTemp=20,disableOnceReached=1,colorSpace=hsl) top #00AA00, #AAAA00, #FF0000,  #FF0000, #FF0000
+linearfade(duration=5) multiply #FFFFFF, #AAAAAA, #555555
+comet(speed=0.5,tailLength=5,colorSpace=hsl) add #FF6C11, #FF3864, #2DE2E6, #261447, #0D0221, #023788
