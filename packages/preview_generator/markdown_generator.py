@@ -8,7 +8,9 @@ args = None
 
 def replace_with_preview(match):
     layers = match.group(2)
-    filename = "preview_" + str(zlib.crc32(layers.encode('utf-8')))+".gif"
+    output_dir = os.path.dirname(args.markdown.name)
+    filename = os.path.join(output_dir, args.directory, "preview_" + str(zlib.crc32(layers.encode('utf-8')))+".gif")
+    relative_filename = "./"+os.path.relpath(filename, os.path.dirname(args.markdown.name))
     # If file doesn't exist
     if not os.path.exists(filename):
         print("Generating "+filename)
@@ -19,7 +21,7 @@ def replace_with_preview(match):
 
 ```layers
 %s
-```""" % (filename, layers)
+```""" % (relative_filename, layers)
 
 
 if __name__ == '__main__':
@@ -29,11 +31,15 @@ if __name__ == '__main__':
     parser.add_argument('markdown', type=argparse.FileType('r'))
     parser.add_argument('--fps', default=24, type=int)
     parser.add_argument('--seconds', '-s', default=10, type=int)
+    parser.add_argument('--directory', default=".", type=str)
     parser.add_argument('--diameter', '-d', default=50, type=int)
     parser.add_argument('--margin', '-m', default=5, type=int)
     parser.add_argument('--leds', '-l', default=10, type=int)
     args = parser.parse_args()
     
+    if not os.path.exists(os.path.join(os.path.dirname(args.markdown.name), args.directory)):
+        os.makedirs(os.path.join(os.path.dirname(args.markdown.name), args.directory))
+
     markdown = args.markdown.read()
     args.markdown.close()
     markdown = re.sub(r'(!\[Preview\]\(.+\)\n+)?```layers\n(.*?)\n```', replace_with_preview, markdown)
