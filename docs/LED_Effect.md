@@ -278,7 +278,7 @@ Some Sample Palettes:
     Fire       (0.0, 0.0, 0.0),(1.0, 0.0, 0.0),(1.0, 1.0, 0.0),(1.0, 1.0, 1.0)
     Blue Comet (0.8, 1.0, 1.0),(0.0, 0.8, 1.0),(0.0, 0.0, 1.0)
 
-![Preview](./preview_3959151186.gif)
+![Preview](./preview_2551992761.gif)
 
 ```
 layers:
