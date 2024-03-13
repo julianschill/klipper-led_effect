@@ -31,6 +31,8 @@ parameterized_line_format_data = [
      "heater", {"heater": "heater_bed", "decay": 1.5}, "add", [(1, 1, 1)]),
     ("    heater(heater=heater_bed, decay=1.5)   add        #FFFFFF",
      "heater", {"heater": "heater_bed", "decay": 1.5}, "add", [(1, 1, 1)]),
+    ("    heater(heater=heater_bed, decay=1.5)   add        $FFFFFF",
+     "heater", {"heater": "heater_bed", "decay": 1.5}, "add", [(1, 1, 1)]),
 ]
 
 

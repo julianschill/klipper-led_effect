@@ -14,7 +14,7 @@ NUMBER: (FLOAT | INT)
 palette: palette_entry ("," palette_entry)*
 palette_entry: float_triplet | hex
 float_triplet: "(" (NUMBER) "," (NUMBER) "," (NUMBER) ["," (NUMBER)] ")"
-hex: "#" HEX_VALUE HEX_VALUE HEX_VALUE
+hex: ("#" | "$") HEX_VALUE HEX_VALUE HEX_VALUE
 HEX_VALUE: HEX_DIGIT HEX_DIGIT
 HEX_DIGIT: /[0-9a-fA-F]/
 
