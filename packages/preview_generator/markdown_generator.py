@@ -11,7 +11,7 @@ def replace_with_preview(match):
     content = match.group('block')
     layers = match.group('layers')
     output_dir = os.path.dirname(args.markdown.name)
-    filename = os.path.join(output_dir, args.directory, "preview_" + str(zlib.crc32(layers.encode('utf-8')))+".gif")
+    filename = os.path.join(output_dir, args.directory, "preview_" + str(zlib.crc32(repr([layers, args]).encode('utf-8')))+".gif")
     relative_filename = "./"+os.path.relpath(filename, os.path.dirname(args.markdown.name))
     # If file doesn't exist
     if not os.path.exists(filename):
