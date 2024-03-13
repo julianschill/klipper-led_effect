@@ -3,11 +3,13 @@ import zlib
 import os
 import argparse
 from preview_generator import generate_preview
+from preview_generator import markdown_regex
 
 args = None
 
 def replace_with_preview(match):
-    layers = match.group(2)
+    content = match.group('block')
+    layers = match.group('layers')
     output_dir = os.path.dirname(args.markdown.name)
     filename = os.path.join(output_dir, args.directory, "preview_" + str(zlib.crc32(layers.encode('utf-8')))+".gif")
     relative_filename = "./"+os.path.relpath(filename, os.path.dirname(args.markdown.name))
@@ -19,9 +21,7 @@ def replace_with_preview(match):
         print("Using existing "+filename)
     return """![Preview](%s)
 
-```layers
-%s
-```""" % (relative_filename, layers)
+%s""" % (relative_filename, content)
 
 
 if __name__ == '__main__':
@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
     markdown = args.markdown.read()
     args.markdown.close()
-    markdown = re.sub(r'(!\[Preview\]\(.+\)\n+)?```layers\n(.*?)\n```', replace_with_preview, markdown)
+    markdown = markdown_regex.sub(replace_with_preview, markdown)
     file = open(args.markdown.name, 'w')
     file.write(markdown)
     file.close()
