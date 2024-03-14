@@ -291,21 +291,21 @@ Some example palettes:
 
 #### Rainbow
 
-![Preview](./preview_3417320710.gif)
+![Preview](./preview_829209814.gif)
 
 ```layers
 static 0 0 top (1.0, 0.0, 0.0),(0.0, 1.0, 0.0),(0.0, 0.0, 1.0)
 ```
 
 #### Fire
-![Preview](./preview_3330680942.gif)
+![Preview](./preview_1232862404.gif)
 
 ```layers
 static 0 0 top (0.0, 0.0, 0.0),(1.0, 0.0, 0.0),(1.0, 1.0, 0.0),(1.0, 1.0, 1.0)
 ```
 
 #### Blue Comet 
-![Preview](./preview_2827746984.gif)
+![Preview](./preview_2159877979.gif)
 
 ```layers
 static 0 0 top (0.8, 1.0, 1.0),(0.0, 0.8, 1.0),(0.0, 0.0, 1.0)
