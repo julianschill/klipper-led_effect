@@ -23,6 +23,12 @@ class TermTransformer(layer_parser_lark.Transformer):
 
     def hex(self, hex):
         return tuple([int(hexVal,16)/255.0 for hexVal in hex])
+    
+    def rgb(self, rgb):
+        return tuple([int(rgbVal)/255.0 for rgbVal in rgb])
+    
+    def rgbw(self, rgbw):
+        return self.rgb(rgbw)
 
     def legacy_line(self, children):
         effect, rate, cutoff, blend, palette = children
