@@ -179,35 +179,35 @@ to pass any parameters.
 
 ### Additional effect level parameters
 
-autostart: true
+`autostart: true`  
 Starts the effect on startup
 
-frame_rate:
+`frame_rate: 24`  
 Sets the frame rate in frames per second for the effect
 
-run_on_error:
+`run_on_error: true`  
 (Needs patched MCU firmware. Currently not supported.)
 
-recalculate:
+`recalculate: true`  
 Enable layer template recalculation on effect activation.
 
-heater:
-Specifies the heater to use for a heater effect. Use `extruder` for the
+`heater: heater_bed`  
+Specifies the default heater to use for a heater effect. Use `extruder` for the
 extruder and `heater_bed` for the bed. For temperature fans or  sensors add the
 type and use quotes.
 Example: `heater: "temperature_fan myfan"`
 
-analog_pin:
+`analog_pin`  
 Specifies the pin to use for effects using an analog signal.
 
-stepper:
+`stepper: x`  
 Specifies the axis to use for the stepper effect. Possible values are:
-`x`, `y` and `z`. Example: `stepper: x`
+`x`, `y` and `z`.
 
-endstops:
+`endstops: x, y`  
 Specifies the endstops the homing effect triggers on. Multiple endstops can be
 specified as a comma seprated list. Possible values are: `x`, `y`, `z` and `probe`.
-Example: `endstops: x, y`
+
 
 ## Defining LEDs
 
@@ -241,6 +241,7 @@ leds:
 ```
 
 ## Defining Effect Layers
+
 Effects are generated as frames. Each frame contains the number of pixels
 equal to the number of LEDs defined for the effect. So an effect with 22
 LEDs specified would have 22 pixels per frame.
@@ -262,35 +263,61 @@ Each layer is defined with the following parameters
  * Color palette
 
 Each layer must be on a single line and each line must be indented.
+
 Color palettes can be of unlimited length but may be compressed depending
-on the size of the frame or number of LEDs on a strip. Colors are defined
-as groups of Red, Green, Blue and (optional) White. The white channel only used
-on RGBW LEDs and ignored on RGB LEDs. The range for each color is a decimal
-number from 0.0 to 1.0. So for yellow, you would use ( 1.0, 1.0, 0.0 ). For
-white you would use ( 1.0, 1.0, 1.0 ) on an RGB LED or ( 0.0, 0.0, 0.0, 1.0 )
-on an RGBW LED.
+on the size of the frame or number of LEDs on a strip. 
 
-Individual colors must be wrapped in parentheses and separated by commas.
+Colors are defined
+as groups of Red, Green, Blue and (optional) White. The white channel only used on RGBW LEDs and ignored on RGB LEDs. 
 
-Some Sample Palettes:
-
-    Rainbow    (1.0, 0.0, 0.0),(0.0, 1.0, 0.0),(0.0, 0.0, 1.0)
-    Fire       (0.0, 0.0, 0.0),(1.0, 0.0, 0.0),(1.0, 1.0, 0.0),(1.0, 1.0, 1.0)
-    Blue Comet (0.8, 1.0, 1.0),(0.0, 0.8, 1.0),(0.0, 0.0, 1.0)
-
-![Preview](./preview_2551992761.gif)
+Colors can be specified as decimals, hex-values (with `$` instead of `#` due to klipper's configuration parser) or rgbw values:
 
 ```
-layers:
-   breathing  .5 0 screen (0,.1,1), (0,1,.5), (0, 1,1), (0,.1,.5)
-   static     1 0 bottom (1,.1,0), (1,.1,0), (1,.1,0), (1,1,0)
+# White
+(1.0, 1.0, 1.0)
+(1.0, 1.0, 1.0, 1.0)
+$FFFFFF
+$FFFFFFFF
+rgb(255, 255, 255)
+rgbw(255, 255, 255, 255)
 ```
-There are several effects to choose from.
+
+A palette is a comma-separated list of colors, e.g. 
+```
+(1.0, 0.0, 0.0),(0.0, 1.0, 0.0),(0.0, 0.0, 1.0)
+```
+
+Some example palettes: 
+
+#### Rainbow
+
+![Preview](./preview_3417320710.gif)
+
+```layers
+static 0 0 top (1.0, 0.0, 0.0),(0.0, 1.0, 0.0),(0.0, 0.0, 1.0)
+```
+
+#### Fire
+![Preview](./preview_3330680942.gif)
+
+```layers
+static 0 0 top (0.0, 0.0, 0.0),(1.0, 0.0, 0.0),(1.0, 1.0, 0.0),(1.0, 1.0, 1.0)
+```
+
+#### Blue Comet 
+![Preview](./preview_2827746984.gif)
+
+```layers
+static 0 0 top (0.8, 1.0, 1.0),(0.0, 0.8, 1.0),(0.0, 0.0, 1.0)
+```
+
+### Effects
 
 #### Static
     Effect Rate:  Not used but must be provided
     Cutoff:       Not used but must be provided
     Palette:      Colors are blended evenly across the strip
+
 A single color is displayed and it does not change. If a palette of multiple
 colors is provided, colors will be evenly blended along the LEDs based on
 difference in hue.
