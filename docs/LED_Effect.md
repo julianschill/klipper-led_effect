@@ -291,21 +291,21 @@ Some example palettes:
 
 #### Rainbow
 
-![Preview](./preview_829209814.gif)
+![Preview](./preview_3417320710.gif)
 
 ```layers
 static 0 0 top (1.0, 0.0, 0.0),(0.0, 1.0, 0.0),(0.0, 0.0, 1.0)
 ```
 
 #### Fire
-![Preview](./preview_1232862404.gif)
+![Preview](./preview_3330680942.gif)
 
 ```layers
 static 0 0 top (0.0, 0.0, 0.0),(1.0, 0.0, 0.0),(1.0, 1.0, 0.0),(1.0, 1.0, 1.0)
 ```
 
 #### Blue Comet 
-![Preview](./preview_2159877979.gif)
+![Preview](./preview_2827746984.gif)
 
 ```layers
 static 0 0 top (0.8, 1.0, 1.0),(0.0, 0.8, 1.0),(0.0, 0.0, 1.0)
@@ -322,8 +322,21 @@ A single color is displayed and it does not change. If a palette of multiple
 colors is provided, colors will be evenly blended along the LEDs based on
 difference in hue.
 
+![Preview](./preview_3679326809.gif)
+
+```layers
+static 1 1 top $FF0000
+```
+
+![Preview](./preview_547140936.gif)
+
+```layers
+static 1 1 top $FF0000, $00FF00, $0000FF
+```
+
+
 #### LinearFade
-    Effect Rate:  3   Duration of a complete cycle
+    Effect Rate:  3   Duration of a complete cycle (`duration`)
     Cutoff:       0   Not used but must be provided
     Palette:          Colors are cycled in order
 
@@ -331,8 +344,14 @@ LEDs fade through the colors. If a palette of multiple colors is provided, it
 will cycle through those colors in the order they are specified in the palette.
 The effect rate parameter controls how long it takes to go through all colors.
 
+![Preview](./preview_2292431945.gif)
+
+```layers
+linearfade(duration=1) top $FF0000, $00FF00, $0000FF
+```
+
 #### Breathing
-    Effect Rate:  3   Duration of a complete cycle
+    Effect Rate:  3   Duration of a complete cycle (`duration`)
     Cutoff:       0   Not used but must be provided
     Palette:          Colors are cycled in order
 
@@ -340,13 +359,25 @@ Colors fade in and out. If a palette of multiple colors is provided, it will
 cycle through those colors in the order they are specified in the palette.
 The effect rate parameter controls how long it takes to "breathe" one time.
 
+![Preview](./preview_695489835.gif)
+
+```layers
+breathing(duration=2) top $FF0000, $00FF00
+```
+
 #### Blink
-    Effect Rate:  1   Duration of a complete cycle
-    Cutoff:       0.5 Ratio of the time the LEDs are on (between 0 and 1)
+    Effect Rate:  1   Duration of a complete cycle (`duration`)
+    Cutoff:       0.5 Ratio of the time the LEDs are on (between 0 and 1) (`onRatio`)
     Palette:          Colors are cycled in order
 
 LEDs are turned fully on and fully off based on the effect speed. If a palette
 of multiple colors is provided, it will cycle through those colors in order.
+
+![Preview](./preview_3901560142.gif)
+
+```layers
+blink(duration=2,onRatio=0.2) top $FF0000, $0000FF
+```
 
 #### Strobe
     Effect Rate:  1   Number of times per second to strobe
@@ -358,12 +389,25 @@ of multiple colors is provided, it will cycle through those colors in order. The
 effect rate controls how many times per second the lights will strobe. The cutoff
 parameter controls the decay rate. A good decay rate is 1.5.
 
+![Preview](./preview_3362067017.gif)
+
+```layers
+strobe(frequency=0.5,decayRate=0.1) top $FF0000, $0000FF
+```
+
+
 #### Twinkle
     Effect Rate:  1   Increases the probability that an LED will illuminate. (0 = never, 254 = always)
     Cutoff:       .25 Determines decay rate. A higher number yields quicker decay
     Palette:          Random color chosen
 Random flashes of light with decay along a strip. If a palette is specified,
 a random color is chosen from the palette.
+
+![Preview](./preview_2763695045.gif)
+
+```layers
+twinkle(probability=0.1,decayRate=0.01) top $00FF00
+```
 
 #### Gradient
     Effect Rate:  1   How fast to cycle through the gradient, negative values change direction.
@@ -377,6 +421,24 @@ length of the gradient in relation to the chain length. The bigger the value,
 the shorter the gradient (e.g. the value 2 means 2 gradients on the length of
 the chain)
 
+![Preview](./preview_3226843640.gif)
+
+```layers
+gradient(speed=1,count=1) top $FF0000, $00FFFF
+```
+
+![Preview](./preview_2162441217.gif)
+
+```layers
+gradient(speed=1,count=1,colorSpace=hsl) top $FF0000, $00FFFF
+```
+
+![Preview](./preview_997577867.gif)
+
+```layers
+gradient(speed=1,count=1,colorSpace=none) top $FF0000, $00FFFF
+```
+
 #### Pattern
     Effect Rate:  1   Time between pattern shifts
     Cutoff:       1   How far the pattern gets shifted
@@ -384,6 +446,13 @@ the chain)
 The palette is applied as a recurring pattern on the chain and shifted along the
 chain. The effect rate determines the time between the shifts in seconds, the
 cutoff determines the amount of LED positions the pattern gets shifted.
+
+![Preview](./preview_3280859285.gif)
+
+```layers
+pattern(duration=2,shift=1) top $FF0000, $00FFFF
+```
+
 
 #### Comet
     Effect Rate:  1   How fast the comet moves, negative values change direction
@@ -394,11 +463,23 @@ by using a negative effect rate value. The palette colors determine the color
 of the comet and the tail. The first color of the palette defines the color of
 the "head" of the comet and the remaining colors are blended into the "tail"
 
+![Preview](./preview_3173539476.gif)
+
+```layers
+comet(speed=0.5,tailLength=5,colorSpace=hsl) top $FF6C11, $FF3864, $2DE2E6, $261447, $0D0221, $023788
+```
+
 #### Chase
     Effect Rate:  1   How fast the comet moves, negative values change direction
     Cutoff:       1   Length of tail (somewhat arbitrary)
     Palette:          Color of "head" and gradient of "tail"
 Identical settings as Comet, but with multiple lights chasing each other.
+
+![Preview](./preview_4075602624.gif)
+
+```layers
+chase(speed=0.5,tailLength=2,colorSpace=hsl) top $FF6C11, $FF3864, $2DE2E6, $261447, $0D0221, $023788
+```
 
 #### Heater
     Effect Rate:  1   Minimum temperature to activate effect
@@ -415,6 +496,12 @@ the colors will follow this pattern in reverse until the temperature falls
 below the minimum temperature specified in the config. This can be used to
 indicate the hotend or bed is in a safe state to touch.
 
+![Preview](./preview_1702150654.gif)
+
+```layers
+heater(minTemp=10,disableOnceReached=1,heater=heater_bed) top (0.227,0.427,0.705),(0.113,1,0.168),(1,0.85,0.168),(1.00,0.47,0.00),(1,0.392,0.196),(1,0.313,0.156),(1,0.078,0.078),(1,0,0),(1,0,0)
+```
+
 #### Temperature
     Effect Rate:  20  Cold Temperature
     Cutoff:       80  Hot Temperature
@@ -422,6 +509,12 @@ indicate the hotend or bed is in a safe state to touch.
 The temperature of the configured heater determines the color in a gradient over
 the palette. When only one color is defined in the palette, the brightness of
 that color is defined by the temperature.
+
+![Preview](./preview_3529488879.gif)
+
+```layers
+temperature(minTemp=10,maxTemp=60,heater=heater_bed) top (0.227,0.427,0.705),(0.113,1,0.168),(1,0.85,0.168),(1.00,0.47,0.00),(1,0.392,0.196),(1,0.313,0.156),(1,0.078,0.078),(1,0,0),(1,0,0)
+```
 
 #### Fire
     Effect Rate:  45  Probability of "sparking"
@@ -434,6 +527,12 @@ where it gradually cools. A higher rate of sparking causes a greater amount
 of heat to accumulate at the base of the strip resulting a more intense flame.
 Changing the rate of cooling results in longer or shorter overall flames.
 
+![Preview](./preview_4243066734.gif)
+
+```layers
+fire(sparkProbability=45,coolingRate=40) top $FF0000, $AA0000
+```
+
 #### HeaterFire
     Effect Rate:  1   Minimum temperature to activate effect
     Cutoff:       0   Disable effect once temp is reached
@@ -443,6 +542,13 @@ The flame starts as a small ember and increases in intensity as the heater's
 target temperature is reached. If the cutoff parameter is set to 1, the effect
 will be disabled once the target temperature is reached, otherwise it will
 stay active until the heater is disabled.
+
+![Preview](./preview_500401529.gif)
+
+```layers
+heaterfire(minTemp=10,disableOnceReached=0) top $0000FF, $AA0000
+```
+
 
 #### AnalogPin
     Effect Rate:  10  Multiplier for input signal
@@ -485,6 +591,13 @@ palette, that is calculated as a gradient over the specified color values.
     Palette:          Color values to blend
 Exact same configuration as Stepper but instead of reporting stepper position, this
 layer reports print progress.
+
+![Preview](./preview_649697196.gif)
+
+```layers
+progress(trailingLedCount=2,leadingLedCount=2) top $0000FF, $AA0000
+```
+
 
 #### Homing
     Effect Rate:  1   Determines decay rate. A higher number yields slower decay

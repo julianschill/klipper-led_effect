@@ -8,6 +8,9 @@ def generate_preview(layers, fps, seconds, leds, diameter, margin, output):
     config.set("layers", layers)
     printer = mockPrinter(config)
     printer._handle_ready()
+    printer.led_effect.handler.heaterCurrent = { "heater_bed": 0 } 
+    printer.led_effect.handler.heaterTarget = { "heater_bed": 60 }
+    printer.led_effect.handler.heaterLast = { "heater_bed": 0 } 
 
     width = leds*diameter + margin*(leds+1)
     height = diameter+margin*2
@@ -15,6 +18,8 @@ def generate_preview(layers, fps, seconds, leds, diameter, margin, output):
     frames = []
     
     for i in range(seconds*fps):
+        printer.led_effect.handler.heaterCurrent["heater_bed"] = 60*i/(seconds*fps)
+        printer.set_progress(int(100*i/(seconds*fps)))
         frame = printer.led_effect.getFrame(i)[0]
         img = Image.new('RGBA', (width, height), color=(0, 0, 0, 0))
         draw = ImageDraw.Draw(img)

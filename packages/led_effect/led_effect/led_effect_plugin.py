@@ -1135,7 +1135,7 @@ class ledEffect:
     class layerFire(_layerBase):
         def __init__(self,  **kwargs):
             super(ledEffect.layerFire, self).__init__(**kwargs)
-            self.sparkPropability = kwargs["sparkPropability"] if "sparkPropability" in kwargs else kwargs["effectRate"]
+            self.sparkProbability = kwargs["sparkProbability"] if "sparkProbability" in kwargs else kwargs["effectRate"]
             self.coolingRate = kwargs["coolingRate"] if "coolingRate" in kwargs else kwargs["effectCutoff"]
 
             self.heatMap    = [0.0] * self.ledCount
@@ -1144,7 +1144,7 @@ class ledEffect:
             self.frameLen   = len(self.gradient)
             self.heatLen    = len(self.heatMap)
             self.heatSource = int(self.ledCount / 10.0)
-            self.sparkPropability = int(self.sparkPropability)
+            self.sparkProbability = int(self.sparkProbability)
 
             if self.heatSource < 1:
                 self.heatSource = 1
@@ -1163,7 +1163,7 @@ class ledEffect:
 
                 self.heatMap[i] = d * (d >= 0)
 
-            if randint(0, 100) < self.sparkPropability:
+            if randint(0, 100) < self.sparkProbability:
                 h = randint(0, self.heatSource)
                 self.heatMap[h] += randint(90,100)
                 if self.heatMap[h] > 100:
