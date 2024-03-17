@@ -6,13 +6,14 @@ description = ""
 
 [tool.poetry.dependencies]
 python = "<3.12,>=3.8"
-colormath = "^3.0.0"
 
 [tool.poetry.group.dev.dependencies]
 lark = "^1.1.9"
 pytest = "^8.0.1"
 pytest-golden = "^0.2.2"
 klippermock = {path = "../klippermock", develop = true}
+hypothesis = "^6.99.6"
+colormath = "^3.0.0"
 
 [build-system]
 requires = ["poetry-core"]

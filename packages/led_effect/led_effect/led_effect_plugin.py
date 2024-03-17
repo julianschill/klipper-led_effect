@@ -9,13 +9,8 @@
 from math import cos, exp, pi
 from random import randint
 import logging
-from colormath.color_conversions import convert_color
-from colormath.color_objects import (
-    sRGBColor,
-    LabColor,
-    HSLColor
-)
 from . import layer_parser
+from . import color_conversions
 
 ANALOG_SAMPLE_TIME  = 0.001
 ANALOG_SAMPLE_COUNT = 5
@@ -612,25 +607,16 @@ class ledEffect:
             if colorSpace == "none":
                 return color1 if r <= 0.5 else color2
             
-            a = color1[3]*(1-r) + color2[3]*r
-            c1 = sRGBColor(color1[0], color1[1], color1[2])
-            c2 = sRGBColor(color2[0], color2[1], color2[2])
-
             if colorSpace == 'hsl':
-                c1 = convert_color(c1, HSLColor).get_value_tuple()
-                c2 = convert_color(c2, HSLColor).get_value_tuple()
+                a = color1[3]*(1-r) + color2[3]*r
+                c1 = [c*255 for c in color1[:3]]
+                c2 = [c*255 for c in color2[:3]]
+                c1 = color_conversions.rgb_to_hsl(c1)
+                c2 = color_conversions.rgb_to_hsl(c2)
                 mix = [((1-r)*c1[m] + r*c2[m]) for m in range(3)]
-                mix = HSLColor(mix[0], mix[1], mix[2])
-                mix = convert_color(mix, sRGBColor).get_value_tuple()
-                return [mix[0], mix[1], mix[2], a]
-
-            if colorSpace == 'lab':
-                c1 = convert_color(c1, LabColor).get_value_tuple()
-                c2 = convert_color(c2, LabColor).get_value_tuple()
-                mix = [((1-r)*c1[m] + r*c2[m]) for m in range(3)]
-                mix = LabColor(mix[0], mix[1], mix[2])
-                mix = convert_color(mix, sRGBColor).get_value_tuple()
-                return [mix[0], mix[1], mix[2], a]
+                mix = color_conversions.hsl_to_rgb(mix)
+                print(mix)
+                return [mix[0]/255, mix[1]/255, mix[2]/255, a]
 
 
             return [((1-r)*color1[m] + r*color2[m]) for m in range(4)]

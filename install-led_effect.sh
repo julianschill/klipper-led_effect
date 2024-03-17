@@ -111,13 +111,6 @@ link_extension()
     echo "[OK]"
 }
 
-install_requirements() 
-(
-    echo -n "Installing requirements... "
-    source "${VENV_PATH}/bin/activate"
-    pip install -r "${SRCDIR}/packages/led_effect/requirements.txt"
-    echo "[OK]"
-)
 
 # Restart moonraker
 restart_moonraker()
@@ -196,7 +189,6 @@ check_folders
 [ $RESTART_SERVICE -eq 1 ] && stop_klipper
 if [ ! $UNINSTALL ]; then
    link_extension
-   install_requirements
    [ $UPDATE_MOONRAKER -eq 1 ] && add_updater
 else
     uninstall

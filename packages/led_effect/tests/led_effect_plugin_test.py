@@ -76,20 +76,17 @@ def test_color_blending_colorspace_rgb_default():
     ], True)
 
 
-def test_color_blending_colorspace_lab():
+def test_color_blending_colorspace_hsl():
     config = mockConfig()
-    config.setint("ledcount", 3)
+    config.setint("ledcount", 10)
     config.set(
         "layers", """
-            static(colorSpace=lab) top (1, 0, 0), (0, 0, 1)
+            static(colorSpace=hsl) top (1, 0, 0), (0, 0, 1)
             """)
     printer = mockPrinter(config)
     printer._handle_ready()
-    assert printer.led_effect.getFrame(0) == ([
-        1.0, 0.0, 0.0, 0.0,
-        0.7923588275927302, 0.0, 0.5387489625917922, 0.0,
-        0.0, 0.0, 1.0, 0.0
-    ], True)
+    assert printer.led_effect.getFrame(0) == (
+        [1.0, 0.0, 0.0, 0.0, 1.0, 0.44313725490196076, 0.0, 0.0, 1.0, 0.8901960784313725, 0.0, 0.0, 0.6666666666666666, 1.0, 0.0, 0.0, 0.2235294117647059, 1.0, 0.0, 0.0, 0.0, 1.0, 0.2235294117647059, 0.0, 0.0, 1.0, 0.6666666666666666, 0.0, 0.0, 0.8901960784313725, 1.0, 0.0, 0.0, 0.44313725490196076, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0], True)
 
 
 def test_color_blending_colorspace_none():
