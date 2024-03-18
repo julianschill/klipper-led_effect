@@ -291,21 +291,21 @@ Some example palettes:
 
 #### Rainbow
 
-![Preview](./preview_829209814.gif)
+![Preview](./img/preview_1007800080.gif)
 
 ```layers
 static 0 0 top (1.0, 0.0, 0.0),(0.0, 1.0, 0.0),(0.0, 0.0, 1.0)
 ```
 
 #### Fire
-![Preview](./preview_1232862404.gif)
+![Preview](./img/preview_842630724.gif)
 
 ```layers
 static 0 0 top (0.0, 0.0, 0.0),(1.0, 0.0, 0.0),(1.0, 1.0, 0.0),(1.0, 1.0, 1.0)
 ```
 
 #### Blue Comet 
-![Preview](./preview_2159877979.gif)
+![Preview](./img/preview_4259539605.gif)
 
 ```layers
 static 0 0 top (0.8, 1.0, 1.0),(0.0, 0.8, 1.0),(0.0, 0.0, 1.0)
@@ -315,27 +315,27 @@ static 0 0 top (0.8, 1.0, 1.0),(0.0, 0.8, 1.0),(0.0, 0.0, 1.0)
 
 For every effect that generates a gradient, the colorSpace used for creating the gradient can be specified. This can lead to more natural looking gradients, or avoid white-out transitions between colors.
 
-![Preview](./preview_4082196249.gif)
+![Preview](./img/preview_1232106862.gif)
 
 ```layers
 static(colorSpace=rgb) top $0000FF, $00FF00, $FFFF00, $FF0000
 ```
 
 
-![Preview](./preview_2719400867.gif)
+![Preview](./img/preview_2934160756.gif)
 
 ```layers
 static(colorSpace=hsl) top $0000FF, $00FF00, $FFFF00, $FF0000
 ```
 
-![Preview](./preview_3671105317.gif)
+![Preview](./img/preview_2716329888.gif)
 
 ```layers
 static(colorSpace=lab) top $0000FF, $00FF00, $FFFF00, $FF0000
 ```
 
 `none` disables mixing and just repeats the palette evenly among the leds.
-![Preview](./preview_370733836.gif)
+![Preview](./img/preview_2711984624.gif)
 
 ```layers
 static(colorSpace=none) top $0000FF, $00FF00, $FFFF00, $FF0000
@@ -352,13 +352,13 @@ A single color is displayed and it does not change. If a palette of multiple
 colors is provided, colors will be evenly blended along the LEDs based on
 difference in hue.
 
-![Preview](./preview_396560817.gif)
+![Preview](./img/preview_2913358780.gif)
 
 ```layers
 static 1 1 top $FF0000
 ```
 
-![Preview](./preview_724848644.gif)
+![Preview](./img/preview_648273030.gif)
 
 ```layers
 static 1 1 top $FF0000, $00FF00, $0000FF
@@ -374,7 +374,7 @@ LEDs fade through the colors. If a palette of multiple colors is provided, it
 will cycle through those colors in the order they are specified in the palette.
 The effect rate parameter controls how long it takes to go through all colors.
 
-![Preview](./preview_1655327484.gif)
+![Preview](./img/preview_128190423.gif)
 
 ```layers
 linearfade(duration=1) top $FF0000, $00FF00, $0000FF
@@ -389,7 +389,7 @@ Colors fade in and out. If a palette of multiple colors is provided, it will
 cycle through those colors in the order they are specified in the palette.
 The effect rate parameter controls how long it takes to "breathe" one time.
 
-![Preview](./preview_3453201676.gif)
+![Preview](./img/preview_762724040.gif)
 
 ```layers
 breathing(duration=2) top $FF0000, $00FF00
@@ -403,7 +403,7 @@ breathing(duration=2) top $FF0000, $00FF00
 LEDs are turned fully on and fully off based on the effect speed. If a palette
 of multiple colors is provided, it will cycle through those colors in order.
 
-![Preview](./preview_2566067626.gif)
+![Preview](./img/preview_277957433.gif)
 
 ```layers
 blink(duration=2,onRatio=0.2) top $FF0000, $0000FF
@@ -419,7 +419,7 @@ of multiple colors is provided, it will cycle through those colors in order. The
 effect rate controls how many times per second the lights will strobe. The cutoff
 parameter controls the decay rate. A good decay rate is 1.5.
 
-![Preview](./preview_671701181.gif)
+![Preview](./img/preview_494879352.gif)
 
 ```layers
 strobe(frequency=0.5,decayRate=0.1) top $FF0000, $0000FF
@@ -433,7 +433,7 @@ strobe(frequency=0.5,decayRate=0.1) top $FF0000, $0000FF
 Random flashes of light with decay along a strip. If a palette is specified,
 a random color is chosen from the palette.
 
-![Preview](./preview_3882279444.gif)
+![Preview](./img/preview_1225707557.gif)
 
 ```layers
 twinkle(probability=0.1,decayRate=0.01) top $00FF00
@@ -451,19 +451,19 @@ length of the gradient in relation to the chain length. The bigger the value,
 the shorter the gradient (e.g. the value 2 means 2 gradients on the length of
 the chain)
 
-![Preview](./preview_1812308691.gif)
+![Preview](./img/preview_3144244063.gif)
 
 ```layers
 gradient(speed=1,count=1) top $FF0000, $00FFFF
 ```
 
-![Preview](./preview_1540653065.gif)
+![Preview](./img/preview_366870783.gif)
 
 ```layers
 gradient(speed=1,count=1,colorSpace=hsl) top $FF0000, $00FFFF
 ```
 
-![Preview](./preview_4269349779.gif)
+![Preview](./img/preview_4188900622.gif)
 
 ```layers
 gradient(speed=1,count=1,colorSpace=none) top $FF0000, $00FFFF
@@ -477,7 +477,7 @@ The palette is applied as a recurring pattern on the chain and shifted along the
 chain. The effect rate determines the time between the shifts in seconds, the
 cutoff determines the amount of LED positions the pattern gets shifted.
 
-![Preview](./preview_189470620.gif)
+![Preview](./img/preview_2005084376.gif)
 
 ```layers
 pattern(duration=2,shift=1) top $FF0000, $00FFFF
@@ -493,7 +493,7 @@ by using a negative effect rate value. The palette colors determine the color
 of the comet and the tail. The first color of the palette defines the color of
 the "head" of the comet and the remaining colors are blended into the "tail"
 
-![Preview](./preview_695340313.gif)
+![Preview](./img/preview_3423969173.gif)
 
 ```layers
 comet(speed=0.5,tailLength=5,colorSpace=hsl) top $FF6C11, $FF3864, $2DE2E6, $261447, $0D0221, $023788
@@ -505,7 +505,7 @@ comet(speed=0.5,tailLength=5,colorSpace=hsl) top $FF6C11, $FF3864, $2DE2E6, $261
     Palette:          Color of "head" and gradient of "tail"
 Identical settings as Comet, but with multiple lights chasing each other.
 
-![Preview](./preview_1570801175.gif)
+![Preview](./img/preview_687643745.gif)
 
 ```layers
 chase(speed=0.5,tailLength=2,colorSpace=hsl) top $FF6C11, $FF3864, $2DE2E6, $261447, $0D0221, $023788
@@ -526,7 +526,7 @@ the colors will follow this pattern in reverse until the temperature falls
 below the minimum temperature specified in the config. This can be used to
 indicate the hotend or bed is in a safe state to touch.
 
-![Preview](./preview_564399861.gif)
+![Preview](./img/preview_2815916569.gif)
 
 ```layers
 heater(minTemp=10,disableOnceReached=1,heater=heater_bed) top (0.227,0.427,0.705),(0.113,1,0.168),(1,0.85,0.168),(1.00,0.47,0.00),(1,0.392,0.196),(1,0.313,0.156),(1,0.078,0.078),(1,0,0),(1,0,0)
@@ -540,7 +540,7 @@ The temperature of the configured heater determines the color in a gradient over
 the palette. When only one color is defined in the palette, the brightness of
 that color is defined by the temperature.
 
-![Preview](./preview_274947729.gif)
+![Preview](./img/preview_3442324617.gif)
 
 ```layers
 temperature(minTemp=10,maxTemp=60,heater=heater_bed) top (0.227,0.427,0.705),(0.113,1,0.168),(1,0.85,0.168),(1.00,0.47,0.00),(1,0.392,0.196),(1,0.313,0.156),(1,0.078,0.078),(1,0,0),(1,0,0)
@@ -557,7 +557,7 @@ where it gradually cools. A higher rate of sparking causes a greater amount
 of heat to accumulate at the base of the strip resulting a more intense flame.
 Changing the rate of cooling results in longer or shorter overall flames.
 
-![Preview](./preview_360211854.gif)
+![Preview](./img/preview_2977715752.gif)
 
 ```layers
 fire(sparkProbability=45,coolingRate=40) top $FF0000, $AA0000
@@ -573,7 +573,7 @@ target temperature is reached. If the cutoff parameter is set to 1, the effect
 will be disabled once the target temperature is reached, otherwise it will
 stay active until the heater is disabled.
 
-![Preview](./preview_1376771172.gif)
+![Preview](./img/preview_2807038225.gif)
 
 ```layers
 heaterfire(minTemp=10,disableOnceReached=0) top $0000FF, $AA0000
@@ -622,7 +622,7 @@ palette, that is calculated as a gradient over the specified color values.
 Exact same configuration as Stepper but instead of reporting stepper position, this
 layer reports print progress.
 
-![Preview](./preview_1375634942.gif)
+![Preview](./img/preview_1045006624.gif)
 
 ```layers
 progress(trailingLedCount=2,leadingLedCount=2) top $0000FF, $AA0000
