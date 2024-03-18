@@ -14,10 +14,11 @@ NUMBER: (FLOAT | INT)
 palette: palette_entry ("," palette_entry)*
 palette_entry: float_triplet | hex | rgb | rgbw
 float_triplet: "(" (NUMBER) "," (NUMBER) "," (NUMBER) ["," (NUMBER)] ")"
-hex: ("#" | "$" | "0x") HEX_VALUE HEX_VALUE HEX_VALUE HEX_VALUE?
 rgb: "rgb" "(" (NUMBER) "," (NUMBER) "," (NUMBER) ")"
 rgbw: "rgbw" "(" (NUMBER) "," (NUMBER) "," (NUMBER) "," (NUMBER) ")"
-HEX_VALUE: HEX_DIGIT HEX_DIGIT
+
+hex: ("#" | "$" | "0x") HEX_OCTET HEX_OCTET HEX_OCTET HEX_OCTET?
+HEX_OCTET: HEX_DIGIT HEX_DIGIT
 HEX_DIGIT: /[0-9a-fA-F]/
 
 ?string: CNAME | ESCAPED_STRING
