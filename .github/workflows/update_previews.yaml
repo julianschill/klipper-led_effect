@@ -35,7 +35,7 @@ jobs:
       run: |
         set -x
         for i in $(ls $GITHUB_WORKSPACE/*.md $GITHUB_WORKSPACE/docs/**/*.md $GITHUB_WORKSPACE/docs/*.md); do
-          poetry run python markdown_generator.py "$i"
+          poetry run python markdown_generator.py --directory img "$i"
         done
     - name: Commit changes
       working-directory: .
