@@ -615,7 +615,6 @@ class ledEffect:
                 c2 = color_conversions.rgb_to_hsl(c2)
                 mix = [((1-r)*c1[m] + r*c2[m]) for m in range(3)]
                 mix = color_conversions.hsl_to_rgb(mix)
-                print(mix)
                 return [mix[0]/255, mix[1]/255, mix[2]/255, a]
 
 

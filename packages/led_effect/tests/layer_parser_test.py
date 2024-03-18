@@ -14,8 +14,8 @@ legacy_format_data = [
      "static", 1, 0, "top", [(1, 0, 0)]),
     ("static         1  0     top        #FF0000",
      "static", 1, 0, "top", [(1, 0, 0)]),
-    ("static         1  0     top        #FFFFFF, #FFFFFFFF, $FFFFFF, $FFFFFFFF, (1, 1, 1), (1, 1, 1, 1), rgb(255, 255, 255), rgbw(255, 255, 255, 255)",
-     "static", 1, 0, "top", [(1, 1, 1), (1, 1, 1, 1), (1, 1, 1), (1, 1, 1, 1), (1, 1, 1), (1, 1, 1, 1), (1, 1, 1), (1, 1, 1, 1)]),
+    ("static         1  0     top        #FFFFFF, #FFFFFFFF, $FFFFFF, $FFFFFFFF, (1, 1, 1), (1, 1, 1, 1), rgb(255, 255, 255), rgbw(255, 255, 255, 255), 0xFFFFFF",
+     "static", 1, 0, "top", [(1, 1, 1), (1, 1, 1, 1), (1, 1, 1), (1, 1, 1, 1), (1, 1, 1), (1, 1, 1, 1), (1, 1, 1), (1, 1, 1, 1), (1, 1, 1)]),
 ]
 
 parameterized_line_format_data = [
