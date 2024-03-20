@@ -1,10 +1,10 @@
 line: legacy_line | parameterized_line
 
 legacy_line: LAYER_NAME RATE CUTOFF BLEND palette
-LAYER_NAME: WORD
+LAYER_NAME: CNAME
 RATE: NUMBER
 CUTOFF: NUMBER
-BLEND: WORD
+BLEND: CNAME
 
 parameterized_line: LAYER_NAME "(" parameters ")" BLEND palette
 parameters: (parameter ("," parameter)*)?
