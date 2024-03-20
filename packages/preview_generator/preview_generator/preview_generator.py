@@ -18,10 +18,14 @@ def generate_preview(layers, fps, seconds, leds, diameter, margin, output):
     progressThickness = 3
     frames = []
 
-    totalFrameCount = (seconds*fps)
 
-    if len(printer.led_effect.layers) == 1 and len(printer.led_effect.layers[0].thisFrame) > 0:
+    if all([type(e).__name__ == 'layerStatic' for e in printer.led_effect.layers]):
+        totalFrameCount = 1
+    elif len(printer.led_effect.layers) == 1 and len(printer.led_effect.layers[0].thisFrame) > 0:
         totalFrameCount = len(printer.led_effect.layers[0].thisFrame)
+    else:
+        totalFrameCount = (seconds*fps)
+
 
     for i in range(totalFrameCount):
         printer.led_effect.handler.heaterCurrent["hotend"] = 250*i/(
