@@ -291,21 +291,21 @@ Some example palettes:
 
 #### Rainbow
 
-![Preview](./img/preview_1007800080.gif)
+![Preview](./img/preview_1930266136.gif)
 
 ```layers
 static 0 0 top (1.0, 0.0, 0.0),(0.0, 1.0, 0.0),(0.0, 0.0, 1.0)
 ```
 
 #### Fire
-![Preview](./img/preview_842630724.gif)
+![Preview](./img/preview_2265218385.gif)
 
 ```layers
 static 0 0 top (0.0, 0.0, 0.0),(1.0, 0.0, 0.0),(1.0, 1.0, 0.0),(1.0, 1.0, 1.0)
 ```
 
 #### Blue Comet 
-![Preview](./img/preview_4259539605.gif)
+![Preview](./img/preview_3153431017.gif)
 
 ```layers
 static 0 0 top (0.8, 1.0, 1.0),(0.0, 0.8, 1.0),(0.0, 0.0, 1.0)
@@ -315,27 +315,27 @@ static 0 0 top (0.8, 1.0, 1.0),(0.0, 0.8, 1.0),(0.0, 0.0, 1.0)
 
 For every effect that generates a gradient, the colorSpace used for creating the gradient can be specified. This can lead to more natural looking gradients, or avoid white-out transitions between colors.
 
-![Preview](./img/preview_1232106862.gif)
+![Preview](./img/preview_522736447.gif)
 
 ```layers
 static(colorSpace=rgb) top $0000FF, $00FF00, $FFFF00, $FF0000
 ```
 
 
-![Preview](./img/preview_2934160756.gif)
+![Preview](./img/preview_1603059860.gif)
 
 ```layers
 static(colorSpace=hsl) top $0000FF, $00FF00, $FFFF00, $FF0000
 ```
 
-![Preview](./img/preview_2716329888.gif)
+![Preview](./img/preview_2206497488.gif)
 
 ```layers
 static(colorSpace=lab) top $0000FF, $00FF00, $FFFF00, $FF0000
 ```
 
 `none` disables mixing and just repeats the palette evenly among the leds.
-![Preview](./img/preview_2711984624.gif)
+![Preview](./img/preview_1038093354.gif)
 
 ```layers
 static(colorSpace=none) top $0000FF, $00FF00, $FFFF00, $FF0000
@@ -352,13 +352,13 @@ A single color is displayed and it does not change. If a palette of multiple
 colors is provided, colors will be evenly blended along the LEDs based on
 difference in hue.
 
-![Preview](./img/preview_2913358780.gif)
+![Preview](./img/preview_372644514.gif)
 
 ```layers
 static 1 1 top $FF0000
 ```
 
-![Preview](./img/preview_648273030.gif)
+![Preview](./img/preview_2185841352.gif)
 
 ```layers
 static 1 1 top $FF0000, $00FF00, $0000FF
@@ -374,7 +374,7 @@ LEDs fade through the colors. If a palette of multiple colors is provided, it
 will cycle through those colors in the order they are specified in the palette.
 The effect rate parameter controls how long it takes to go through all colors.
 
-![Preview](./img/preview_128190423.gif)
+![Preview](./img/preview_3828332067.gif)
 
 ```layers
 linearfade(duration=1) top $FF0000, $00FF00, $0000FF
@@ -389,7 +389,7 @@ Colors fade in and out. If a palette of multiple colors is provided, it will
 cycle through those colors in the order they are specified in the palette.
 The effect rate parameter controls how long it takes to "breathe" one time.
 
-![Preview](./img/preview_762724040.gif)
+![Preview](./img/preview_947365406.gif)
 
 ```layers
 breathing(duration=2) top $FF0000, $00FF00
@@ -403,7 +403,7 @@ breathing(duration=2) top $FF0000, $00FF00
 LEDs are turned fully on and fully off based on the effect speed. If a palette
 of multiple colors is provided, it will cycle through those colors in order.
 
-![Preview](./img/preview_277957433.gif)
+![Preview](./img/preview_1114876585.gif)
 
 ```layers
 blink(duration=2,onRatio=0.2) top $FF0000, $0000FF
@@ -419,7 +419,7 @@ of multiple colors is provided, it will cycle through those colors in order. The
 effect rate controls how many times per second the lights will strobe. The cutoff
 parameter controls the decay rate. A good decay rate is 1.5.
 
-![Preview](./img/preview_494879352.gif)
+![Preview](./img/preview_2796306561.gif)
 
 ```layers
 strobe(frequency=0.5,decayRate=0.1) top $FF0000, $0000FF
@@ -433,7 +433,7 @@ strobe(frequency=0.5,decayRate=0.1) top $FF0000, $0000FF
 Random flashes of light with decay along a strip. If a palette is specified,
 a random color is chosen from the palette.
 
-![Preview](./img/preview_1225707557.gif)
+![Preview](./img/preview_2771514037.gif)
 
 ```layers
 twinkle(probability=0.1,decayRate=0.01) top $00FF00
@@ -451,19 +451,19 @@ length of the gradient in relation to the chain length. The bigger the value,
 the shorter the gradient (e.g. the value 2 means 2 gradients on the length of
 the chain)
 
-![Preview](./img/preview_3144244063.gif)
+![Preview](./img/preview_152731936.gif)
 
 ```layers
 gradient(speed=1,count=1) top $FF0000, $00FFFF
 ```
 
-![Preview](./img/preview_366870783.gif)
+![Preview](./img/preview_1235035691.gif)
 
 ```layers
 gradient(speed=1,count=1,colorSpace=hsl) top $FF0000, $00FFFF
 ```
 
-![Preview](./img/preview_4188900622.gif)
+![Preview](./img/preview_3029361392.gif)
 
 ```layers
 gradient(speed=1,count=1,colorSpace=none) top $FF0000, $00FFFF
@@ -477,7 +477,7 @@ The palette is applied as a recurring pattern on the chain and shifted along the
 chain. The effect rate determines the time between the shifts in seconds, the
 cutoff determines the amount of LED positions the pattern gets shifted.
 
-![Preview](./img/preview_2005084376.gif)
+![Preview](./img/preview_3769006074.gif)
 
 ```layers
 pattern(duration=2,shift=1) top $FF0000, $00FFFF
@@ -493,7 +493,7 @@ by using a negative effect rate value. The palette colors determine the color
 of the comet and the tail. The first color of the palette defines the color of
 the "head" of the comet and the remaining colors are blended into the "tail"
 
-![Preview](./img/preview_3423969173.gif)
+![Preview](./img/preview_2002574259.gif)
 
 ```layers
 comet(speed=0.5,tailLength=5,colorSpace=hsl) top $FF6C11, $FF3864, $2DE2E6, $261447, $0D0221, $023788
@@ -505,7 +505,7 @@ comet(speed=0.5,tailLength=5,colorSpace=hsl) top $FF6C11, $FF3864, $2DE2E6, $261
     Palette:          Color of "head" and gradient of "tail"
 Identical settings as Comet, but with multiple lights chasing each other.
 
-![Preview](./img/preview_687643745.gif)
+![Preview](./img/preview_1561632303.gif)
 
 ```layers
 chase(speed=0.5,tailLength=2,colorSpace=hsl) top $FF6C11, $FF3864, $2DE2E6, $261447, $0D0221, $023788
@@ -526,7 +526,7 @@ the colors will follow this pattern in reverse until the temperature falls
 below the minimum temperature specified in the config. This can be used to
 indicate the hotend or bed is in a safe state to touch.
 
-![Preview](./img/preview_2815916569.gif)
+![Preview](./img/preview_2786598551.gif)
 
 ```layers
 heater(minTemp=10,disableOnceReached=1,heater=heater_bed) top (0.227,0.427,0.705),(0.113,1,0.168),(1,0.85,0.168),(1.00,0.47,0.00),(1,0.392,0.196),(1,0.313,0.156),(1,0.078,0.078),(1,0,0),(1,0,0)
@@ -540,7 +540,7 @@ The temperature of the configured heater determines the color in a gradient over
 the palette. When only one color is defined in the palette, the brightness of
 that color is defined by the temperature.
 
-![Preview](./img/preview_3442324617.gif)
+![Preview](./img/preview_4037467609.gif)
 
 ```layers
 temperature(minTemp=10,maxTemp=60,heater=heater_bed) top (0.227,0.427,0.705),(0.113,1,0.168),(1,0.85,0.168),(1.00,0.47,0.00),(1,0.392,0.196),(1,0.313,0.156),(1,0.078,0.078),(1,0,0),(1,0,0)
@@ -557,7 +557,7 @@ where it gradually cools. A higher rate of sparking causes a greater amount
 of heat to accumulate at the base of the strip resulting a more intense flame.
 Changing the rate of cooling results in longer or shorter overall flames.
 
-![Preview](./img/preview_2977715752.gif)
+![Preview](./img/preview_4157309777.gif)
 
 ```layers
 fire(sparkProbability=45,coolingRate=40) top $FF0000, $AA0000
@@ -573,7 +573,7 @@ target temperature is reached. If the cutoff parameter is set to 1, the effect
 will be disabled once the target temperature is reached, otherwise it will
 stay active until the heater is disabled.
 
-![Preview](./img/preview_2807038225.gif)
+![Preview](./img/preview_2663755680.gif)
 
 ```layers
 heaterfire(minTemp=10,disableOnceReached=0) top $0000FF, $AA0000
@@ -622,7 +622,7 @@ palette, that is calculated as a gradient over the specified color values.
 Exact same configuration as Stepper but instead of reporting stepper position, this
 layer reports print progress.
 
-![Preview](./img/preview_1045006624.gif)
+![Preview](./img/preview_3222577365.gif)
 
 ```layers
 progress(trailingLedCount=2,leadingLedCount=2) top $0000FF, $AA0000
@@ -653,11 +653,45 @@ Layer blending is always evaluated from the bottom up.
 Since values cannot exceed 100% brightness and 0% darkness, they are clamped
 to this range as a floating-point number ( 0.0 - 1.0 )
 
+We'll blend the following colors to illustrate:
+
+![Preview](./img/preview_1173196264.gif)
+
+```layers
+static 0 0 top (1, 0.5, 0)
+```
+
+![Preview](./img/preview_1808171867.gif)
+
+```layers
+static 0 0 top (0, 0.5, 1)
+```
+
+
 #### bottom
 No blending is done, the value from the color channel of the bottom layer is used.
 
+![Preview](./img/preview_3176149258.gif)
+
+```layers
+static 0 0 bottom (0, 0.5, 1)
+static 0 0 top (1, 0.5, 0)
+```
+
+*The bottom layer needs to be `top` so that it is used at all*
+
+
 #### top
 No blending is done, the value from the color channel of the top layer is used.
+
+
+![Preview](./img/preview_3462693145.gif)
+
+```layers
+static 0 0 top (0, 0.5, 1)
+static 0 0 top (1, 0.5, 0)
+```
+
 
 #### add
 ```
@@ -666,12 +700,28 @@ No blending is done, the value from the color channel of the top layer is used.
 Color channels (Red, Green, and Blue) are added to one another. This results
 in channels becoming brighter.
 
+![Preview](./img/preview_3234791021.gif)
+
+```layers
+static 0 0 add (0, 0.5, 1)
+static 0 0 top (1, 0.5, 0)
+```
+
+
 #### subtract
 ```
     ( b - t )
 ```
 The the top layer is subtracted from the bottom layer. This results in darkening
 similar colors.
+
+![Preview](./img/preview_3009762427.gif)
+
+```layers
+static 0 0 subtract (0, 0.5, 1)
+static 0 0 top (1, 0.5, 0)
+```
+
 
 #### subtract_b
 ```
@@ -680,11 +730,27 @@ similar colors.
 The the bottom layer is subtracted from the top layer. This results in darkening
 similar colors.
 
+![Preview](./img/preview_1082126048.gif)
+
+```layers
+static 0 0 subtract_b (0, 0.5, 1)
+static 0 0 top (1, 0.5, 0)
+```
+
+
 #### difference
 ```
     ( t - b ) or ( b - t )
 ```
 The darker of the layers is subtracted from the brighter of the two
+
+![Preview](./img/preview_2689310554.gif)
+
+```layers
+static 0 0 difference (0, 0.5, 1)
+static 0 0 top (1, 0.5, 0)
+```
+
 
 #### average
 ```
@@ -692,11 +758,37 @@ The darker of the layers is subtracted from the brighter of the two
 ```
 The average of the channels is taken
 
+![Preview](./img/preview_2546082449.gif)
+
+```layers
+static 0 0 average (0, 0.5, 1)
+static 0 0 top (1, 0.5, 0)
+```
+
+
 #### multiply
 ```
     ( t * b )
 ```
 The channels are multiplied together, this is useful to darken colors
+
+![Preview](./img/preview_2991711774.gif)
+
+```layers
+static 0 0 multiply (0, 0.5, 1)
+static 0 0 top (1, 0.5, 0)
+```
+
+This is useful, e.g. if you want to create a pulsing animation of e.g. a heater:
+
+![Preview](./img/preview_2969376940.gif)
+
+```layers
+linearfade 1 0 multiply (0.2,0.2,0.2),(1,1,1)
+heater  0 0 top (0, 0, 1), (0, 1, 0), (1, 0, 0), (1, 0, 0)
+```
+
+
 
 #### divide
 ```
@@ -704,11 +796,26 @@ The channels are multiplied together, this is useful to darken colors
 ```
 The channels are divided, this results in brightening colors, often to white
 
+![Preview](./img/preview_2508875843.gif)
+
+```layers
+static 0 0 divide (0, 0.5, 1)
+static 0 0 top (1, 0.5, 0)
+```
+
+
 #### divide_inv
 ```
     ( b / t )
 ```
 Like divide, but bottom divided by top
+
+![Preview](./img/preview_2728533037.gif)
+
+```layers
+static 0 0 divide_inv (0, 0.5, 1)
+static 0 0 top (1, 0.5, 0)
+```
 
 #### screen
 ```
@@ -717,11 +824,26 @@ Like divide, but bottom divided by top
 The values are inverted, multiplied, and then inverted again. Similar to
 divide, it results in brighter colors
 
+![Preview](./img/preview_3006598880.gif)
+
+```layers
+static 0 0 screen (0, 0.5, 1)
+static 0 0 top (1, 0.5, 0)
+```
+
+
 #### lighten
 ```
     ( t if t > b else b )
 ```
 The brighter of the color channels is used
+
+![Preview](./img/preview_479940560.gif)
+
+```layers
+static 0 0 lighten (0, 0.5, 1)
+static 0 0 top (1, 0.5, 0)
+```
 
 #### darken
 ```
@@ -729,12 +851,27 @@ The brighter of the color channels is used
 ```
 The opposite of lighten, the darker of color channels is used
 
+![Preview](./img/preview_3323396353.gif)
+
+```layers
+static 0 0 darken (0, 0.5, 1)
+static 0 0 top (1, 0.5, 0)
+```
+
 #### overlay
 ```
     ( 2ab if a > .5 else 1 - 2( 1 - a )( 1 - b ) )
 ```
 Overlay is a combination of multiply and screen. This has a similar effect
 of increasing contrast.
+
+![Preview](./img/preview_2872927478.gif)
+
+```layers
+static 0 0 overlay (0, 0.5, 1)
+static 0 0 top (1, 0.5, 0)
+```
+
 
 # Sample Configurations
 
