@@ -70,13 +70,13 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "hypothesis"
-version = "6.99.11"
+version = "6.99.12"
 description = "A library for property-based testing"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "hypothesis-6.99.11-py3-none-any.whl", hash = "sha256:9c010b219ec611c995bac7e11a3edc96cea3c2c0b04a9d08ec586a7981715353"},
-    {file = "hypothesis-6.99.11.tar.gz", hash = "sha256:3df99ecf501e056c7e2c6ac7a9e3726f4fe8d2139dcce068aceffdab58265f1e"},
+    {file = "hypothesis-6.99.12-py3-none-any.whl", hash = "sha256:299213c31e31a512e526b8e43917c7a08f3ffbf05657f008f56228420cf4547d"},
+    {file = "hypothesis-6.99.12.tar.gz", hash = "sha256:421c57c9e8cc0837622881ca1d5e099404aef6600cdea3ade3004fc992a44d7f"},
 ]
 
 [package.dependencies]
