@@ -153,7 +153,7 @@ def test_it_should_not_switch_off_leds_if_autostart_is_off():
 def test_it_should_support_disabling_an_effect():
     config = mockConfig()
     config.setint("ledcount", 1)
-    config.setbool("autostart", "True")
+    config.setbool("autostart", True)
     config.set(
         "layers", """
             static() top (0.5, 0.5, 0.5, 0.5)
