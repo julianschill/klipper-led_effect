@@ -1,6 +1,7 @@
 from led_effect.led_effect_plugin import ledEffect, ledFrameHandler
 
 class mockPrinter:
+    NEVER = 0
     def __init__(self, config):
         self.config = config
         self.config.set_printer(self)
@@ -80,7 +81,7 @@ class mockConfig:
     def __init__(self):
         self.config={
             "frame_rate" : "24.0",
-            "autostart" : "False",
+            "autostart" : "True",
             "run_on_error" : "False",
             "recalculate": "False",
             "heater" : "heater_bed",
@@ -99,7 +100,9 @@ class mockConfig:
     def getfloat(self,key,default,minval,maxval):
         return float(self.config[key])
     def getboolean(self,key,default):
-        return bool(self.config[key])
+        return self.config[key] in [True, "True", "true", "1"] if key in self.config else default
+    def setbool(self,key, value):
+        self.config[key] = bool (value)
     def getint(self,key,default,minval,maxval):
         return int(self.config[key])
     def setint(self,key, value):
@@ -114,6 +117,11 @@ class mockConfig:
 class mockLedHelper:
     def __init__(self,config):
         self.led_count = config.getint("ledcount", 1, 1, 1024)
+        self.led_state = [(0, 0, 0, 0)] * self.led_count
+    
     def get_led_count(self):
         return self.led_count
+
+    def update_func(self, led_state, print_time):
+        self.led_state = led_state
 

@@ -134,3 +134,35 @@ def test_changing_heater_gradient_length():
     assert printer.led_effect.getFrame(0) == ([
         0.5, 0.0, 0.5, 0.0
     ], True)
+
+def test_it_should_not_switch_off_leds_if_autostart_is_off():
+    config = mockConfig()
+    config.setint("ledcount", 1)
+    config.setbool("autostart", False)
+    config.set(
+        "layers", """
+            static() top (0.5, 0.5, 0.5, 0.5)
+            """)
+    printer = mockPrinter(config)
+    printer.led_helper.led_state = [(1, 1, 1, 1)]
+    printer._handle_ready()
+    printer.led_effect.handler._getFrames(1)
+    assert printer.led_helper.led_state == [(1, 1, 1, 1)]
+
+def test_it_should_support_disabling_an_effect():
+    config = mockConfig()
+    config.setint("ledcount", 1)
+    config.setbool("autostart", "True")
+    config.set(
+        "layers", """
+            static() top (0.5, 0.5, 0.5, 0.5)
+            """)
+    printer = mockPrinter(config)
+    printer.led_helper.led_state = [(1, 1, 1, 1)]
+    print(printer.led_effect.enabled)
+    printer._handle_ready()
+    print(printer.led_effect.enabled)
+    [printer.led_effect.handler._getFrames(x) for x in range(0, 10)]
+    assert printer.led_helper.led_state == [(0.5, 0.5, 0.5, 0.5)]
+    printer.led_effect.set_enabled(False)
+    assert printer.led_helper.led_state == [(0, 0, 0, 0)]
