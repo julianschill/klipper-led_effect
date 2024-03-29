@@ -93,6 +93,7 @@ class ledFrameHandler:
     cmd_STOP_LED_EFFECTS_help = 'Stops all led_effects'
 
     def _handle_ready(self):
+        self.firstFrameHasBeenProcessed = False
         self.shutdown = False
         self.reactor = self.printer.get_reactor()
         self.printer.register_event_handler('klippy:shutdown', 
@@ -259,6 +260,8 @@ class ledFrameHandler:
             next_eventtime = eventtime
         # run at least with 10Hz
         next_eventtime=min(next_eventtime, eventtime + 0.1) 
+
+        self.firstFrameHasBeenProcessed = True
         return next_eventtime
     
     def parse_chain(self, chain):
@@ -478,6 +481,9 @@ class ledEffect:
         self.handler.addEffect(self)
 
     def getFrame(self, eventtime):
+        if not self.enabled and not self.handler.firstFrameHasBeenProcessed:
+            return self.frame, False
+
         if not self.enabled and self.fadeValue <= 0.0:
             if self.nextEventTime < self.handler.reactor.NEVER:
                 # Effect has just been disabled. Set colors to 0 and update once.
