@@ -147,6 +147,7 @@ def test_it_should_not_switch_off_leds_if_autostart_is_off():
     printer.led_helper.led_state = [(1, 1, 1, 1)]
     printer._handle_ready()
     printer.led_effect.handler._getFrames(1)
+    printer.led_effect.handler._getFrames(2)
     assert printer.led_helper.led_state == [(1, 1, 1, 1)]
 
 def test_it_should_support_disabling_an_effect():
@@ -159,9 +160,7 @@ def test_it_should_support_disabling_an_effect():
             """)
     printer = mockPrinter(config)
     printer.led_helper.led_state = [(1, 1, 1, 1)]
-    print(printer.led_effect.enabled)
     printer._handle_ready()
-    print(printer.led_effect.enabled)
     [printer.led_effect.handler._getFrames(x) for x in range(0, 10)]
     assert printer.led_helper.led_state == [(0.5, 0.5, 0.5, 0.5)]
     printer.led_effect.set_enabled(False)
