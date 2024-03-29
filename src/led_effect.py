@@ -314,6 +314,7 @@ class ledEffect:
         self.frameRate    = 1.0 / config.getfloat('frame_rate', 
                                         default=24, minval=1, maxval=60)
         self.enabled      = False
+        self.isDisabling  = False
         self.iteration    = 0
         self.layers       = []
         self.analogValue  = 0
@@ -461,10 +462,14 @@ class ledEffect:
         self.handler.addEffect(self)
 
     def getFrame(self, eventtime):
+        if not self.enabled and not self.isDisabling:
+            return self.frame, False
+
         if not self.enabled and self.fadeValue <= 0.0:
             if self.nextEventTime < self.handler.reactor.NEVER:
                 # Effect has just been disabled. Set colors to 0 and update once.
                 self.nextEventTime = self.handler.reactor.NEVER
+                self.isDisabling = False
                 self.frame = [0.0] * COLORS * self.ledCount
                 update = True
             else:
@@ -494,6 +499,7 @@ class ledEffect:
     def set_enabled(self, state):
         if self.enabled != state:
             self.enabled = state
+            self.isDisabling = not state
             self.nextEventTime = self.handler.reactor.NOW
             self.handler._getFrames(self.handler.reactor.NOW)
     
