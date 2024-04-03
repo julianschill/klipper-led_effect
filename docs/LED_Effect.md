@@ -406,6 +406,7 @@ of multiple colors is provided, it will cycle through those colors in order.
 ![Preview](./img/preview_277957433.gif)
 
 ```layers
+blink(duration=2,onRatio=0.2) add $00FF00, $0000FF
 blink(duration=2,onRatio=0.2) top $FF0000, $0000FF
 ```
 
