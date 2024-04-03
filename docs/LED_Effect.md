@@ -403,7 +403,7 @@ breathing(duration=2) top $FF0000, $00FF00
 LEDs are turned fully on and fully off based on the effect speed. If a palette
 of multiple colors is provided, it will cycle through those colors in order.
 
-![Preview](./img/preview_277957433.gif)
+![Preview](./img/preview_1366607111.gif)
 
 ```layers
 blink(duration=2,onRatio=0.2) add $00FF00, $0000FF
