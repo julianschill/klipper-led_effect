@@ -888,22 +888,33 @@ class ledEffect:
             heaterCurrent = self.frameHandler.heaterCurrent[self.handler.heater]
             heaterLast    = self.frameHandler.heaterLast[self.handler.heater]
 
-            if heaterTarget > 0.0 and heaterCurrent > 0.0:
-                if (heaterCurrent >= self.effectRate):
-                    if (heaterCurrent <= heaterTarget-2):
-                        s = int(((heaterCurrent - self.effectRate) / heaterTarget) * 200)
-                        s = min(len(self.thisFrame)-1,s)
-                        return self.thisFrame[s]
-                    elif self.effectCutoff > 0:
-                        return None
-                    else:
-                        return self.thisFrame[-1]
-                else:
-                    return None
+            acceptance_offset = 2.0
+            threshold_temperature = self.effectRate
 
-            elif self.effectRate > 0 and heaterCurrent > 0.0:
-                if heaterCurrent >= self.effectRate and heaterLast > 0:
-                    s = int(((heaterCurrent - self.effectRate) / heaterLast) * 200)
+            if heaterCurrent < threshold_temperature:
+                return None
+
+            if heaterTarget > 0.0:
+                if (heaterTarget - acceptance_offset <= threshold_temperature):
+                    return self.thisFrame[-1]
+                elif (heaterCurrent <= heaterTarget - acceptance_offset ):
+                    shrunken_current = heaterCurrent - threshold_temperature
+                    shrunken_target = heaterTarget - threshold_temperature - acceptance_offset
+                    s = int((shrunken_current / shrunken_target) * 200)
+                    s = min(len(self.thisFrame)-1,s)
+                    return self.thisFrame[s]
+                elif self.effectCutoff > 0:
+                    return None
+                else:
+                    return self.thisFrame[-1]
+ 
+            elif heaterLast > 0.0:
+                if (heaterLast- acceptance_offset <= threshold_temperature):
+                    return self.thisFrame[-1]
+                else:
+                    shrunken_current = heaterCurrent - threshold_temperature
+                    shrunken_last = heaterLast - threshold_temperature
+                    s = int((shrunken_current / shrunken_last) * 200)
                     s = min(len(self.thisFrame)-1,s)
                     return self.thisFrame[s]
 
