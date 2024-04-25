@@ -931,6 +931,7 @@ class ledEffect:
             for i in range(len(gradient)):
                 self.thisFrame.append(gradient[i] * self.ledCount)
             self.frameCount = len(self.thisFrame)
+            
         def nextFrame(self, eventtime):
             if self.effectCutoff == self.effectRate:
                 s = 200 if self.frameHandler.heaterCurrent[self.handler.heater] >= self.effectRate else 0
