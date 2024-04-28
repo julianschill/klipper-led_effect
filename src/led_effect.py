@@ -317,6 +317,7 @@ class ledEffect:
         self.iteration    = 0
         self.layers       = []
         self.analogValue  = 0
+        self.button_state = 0
         self.fadeValue    = 0.0
         self.fadeTime     = 0.0
         self.fadeEndTime  = 0
@@ -347,6 +348,7 @@ class ledEffect:
         self.runOnShutown = config.getboolean('run_on_error', False)
         self.heater       = config.get('heater', None)
         self.analogPin    = config.get('analog_pin', None)
+        self.buttonPin    = config.get('button_pin', None)
         self.stepper      = config.get('stepper', None)
         self.recalculate  = config.get('recalculate', False)
         self.endstops     = [x.strip() for x in config.get('endstops','').split(',')]
@@ -367,6 +369,10 @@ class ledEffect:
             self.mcu_adc.setup_adc_callback(ANALOG_REPORT_TIME, self.adcCallback)
             query_adc = self.printer.load_object(self.config, 'query_adc')
             query_adc.register_adc(self.name, self.mcu_adc)
+
+        if self.buttonPin:
+            buttons = self.printer.load_object(config, "buttons")
+            buttons.register_buttons([self.buttonPin], self.button_callback)
 
     cmd_SET_LED_help = 'Starts or Stops the specified led_effect'
 
@@ -541,6 +547,9 @@ class ledEffect:
 
     def adcCallback(self, read_time, read_value):
         self.analogValue = int(read_value * 1000.0) / 10.0
+    
+    def button_callback(self, eventtime, state):
+        self.button_state = state
 
     ######################################################################
     # LED Effect layers
@@ -1261,6 +1270,127 @@ class ledEffect:
             
             return frame
 
+    class layerSwitchButton(_layerBase):
+        def __init__(self,  **kwargs):
+            super(ledEffect.layerSwitchButton, self).__init__(**kwargs)
+            self.last_state = 0
+            self.coloridx = 0
+            self.fadeValue = 0.0
+            self.paletteColors = colorArray(COLORS, self.paletteColors)
+
+            for c in range(0, len(self.paletteColors)):
+                color = self.paletteColors[c]
+                self.thisFrame.append(colorArray(COLORS,color*self.ledCount))
+
+        def nextFrame(self, eventtime):
+            if not self.last_state and self.handler.button_state:
+                self.coloridx = (self.coloridx + 1) % len(self.paletteColors)
+                self.last_state = self.handler.button_state
+
+            elif self.last_state and not self.handler.button_state:
+                self.last_state = self.handler.button_state
+
+            if self.last_state:
+                if self.effectRate > 0 and self.fadeValue < 1.0:
+                    self.fadeValue += (self.handler.frameRate / self.effectRate) 
+                else:
+                    self.fadeValue = 1.0
+            else:
+                if self.effectCutoff > 0 and self.fadeValue > 0.0:
+                    self.fadeValue -= (self.handler.frameRate / self.effectCutoff)
+                else:
+                    self.fadeValue = 0.0
+
+            if self.fadeValue < 0: self.fadeValue = 0
+            if self.fadeValue > 1.0: self.fadeValue = 1.0
+            return [self.fadeValue * i for i in self.thisFrame[self.coloridx]]
+
+    class layerToggleButton(_layerBase):
+        def __init__(self,  **kwargs):
+            super(ledEffect.layerToggleButton, self).__init__(**kwargs)
+            self.last_state = 0
+            self.last_coloridx = 0
+            self.coloridx = 0
+            self.fadeInValue = 0.0
+            self.fadeOutValue = 0.0
+            self.active = False
+            self.paletteColors = colorArray(COLORS, self.paletteColors)
+
+            for c in range(0, len(self.paletteColors)):
+                color = self.paletteColors[c]
+                self.thisFrame.append(colorArray(COLORS,color*self.ledCount))
+
+        def nextFrame(self, eventtime):
+            if not self.last_state and self.handler.button_state:
+                self.last_coloridx = self.coloridx
+                self.coloridx = (self.coloridx + 1) % len(self.paletteColors)
+                self.last_state = self.handler.button_state
+                self.fadeInValue = 0
+                self.fadeOutValue = 1.0
+
+            elif self.last_state and not self.handler.button_state:
+                self.last_state = self.handler.button_state
+
+            if self.effectRate > 0 and self.fadeInValue < 1.0:
+                self.fadeInValue += (self.handler.frameRate / self.effectRate) 
+            else:
+                self.fadeInValue = 1.0
+            if self.effectCutoff > 0 and self.fadeOutValue > 0.0:
+                self.fadeOutValue -= (self.handler.frameRate / self.effectCutoff)
+            else:
+                self.fadeOutValue = 0.0
+
+            if self.fadeInValue < 0: self.fadeInValue = 0
+            if self.fadeInValue > 1.0: self.fadeInValue = 1.0
+            
+            if self.fadeOutValue < 0: self.fadeOutValue = 0
+            if self.fadeOutValue > 1.0: self.fadeOutValue = 1.0
+
+            frameIn = [self.fadeInValue * i for i in self.thisFrame[self.coloridx]]
+            frameOut = [self.fadeOutValue * i for i in self.thisFrame[self.last_coloridx]]
+
+            return [ i + o for i, o in zip(frameIn,frameOut)]
+
+    class layerFlashButton(_layerBase):
+        def __init__(self,  **kwargs):
+            super(ledEffect.layerFlashButton, self).__init__(**kwargs)
+            self.last_state = 0
+            self.active = False
+            self.coloridx = 0
+            self.fadeValue = 0.0
+            self.paletteColors = colorArray(COLORS, self.paletteColors)
+
+            for c in range(0, len(self.paletteColors)):
+                color = self.paletteColors[c]
+                self.thisFrame.append(colorArray(COLORS,color*self.ledCount))
+
+        def nextFrame(self, eventtime):
+            if not self.last_state and self.handler.button_state:
+                self.coloridx = (self.coloridx + 1) % len(self.paletteColors)
+                self.last_state = self.handler.button_state
+                self.active = True
+
+            elif self.last_state and not self.handler.button_state:
+                self.last_state = self.handler.button_state
+
+            if self.active:
+                if self.effectRate > 0 and self.fadeValue < 1.0:
+                    self.fadeValue += (self.handler.frameRate / self.effectRate) 
+                else:
+                    self.fadeValue = 1.0
+                if self.fadeValue >= 1.0: 
+                    self.fadeValue = 1.0
+                    self.active = False
+            else:
+                if self.effectCutoff > 0 and self.fadeValue > 0.0:
+                    self.fadeValue -= (self.handler.frameRate / self.effectCutoff)
+                else:
+                    self.fadeValue = 0.0
+
+            if self.fadeValue <= 0: 
+                self.fadeValue = 0
+            
+            return [self.fadeValue * i for i in self.thisFrame[self.coloridx]]
 
 def load_config_prefix(config):
     return ledEffect(config)
