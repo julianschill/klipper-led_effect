@@ -348,7 +348,7 @@ class ledEffect:
         self.runOnShutown = config.getboolean('run_on_error', False)
         self.heater       = config.get('heater', None)
         self.analogPin    = config.get('analog_pin', None)
-        self.buttonPin    = config.get('button_pin', None)
+        self.buttonPin    = config.getlist('button_pin', None)
         self.stepper      = config.get('stepper', None)
         self.recalculate  = config.get('recalculate', False)
         self.endstops     = [x.strip() for x in config.get('endstops','').split(',')]
@@ -372,7 +372,7 @@ class ledEffect:
 
         if self.buttonPin:
             buttons = self.printer.load_object(config, "buttons")
-            buttons.register_buttons([self.buttonPin], self.button_callback)
+            buttons.register_buttons(self.buttonPin, self.button_callback)
 
     cmd_SET_LED_help = 'Starts or Stops the specified led_effect'
 
@@ -1283,12 +1283,10 @@ class ledEffect:
                 self.thisFrame.append(colorArray(COLORS,color*self.ledCount))
 
         def nextFrame(self, eventtime):
-            if not self.last_state and self.handler.button_state:
+            if self.handler.button_state > self.last_state:
                 self.coloridx = (self.coloridx + 1) % len(self.paletteColors)
-                self.last_state = self.handler.button_state
 
-            elif self.last_state and not self.handler.button_state:
-                self.last_state = self.handler.button_state
+            self.last_state = self.handler.button_state
 
             if self.last_state:
                 if self.effectRate > 0 and self.fadeValue < 1.0:
@@ -1321,15 +1319,14 @@ class ledEffect:
                 self.thisFrame.append(colorArray(COLORS,color*self.ledCount))
 
         def nextFrame(self, eventtime):
-            if not self.last_state and self.handler.button_state:
+            if self.handler.button_state > self.last_state:
                 self.last_coloridx = self.coloridx
                 self.coloridx = (self.coloridx + 1) % len(self.paletteColors)
                 self.last_state = self.handler.button_state
                 self.fadeInValue = 0
                 self.fadeOutValue = 1.0
 
-            elif self.last_state and not self.handler.button_state:
-                self.last_state = self.handler.button_state
+            self.last_state = self.handler.button_state
 
             if self.effectRate > 0 and self.fadeInValue < 1.0:
                 self.fadeInValue += (self.handler.frameRate / self.effectRate) 
@@ -1365,14 +1362,13 @@ class ledEffect:
                 self.thisFrame.append(colorArray(COLORS,color*self.ledCount))
 
         def nextFrame(self, eventtime):
-            if not self.last_state and self.handler.button_state:
+            
+            if self.handler.button_state > self.last_state:
                 self.coloridx = (self.coloridx + 1) % len(self.paletteColors)
-                self.last_state = self.handler.button_state
                 self.active = True
-
-            elif self.last_state and not self.handler.button_state:
-                self.last_state = self.handler.button_state
-
+                
+            self.last_state=self.handler.button_state
+    
             if self.active:
                 if self.effectRate > 0 and self.fadeValue < 1.0:
                     self.fadeValue += (self.handler.frameRate / self.effectRate) 
