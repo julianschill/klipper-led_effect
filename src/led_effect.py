@@ -317,7 +317,7 @@ class ledEffect:
         self.iteration    = 0
         self.layers       = []
         self.analogValue  = 0
-        self.fadeValue    = 1.0
+        self.fadeValue    = 0.0
         self.fadeTime     = 0.0
         self.fadeEndTime  = 0
 
@@ -375,6 +375,8 @@ class ledEffect:
         self.ledChains    = []
         self.leds         = []
         self.enabled = self.autoStart
+        if not self.enabled:
+            self.nextEventTime = self.handler.reactor.NEVER
         self.printer.register_event_handler('klippy:shutdown', 
                                     self._handle_shutdown)
         #map each LED from the chains to the "pixels" in the effect frame
