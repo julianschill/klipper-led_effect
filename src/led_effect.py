@@ -908,6 +908,10 @@ class ledEffect:
 
             self.frameCount = len(self.thisFrame)
 
+            if self.handler.heater is None:
+                raise self.handler.printer.config_error(
+                    "LED Effect '%s' has no heater defined." % (self.handler.name))
+
         def nextFrame(self, eventtime):
             heaterTarget  = self.frameHandler.heaterTarget[self.handler.heater]
             heaterCurrent = self.frameHandler.heaterCurrent[self.handler.heater]
@@ -945,6 +949,11 @@ class ledEffect:
             for i in range(len(gradient)):
                 self.thisFrame.append(gradient[i] * self.ledCount)
             self.frameCount = len(self.thisFrame)
+
+            if self.handler.heater is None:
+                raise self.handler.printer.config_error(
+                    "LED Effect '%s' has no heater defined." % (self.handler.name))
+            
         def nextFrame(self, eventtime):
             if self.effectCutoff == self.effectRate:
                 s = 200 if self.frameHandler.heaterCurrent[self.handler.heater] >= self.effectRate else 0
@@ -1109,7 +1118,10 @@ class ledEffect:
             self.frameLen   = len(self.gradient)
             self.heatLen    = len(self.heatMap)
             self.heatSource = int(self.ledCount / 10.0)
-            self.effectRate = 0
+
+            if self.handler.heater is None:
+                raise self.handler.printer.config_error(
+                    "LED Effect '%s' has no heater defined." % (self.handler.name))
 
             if self.heatSource < 1:
                 self.heatSource = 1
@@ -1122,14 +1134,15 @@ class ledEffect:
             heaterLast    = self.frameHandler.heaterLast[self.handler.heater]
 
             if heaterTarget > 0.0 and heaterCurrent > 0.0:
-                if heaterCurrent <= heaterTarget-2:
-                    spark = int((heaterCurrent / heaterTarget) * 80)
-                    brightness = int((heaterCurrent / heaterTarget) * 100)
-                elif self.effectCutoff > 0:
-                    spark = 0
-                else:
-                    spark = 80
-                    brightness = 100
+                if (heaterCurrent >= self.effectRate):
+                    if heaterCurrent <= heaterTarget-2:
+                        spark = int((heaterCurrent / heaterTarget) * 80)
+                        brightness = int((heaterCurrent / heaterTarget) * 100)
+                    elif self.effectCutoff > 0:
+                        spark = 0
+                    else:
+                        spark = 80
+                        brightness = 100
             elif self.effectRate > 0 and heaterCurrent > 0.0:
                 if heaterCurrent >= self.effectRate:
                     spark = int(((heaterCurrent - self.effectRate)
@@ -1137,7 +1150,7 @@ class ledEffect:
                     brightness = int(((heaterCurrent - self.effectRate)
                                       / heaterLast) * 100)
 
-            if spark > 0:
+            if spark > 0 and heaterTarget != 0:
                 cooling = int((heaterCurrent / heaterTarget) * 20)
 
                 for h in range(self.heatLen):
