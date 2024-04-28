@@ -8,7 +8,6 @@
 
 from math import cos, exp, pi
 from random import randint
-import logging
 
 ANALOG_SAMPLE_TIME  = 0.001
 ANALOG_SAMPLE_COUNT = 5
@@ -114,7 +113,6 @@ class ledFrameHandler:
     
     def _handle_homing_move_begin(self, hmove):
         endstops_being_homed = [name for es,name in hmove.endstops]
-        logging.info(endstops_being_homed)
 
         for endstop in endstops_being_homed:
             if endstop in self.homing_start_flag: 
@@ -348,7 +346,7 @@ class ledEffect:
         self.runOnShutown = config.getboolean('run_on_error', False)
         self.heater       = config.get('heater', None)
         self.analogPin    = config.get('analog_pin', None)
-        self.buttonPin    = config.getlist('button_pin', None)
+        self.buttonPin    = config.getlist('button_pins', None)
         self.stepper      = config.get('stepper', None)
         self.recalculate  = config.get('recalculate', False)
         self.endstops     = [x.strip() for x in config.get('endstops','').split(',')]
@@ -1252,7 +1250,6 @@ class ledEffect:
             self.coloridx=-1
             self.my_flag={}
             for endstop in self.handler.endstops:
-                logging.info(endstop)
                 self.frameHandler.homing_end_flag[endstop] = 0
                 self.my_flag[endstop] = self.frameHandler.homing_end_flag[endstop]
 
