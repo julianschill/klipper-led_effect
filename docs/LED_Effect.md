@@ -193,21 +193,30 @@ Enable layer template recalculation on effect activation.
 
 heater:
 Specifies the heater to use for a heater effect. Use `extruder` for the
-extruder and `heater_bed` for the bed. For temperature fans or  sensors add the
+extruder and `heater_bed` for the bed. For temperature fans or sensors add the
 type and use quotes.
 Example: `heater: "temperature_fan myfan"`
 
 analog_pin:
 Specifies the pin to use for effects using an analog signal.
+Example: `analog_pin: PA1`
 
 stepper:
 Specifies the axis to use for the stepper effect. Possible values are:
-`x`, `y` and `z`. Example: `stepper: x`
+`x`, `y` and `z`. 
+Example: `stepper: x`
 
 endstops:
 Specifies the endstops the homing effect triggers on. Multiple endstops can be
-specified as a comma seprated list. Possible values are: `x`, `y`, `z` and `probe`.
+specified as a comma seperated list. Possible values are: `x`, `y`, `z` and `probe`.
 Example: `endstops: x, y`
+
+button_pins:
+Specifies the pins the button effect trigger on. Multiple pins can be specified
+as a comma seperated list. Then the effect will trigger on any of the buttons. 
+Using already assigned pins (such as endstop pins) is possible by using 
+`duplicate_pin_override` (see Klipper documentation for details).
+Example: `button_pins: PC1, PC2`
 
 ## Defining LEDs
 
@@ -264,8 +273,8 @@ Each layer is defined with the following parameters
 Each layer must be on a single line and each line must be indented.
 Color palettes can be of unlimited length but may be compressed depending
 on the size of the frame or number of LEDs on a strip. Colors are defined
-as groups of Red, Green, Blue and (optional) White. The white channel only used
-on RGBW LEDs and ignored on RGB LEDs. The range for each color is a decimal
+as groups of Red, Green, Blue and (optional) White. The white channel is only 
+used on RGBW LEDs and ignored on RGB LEDs. The range for each color is a decimal
 number from 0.0 to 1.0. So for yellow, you would use ( 1.0, 1.0, 0.0 ). For
 white you would use ( 1.0, 1.0, 1.0 ) on an RGB LED or ( 0.0, 0.0, 0.0, 1.0 )
 on an RGBW LED.
@@ -462,9 +471,37 @@ layer reports print progress.
     Cutoff:       0   Not used, but must be provided
     Palette:          Colors are cycled in order
 
-LEDs turn on during homing when the endstop is triggered and fade out again. The
-effect rate determines the time for the fade out. If a palette of multiple colors
-is provided, it will cycle through those colors in order.
+Needs an endstop defined. LEDs turn on during homing when the endstop is 
+triggered and fade out again. The effect rate determines the time for the fade
+out. If a palette of multiple colors is provided, it will cycle through those 
+colors in order.
+
+#### SwitchButton
+    Effect Rate:  1   Fade in time. Time until LEDs are on after button press 
+    Cutoff:       1   Fade out time. Time until LEDs are off after button release
+    Palette:          Colors are cycled in order
+
+Needs a button_pin defined. LEDs turn on when the button is pressed and turn off
+when the button is released again. Each press cycles through the colors of the
+palette.
+
+#### ToggleButton
+    Effect Rate:  1   Fade in time. Time to fade in next color
+    Cutoff:       1   Fade out time. Time to fade out previous color
+    Palette:          Colors are cycled in order
+
+Needs a button_pin defined. Cycles through the colors with each button press. 
+The transition times can be configured with the effect rate and cutoff parameters.
+Hint: Define (0,0,0) as a color if you want to toggle between on and off.
+
+#### FlashButton
+    Effect Rate:  0.1 Fade in time. Time to fade in.
+    Cutoff:       1   Fade out time. Time to fade out.
+    Palette:          Colors are cycled in order
+
+Needs a button_pin defined. When the button is pressed the LEDs fade on in the 
+defined time and fade off immediately afterwards.  If a palette of multiple colors
+is provided, it will cycle through those colors in order with each button press.
 
 ## Effect Layer Blending
 If you have ever used image editing software you may be familiar with
