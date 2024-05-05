@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ###########################################################################
-## Python code generated with wxFormBuilder (version 3.10.1-0-g8feb16b3)
+## Python code generated with wxFormBuilder (version 3.10.1-e2e4764)
 ## http://www.wxformbuilder.org/
 ##
 ## PLEASE DO *NOT* EDIT THIS FILE!
@@ -168,15 +168,20 @@ class SimFrame ( wx.Frame ):
 
 		bHeaterStepperSizer.Add( ( 20, 0), 1, wx.EXPAND, 5 )
 
-		bEndstopSizer = wx.BoxSizer( wx.HORIZONTAL )
+		bEndstopSizer = wx.BoxSizer( wx.VERTICAL )
 
 		self.m_btnEndstop = wx.Button( self.m_panel41, wx.ID_ANY, u"Endstop", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_btnEndstop.SetMinSize( wx.Size( 60,-1 ) )
 
-		bEndstopSizer.Add( self.m_btnEndstop, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+		bEndstopSizer.Add( self.m_btnEndstop, 0, wx.ALL, 5 )
+
+		self.m_btnButton = wx.ToggleButton( self.m_panel41, wx.ID_ANY, u"Button", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_btnButton.SetMinSize( wx.Size( 60,-1 ) )
+
+		bEndstopSizer.Add( self.m_btnButton, 0, wx.ALL, 5 )
 
 
-		bHeaterStepperSizer.Add( bEndstopSizer, 1, wx.EXPAND, 5 )
+		bHeaterStepperSizer.Add( bEndstopSizer, 1, wx.EXPAND|wx.TOP, 5 )
 
 
 		self.m_panel41.SetSizer( bHeaterStepperSizer )
@@ -390,6 +395,7 @@ class SimFrame ( wx.Frame ):
 		self.m_slProgress.Bind( wx.EVT_SLIDER, self.OnProgressSlider )
 		self.m_slAnalog.Bind( wx.EVT_SLIDER, self.OnAnalogSlider )
 		self.m_btnEndstop.Bind( wx.EVT_BUTTON, self.OnBtnEndstopClick )
+		self.m_btnButton.Bind( wx.EVT_TOGGLEBUTTON, self.OnBtnButtonClick )
 		self.m_cbActive.Bind( wx.EVT_CHECKBOX, self.OnEffectSettingChanged )
 		self.m_cbEffect.Bind( wx.EVT_COMBOBOX, self.OnEffectSettingChanged )
 		self.m_spinEffectRate.Bind( wx.EVT_SPINCTRLDOUBLE, self.OnEffectSettingChanged )
@@ -454,6 +460,9 @@ class SimFrame ( wx.Frame ):
 		event.Skip()
 
 	def OnBtnEndstopClick( self, event ):
+		event.Skip()
+
+	def OnBtnButtonClick( self, event ):
 		event.Skip()
 
 	def OnEffectSettingChanged( self, event ):

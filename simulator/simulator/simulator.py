@@ -254,7 +254,12 @@ class Simulator( simgui.SimFrame ):
             self.printer.led_effect.handler.homing_end_flag["x"] += 1
         else:
             self.printer.led_effect.handler.homing_end_flag["x"]  = 0
-        
+
+    def OnBtnButtonClick( self, event ):
+        if self.m_btnButton.Value:
+            self.printer.led_effect.button_state = 1
+        else:
+            self.printer.led_effect.button_state = 0
 
     def OnExit(self, event):
         self.Close(True)
