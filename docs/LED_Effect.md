@@ -398,10 +398,30 @@ indicate the hotend or bed is in a safe state to touch.
 #### Temperature
     Effect Rate:  20  Cold Temperature
     Cutoff:       80  Hot Temperature
-    Palette:          Color values to blend from Cold to Hot
+    Palette:          Color values to blend from "Cold" to "Hot"
 The temperature of the configured heater determines the color in a gradient over
 the palette. When only one color is defined in the palette, the brightness of
 that color is defined by the temperature.
+
+#### HeaterGauge
+    Effect Rate:  50  Number of trailing LEDs
+    Cutoff:       0   Number of leading LEDs
+    Palette:          Color values to blend from "Cold" to "Hot"
+The temperature of the heater relative from 0 to its target is represented by 
+the first color in the palette. The remaining colors in the gradient are blended
+and mirrored on either side. As the heater heats up to it's target temperature,
+the lights move up the strip. A negative value in effect rate will fill the 
+entire strip leading up to the temperature position, a negative value in cutoff 
+will fill the entire strip after the temperature position.
+
+#### TemperatureGauge
+    Effect Rate:  20  Cold Temperature
+    Cutoff:       80  Hot Temperature
+    Palette:          Color values to blend
+The temperature of the heater or temperature sensor relative from the cold 
+temperature to the hot temperature its target is represented by the first color 
+in the palette. The remaining colors form a gradient on the lower side of the 
+strip.
 
 #### Fire
     Effect Rate:  45  Probability of "sparking"
