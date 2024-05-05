@@ -346,7 +346,7 @@ class ledEffect:
         self.runOnShutown = config.getboolean('run_on_error', False)
         self.heater       = config.get('heater', None)
         self.analogPin    = config.get('analog_pin', None)
-        self.buttonPin    = config.getlist('button_pins', None)
+        self.buttonPins   = config.getlist('button_pins', None)
         self.stepper      = config.get('stepper', None)
         self.recalculate  = config.get('recalculate', False)
         self.endstops     = [x.strip() for x in config.get('endstops','').split(',')]
@@ -368,9 +368,9 @@ class ledEffect:
             query_adc = self.printer.load_object(self.config, 'query_adc')
             query_adc.register_adc(self.name, self.mcu_adc)
 
-        if self.buttonPin:
+        if self.buttonPins:
             buttons = self.printer.load_object(config, "buttons")
-            buttons.register_buttons(self.buttonPin, self.button_callback)
+            buttons.register_buttons(self.buttonPins, self.button_callback)
 
     cmd_SET_LED_help = 'Starts or Stops the specified led_effect'
 
