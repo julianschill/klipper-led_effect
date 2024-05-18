@@ -3,6 +3,7 @@
 set -e
 
 KLIPPER_PATH="${HOME}/klipper"
+KLIPPER_SERVICE_NAME=klipper
 SYSTEMDDIR="/etc/systemd/system"
 MOONRAKER_CONFIG_DIR="${HOME}/printer_data/config"
 
@@ -12,11 +13,12 @@ if [ ! -d "${MOONRAKER_CONFIG_DIR}" ]; then
     MOONRAKER_CONFIG_DIR="${HOME}/klipper_config"
 fi
 
-usage(){ echo "Usage: $0 [-k <klipper path>] [-c <configuration path>]" 1>&2; exit 1; }
+usage(){ echo "Usage: $0 [-k <klipper path>] [-s <klipper service name>] [-c <configuration path>] [-u]" 1>&2; exit 1; }
 # Parse command line arguments
-while getopts "k:c:uh" arg; do
+while getopts "k:s:c:uh" arg; do
     case $arg in
         k) KLIPPER_PATH=$OPTARG;;
+        s) KLIPPER_SERVICE_NAME=$OPTARG;;
         c) MOONRAKER_CONFIG_DIR=$OPTARG;;
         u) UNINSTALL=1;;
         h) usage;;
@@ -29,10 +31,10 @@ SRCDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/src/ && pwd )"
 # Verify Klipper has been installed
 check_klipper()
 {
-    if [ "$(sudo systemctl list-units --full -all -t service --no-legend | grep -F "klipper.service")" ]; then
-        echo "Klipper service found."
+    if [ "$(sudo systemctl list-units --full -all -t service --no-legend | grep -F "$KLIPPER_SERVICE_NAME.service")" ]; then
+        echo "Klipper service found with name "$KLIPPER_SERVICE_NAME"."
     else
-        echo "[ERROR] Klipper service not found, please install Klipper first"
+        echo "[ERROR] Klipper service with name "$KLIPPER_SERVICE_NAME" not found, please install Klipper first or specify name with -s."
         exit -1
     fi
 }
@@ -90,21 +92,21 @@ add_updater()
 restart_klipper()
 {
     echo -n "Restarting Klipper... "
-    sudo systemctl restart klipper
+    sudo systemctl restart $KLIPPER_SERVICE_NAME
     echo "[OK]"
 }
 
 start_klipper()
 {
     echo -n "Starting Klipper... "
-    sudo systemctl start klipper
+    sudo systemctl start $KLIPPER_SERVICE_NAME
     echo "[OK]"
 }
 
 stop_klipper()
 {
     echo -n "Stopping Klipper... "
-    sudo systemctl start klipper
+    sudo systemctl stop $KLIPPER_SERVICE_NAME
     echo "[OK]"
 }
 

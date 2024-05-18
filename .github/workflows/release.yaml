@@ -23,7 +23,7 @@ jobs:
     - name: Output Release URL File
       run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
     - name: Save Release URL File for publish
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: release_url
         path: release_url.txt
@@ -50,9 +50,9 @@ jobs:
             ASSET_MIME: application/vnd.microsoft.portable-executable
             POETRY_FOLDER: C:\Users\runneradmin\.local
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
     - name: Set up Python 3.9
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.9
     #- name: cache poetry install
@@ -60,13 +60,13 @@ jobs:
     #  with:
     #    path: ${{matrix.POETRY_FOLDER}}
     #    key: poetry-1.3.3-0
-    - uses: snok/install-poetry@v1.3.3
+    - uses: snok/install-poetry@v1
       with:
         virtualenvs-create: true
         virtualenvs-in-project: true
     - name: cache deps
       id: cache-deps
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: simulator/.venv
         key: pydeps-${{ hashFiles('**/poetry.lock') }}
@@ -82,7 +82,7 @@ jobs:
       working-directory: ./simulator
       run: ${{matrix.POETRY_FOLDER}}/bin/poetry run ${{matrix.CMD_BUILD}}
     - name: Load Release URL File from release job
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v4
       with:
         name: release_url
     - name: Get Release File Name & Upload URL

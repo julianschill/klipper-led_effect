@@ -8,7 +8,6 @@
 
 from math import cos, exp, pi
 from random import randint
-import logging
 
 ANALOG_SAMPLE_TIME  = 0.001
 ANALOG_SAMPLE_COUNT = 5
@@ -114,7 +113,6 @@ class ledFrameHandler:
     
     def _handle_homing_move_begin(self, hmove):
         endstops_being_homed = [name for es,name in hmove.endstops]
-        logging.info(endstops_being_homed)
 
         for endstop in endstops_being_homed:
             if endstop in self.homing_start_flag: 
@@ -309,6 +307,7 @@ class ledEffect:
         self.config       = config
         self.printer      = config.get_printer()
         self.gcode        = self.printer.lookup_object('gcode')
+        self.gcode_macro  = self.printer.lookup_object('gcode_macro')
         self.handler      = self.printer.load_object(config, 'led_effect')
         self.frameRate    = 1.0 / config.getfloat('frame_rate', 
                                         default=24, minval=1, maxval=60)
@@ -316,7 +315,8 @@ class ledEffect:
         self.iteration    = 0
         self.layers       = []
         self.analogValue  = 0
-        self.fadeValue    = 1.0
+        self.button_state = 0
+        self.fadeValue    = 0.0
         self.fadeTime     = 0.0
         self.fadeEndTime  = 0
 
@@ -346,9 +346,12 @@ class ledEffect:
         self.runOnShutown = config.getboolean('run_on_error', False)
         self.heater       = config.get('heater', None)
         self.analogPin    = config.get('analog_pin', None)
+        self.buttonPins   = config.getlist('button_pins', None)
         self.stepper      = config.get('stepper', None)
+        self.recalculate  = config.get('recalculate', False)
         self.endstops     = [x.strip() for x in config.get('endstops','').split(',')]
-        self.configLayers = config.get('layers')
+        self.layerTempl   = self.gcode_macro.load_template(config, 'layers')
+        self.configLayers = []
         self.configLeds   = config.get('leds')
 
         self.nextEventTime = 0
@@ -365,6 +368,10 @@ class ledEffect:
             query_adc = self.printer.load_object(self.config, 'query_adc')
             query_adc.register_adc(self.name, self.mcu_adc)
 
+        if self.buttonPins:
+            buttons = self.printer.load_object(config, "buttons")
+            buttons.register_buttons(self.buttonPins, self.button_callback)
+
     cmd_SET_LED_help = 'Starts or Stops the specified led_effect'
 
     def _handle_ready(self):
@@ -372,6 +379,8 @@ class ledEffect:
         self.ledChains    = []
         self.leds         = []
         self.enabled = self.autoStart
+        if not self.enabled:
+            self.nextEventTime = self.handler.reactor.NEVER
         self.printer.register_event_handler('klippy:shutdown', 
                                     self._handle_shutdown)
         #map each LED from the chains to the "pixels" in the effect frame
@@ -400,7 +409,14 @@ class ledEffect:
                                  .lower() : c
                                    for c in self._layerBase.__subclasses__()
                                    if str(c).startswith("<class")}
+        self._generateLayers()
 
+    def _generateLayers(self, context=None):
+        self.layers = []
+        if context is None:
+            context = self.gcode_macro.create_template_context()
+            context.update({'params': {}, 'rawparams': ''})
+        self.configLayers = self.layerTempl.render(context)
         for layer in [line for line \
             in self.configLayers.split('\n') if line.strip()]:
 
@@ -487,6 +503,10 @@ class ledEffect:
             self.nextEventTime = self.handler.reactor.NOW
             self.handler._getFrames(self.handler.reactor.NOW)
     
+    def reset_frame(self):
+        for layer in self.layers:
+            layer.frameNumber = 0
+
     def set_fade_time(self, fadetime):
         self.fadeTime = fadetime
         self.fadeEndTime = self.handler.reactor.monotonic() + fadetime
@@ -501,6 +521,11 @@ class ledEffect:
                 self.set_fade_time(parmFadeTime)
             self.set_enabled(False)
         else:
+            if self.recalculate:
+                kwargs = self.layerTempl.create_template_context()
+                kwargs['params'] = gcmd.get_command_parameters()
+                kwargs['rawparams'] = gcmd.get_raw_command_parameters()
+                self._generateLayers(kwargs)
             if gcmd.get_int('REPLACE',0) >= 1:
                 for led in self.leds:
                     for effect in self.handler.effects:
@@ -511,6 +536,8 @@ class ledEffect:
 
             if not self.enabled:
                 self.set_fade_time(parmFadeTime)
+            if gcmd.get_int('RESTART', 0) >= 1:
+                self.reset_frame()
             self.set_enabled(True)
 
     def _handle_shutdown(self):
@@ -518,6 +545,9 @@ class ledEffect:
 
     def adcCallback(self, read_time, read_value):
         self.analogValue = int(read_value * 1000.0) / 10.0
+    
+    def button_callback(self, eventtime, state):
+        self.button_state = state
 
     ######################################################################
     # LED Effect layers
@@ -542,6 +572,8 @@ class ledEffect:
             self.lastAnalog      = 0
 
         def nextFrame(self, eventtime):
+            if not self.frameCount:
+                return [0] * COLORS * self.ledCount
             self.frameNumber += 1
             self.frameNumber = self.frameNumber * \
                 ( self.frameNumber < self.frameCount )
@@ -883,6 +915,10 @@ class ledEffect:
 
             self.frameCount = len(self.thisFrame)
 
+            if self.handler.heater is None:
+                raise self.handler.printer.config_error(
+                    "LED Effect '%s' has no heater defined." % (self.handler.name))
+
         def nextFrame(self, eventtime):
             heaterTarget  = self.frameHandler.heaterTarget[self.handler.heater]
             heaterCurrent = self.frameHandler.heaterCurrent[self.handler.heater]
@@ -920,6 +956,11 @@ class ledEffect:
             for i in range(len(gradient)):
                 self.thisFrame.append(gradient[i] * self.ledCount)
             self.frameCount = len(self.thisFrame)
+
+            if self.handler.heater is None:
+                raise self.handler.printer.config_error(
+                    "LED Effect '%s' has no heater defined." % (self.handler.name))
+            
         def nextFrame(self, eventtime):
             if self.effectCutoff == self.effectRate:
                 s = 200 if self.frameHandler.heaterCurrent[self.handler.heater] >= self.effectRate else 0
@@ -931,6 +972,111 @@ class ledEffect:
             s = min(len(self.thisFrame)-1,s)
             s = max(0,s)
             return self.thisFrame[s]
+    class layerHeaterGauge(_layerBase):
+        def __init__(self,  **kwargs):
+            super(ledEffect.layerHeaterGauge, self).__init__(**kwargs)
+
+            if self.effectRate < 0:
+                self.effectRate = self.ledCount
+
+            if self.effectCutoff < 0:
+                self.effectCutoff = self.ledCount
+
+            if self.effectRate == 0:
+                trailing = colorArray(COLORS, [0.0]*COLORS * self.ledCount)
+            else:
+                trailing = colorArray(COLORS, self._gradient(self.paletteColors[1:],
+                                                     int(self.effectRate), True))
+                trailing.padLeft([0.0]*COLORS, self.ledCount)
+
+            if self.effectCutoff == 0:
+                leading = colorArray(COLORS, [0.0]*COLORS * self.ledCount)
+            else:
+                leading = colorArray(COLORS, self._gradient(self.paletteColors[1:],
+                                                    int(self.effectCutoff), False))
+                leading.padRight([0.0]*COLORS, self.ledCount)
+
+            gradient = colorArray(COLORS, trailing + self.paletteColors[0] + leading)
+            gradient.shift(len(trailing), 0)
+            frames = [gradient[:self.ledCount]]
+
+            for i in range(0, self.ledCount):
+                gradient.shift(1,1)
+                frames.append(gradient[:self.ledCount])
+
+            self.thisFrame.append(colorArray(COLORS, [0.0]*COLORS * self.ledCount))
+            for i in range(1, 101):
+                x = int((i / 101.0) * self.ledCount)
+                self.thisFrame.append(frames[x])
+
+            self.frameCount = len(self.thisFrame)
+
+        def nextFrame(self, eventtime):
+            heaterTarget  = self.frameHandler.heaterTarget[self.handler.heater]
+            heaterCurrent = self.frameHandler.heaterCurrent[self.handler.heater]
+            heaterLast    = self.frameHandler.heaterLast[self.handler.heater]
+            
+            if heaterTarget > 0.0:
+                p = int(heaterCurrent/heaterTarget * 100.0)
+            elif heaterLast > 0.0:
+                p = int(heaterCurrent/heaterLast * 100.0)
+            else: 
+                p = 0
+            
+            p = min(len(self.thisFrame)-1,p)
+            p = max(0,p)
+            
+            return self.thisFrame[p]
+
+    class layerTemperatureGauge(_layerBase):
+        def __init__(self,  **kwargs):
+            super(ledEffect.layerTemperatureGauge, self).__init__(**kwargs)
+
+            trailing = colorArray(COLORS, self._gradient(self.paletteColors[1:],
+                                                    int(self.ledCount), True))
+            trailing.padLeft([0.0]*COLORS, self.ledCount)
+
+            leading = colorArray(COLORS, [0.0]*COLORS * self.ledCount)
+
+            gradient = colorArray(COLORS, trailing + self.paletteColors[0] + leading)
+            gradient.shift(len(trailing), 0)
+            frames = [gradient[:self.ledCount]]
+
+            for i in range(0, self.ledCount):
+                gradient.shift(1,1)
+                frames.append(gradient[:self.ledCount])
+
+            self.thisFrame.append(colorArray(COLORS, [0.0]*COLORS * self.ledCount))
+            self.steps = 255
+            for i in range(1, self.steps + 1):
+                x = int((i / float(self.steps + 1)) * self.ledCount)
+                frames2=colorArray(COLORS,[])
+
+                for idx,led in enumerate(frames[x]):
+                    
+                    brightness = min(1.0,max(0.0,len(frames[x]) * (float(i) / float(self.steps + 1)) - int(idx/COLORS)))
+                   
+                    frames2.append(led*brightness)
+
+                self.thisFrame.append(frames2)
+
+            self.frameCount = len(self.thisFrame)
+
+        def nextFrame(self, eventtime):
+            if self.effectCutoff == self.effectRate:
+                s = len(self.thisFrame) if self.frameHandler.heaterCurrent[self.handler.heater] >= self.effectRate else 0
+            else:
+                s = int(((self.frameHandler.heaterCurrent[self.handler.heater] - 
+                            self.effectRate) / 
+                            (self.effectCutoff - self.effectRate)) * self.steps)
+                
+            s = min(len(self.thisFrame)-1,s)
+            s = max(0,s)
+
+
+
+            return self.thisFrame[s]
+
             
     #Responds to analog pin voltage
     class layerAnalogPin(_layerBase):
@@ -1084,7 +1230,10 @@ class ledEffect:
             self.frameLen   = len(self.gradient)
             self.heatLen    = len(self.heatMap)
             self.heatSource = int(self.ledCount / 10.0)
-            self.effectRate = 0
+
+            if self.handler.heater is None:
+                raise self.handler.printer.config_error(
+                    "LED Effect '%s' has no heater defined." % (self.handler.name))
 
             if self.heatSource < 1:
                 self.heatSource = 1
@@ -1097,14 +1246,15 @@ class ledEffect:
             heaterLast    = self.frameHandler.heaterLast[self.handler.heater]
 
             if heaterTarget > 0.0 and heaterCurrent > 0.0:
-                if heaterCurrent <= heaterTarget-2:
-                    spark = int((heaterCurrent / heaterTarget) * 80)
-                    brightness = int((heaterCurrent / heaterTarget) * 100)
-                elif self.effectCutoff > 0:
-                    spark = 0
-                else:
-                    spark = 80
-                    brightness = 100
+                if (heaterCurrent >= self.effectRate):
+                    if heaterCurrent <= heaterTarget-2:
+                        spark = int((heaterCurrent / heaterTarget) * 80)
+                        brightness = int((heaterCurrent / heaterTarget) * 100)
+                    elif self.effectCutoff > 0:
+                        spark = 0
+                    else:
+                        spark = 80
+                        brightness = 100
             elif self.effectRate > 0 and heaterCurrent > 0.0:
                 if heaterCurrent >= self.effectRate:
                     spark = int(((heaterCurrent - self.effectRate)
@@ -1112,7 +1262,7 @@ class ledEffect:
                     brightness = int(((heaterCurrent - self.effectRate)
                                       / heaterLast) * 100)
 
-            if spark > 0:
+            if spark > 0 and heaterTarget != 0:
                 cooling = int((heaterCurrent / heaterTarget) * 20)
 
                 for h in range(self.heatLen):
@@ -1205,7 +1355,6 @@ class ledEffect:
             self.coloridx=-1
             self.my_flag={}
             for endstop in self.handler.endstops:
-                logging.info(endstop)
                 self.frameHandler.homing_end_flag[endstop] = 0
                 self.my_flag[endstop] = self.frameHandler.homing_end_flag[endstop]
 
@@ -1222,7 +1371,123 @@ class ledEffect:
                 self.counter += 1 
             
             return frame
+    class layerSwitchButton(_layerBase):
+        def __init__(self,  **kwargs):
+            super(ledEffect.layerSwitchButton, self).__init__(**kwargs)
+            self.last_state = 0
+            self.coloridx = 0
+            self.fadeValue = 0.0
+            self.paletteColors = colorArray(COLORS, self.paletteColors)
 
+            for c in range(0, len(self.paletteColors)):
+                color = self.paletteColors[c]
+                self.thisFrame.append(colorArray(COLORS,color*self.ledCount))
+
+        def nextFrame(self, eventtime):
+            if self.handler.button_state > self.last_state:
+                self.coloridx = (self.coloridx + 1) % len(self.paletteColors)
+
+            self.last_state = self.handler.button_state
+
+            if self.last_state:
+                if self.effectRate > 0 and self.fadeValue < 1.0:
+                    self.fadeValue += (self.handler.frameRate / self.effectRate) 
+                else:
+                    self.fadeValue = 1.0
+            else:
+                if self.effectCutoff > 0 and self.fadeValue > 0.0:
+                    self.fadeValue -= (self.handler.frameRate / self.effectCutoff)
+                else:
+                    self.fadeValue = 0.0
+
+            if self.fadeValue < 0: self.fadeValue = 0
+            if self.fadeValue > 1.0: self.fadeValue = 1.0
+            return [self.fadeValue * i for i in self.thisFrame[self.coloridx]]
+
+    class layerToggleButton(_layerBase):
+        def __init__(self,  **kwargs):
+            super(ledEffect.layerToggleButton, self).__init__(**kwargs)
+            self.last_state = 0
+            self.last_coloridx = 0
+            self.coloridx = 0
+            self.fadeInValue = 0.0
+            self.fadeOutValue = 0.0
+            self.active = False
+            self.paletteColors = colorArray(COLORS, self.paletteColors)
+
+            for c in range(0, len(self.paletteColors)):
+                color = self.paletteColors[c]
+                self.thisFrame.append(colorArray(COLORS,color*self.ledCount))
+
+        def nextFrame(self, eventtime):
+            if self.handler.button_state > self.last_state:
+                self.last_coloridx = self.coloridx
+                self.coloridx = (self.coloridx + 1) % len(self.paletteColors)
+                self.last_state = self.handler.button_state
+                self.fadeInValue = 0
+                self.fadeOutValue = 1.0
+
+            self.last_state = self.handler.button_state
+
+            if self.effectRate > 0 and self.fadeInValue < 1.0:
+                self.fadeInValue += (self.handler.frameRate / self.effectRate) 
+            else:
+                self.fadeInValue = 1.0
+            if self.effectCutoff > 0 and self.fadeOutValue > 0.0:
+                self.fadeOutValue -= (self.handler.frameRate / self.effectCutoff)
+            else:
+                self.fadeOutValue = 0.0
+
+            if self.fadeInValue < 0: self.fadeInValue = 0
+            if self.fadeInValue > 1.0: self.fadeInValue = 1.0
+            
+            if self.fadeOutValue < 0: self.fadeOutValue = 0
+            if self.fadeOutValue > 1.0: self.fadeOutValue = 1.0
+
+            frameIn = [self.fadeInValue * i for i in self.thisFrame[self.coloridx]]
+            frameOut = [self.fadeOutValue * i for i in self.thisFrame[self.last_coloridx]]
+
+            return [ i + o for i, o in zip(frameIn,frameOut)]
+
+    class layerFlashButton(_layerBase):
+        def __init__(self,  **kwargs):
+            super(ledEffect.layerFlashButton, self).__init__(**kwargs)
+            self.last_state = 0
+            self.active = False
+            self.coloridx = 0
+            self.fadeValue = 0.0
+            self.paletteColors = colorArray(COLORS, self.paletteColors)
+
+            for c in range(0, len(self.paletteColors)):
+                color = self.paletteColors[c]
+                self.thisFrame.append(colorArray(COLORS,color*self.ledCount))
+
+        def nextFrame(self, eventtime):
+            
+            if self.handler.button_state > self.last_state:
+                self.coloridx = (self.coloridx + 1) % len(self.paletteColors)
+                self.active = True
+                
+            self.last_state=self.handler.button_state
+    
+            if self.active:
+                if self.effectRate > 0 and self.fadeValue < 1.0:
+                    self.fadeValue += (self.handler.frameRate / self.effectRate) 
+                else:
+                    self.fadeValue = 1.0
+                if self.fadeValue >= 1.0: 
+                    self.fadeValue = 1.0
+                    self.active = False
+            else:
+                if self.effectCutoff > 0 and self.fadeValue > 0.0:
+                    self.fadeValue -= (self.handler.frameRate / self.effectCutoff)
+                else:
+                    self.fadeValue = 0.0
+
+            if self.fadeValue <= 0: 
+                self.fadeValue = 0
+            
+            return [self.fadeValue * i for i in self.thisFrame[self.coloridx]]
 
 def load_config_prefix(config):
     return ledEffect(config)

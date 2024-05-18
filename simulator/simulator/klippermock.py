@@ -37,6 +37,8 @@ class mockPrinter:
                 return self.objects[o]
             elif o == "query_adc":
                 return self
+            elif o == "buttons":
+                return self
         return None
     def register_event_handler(self, event, callback):
         pass
@@ -45,6 +47,8 @@ class mockPrinter:
     def register_command(self, cmd, callback, desc):
         pass
     def register_timer(self, callback, time):
+        pass
+    def register_buttons(self, pins, callback):
         pass
     def get_reactor(self):
         return self
@@ -74,6 +78,14 @@ class mockPrinter:
         self.led_effect.handler.printProgress=progress
     def set_analog(self, value):
         self.led_effect.analogValue=value
+    def load_template(self, config, name):
+        self.template = config.get(name)
+        return self
+    def render(self, context=None):
+        return self.template
+    def create_template_context(self):
+        return {'printer': self}
+
 
 class mockConfig:
     def __init__(self):
@@ -81,12 +93,14 @@ class mockConfig:
             "frame_rate" : "24.0",
             "autostart" : "False",
             "run_on_error" : "False",
+            "recalculate": "False",
             "heater" : "bed",
             "analog_pin" : "PA0",
             "stepper" : "x",
             "layers"  : """gradient       1 1 top  (1, 0.0, 0.0),(0, 1, 0.0),(0.0, 0.0, 1)""",
             "leds" : "leds:leds",
-            "endstops" : "x"
+            "endstops" : "x",
+            "button_pins" : "PA0"
        }
     def set_printer(self, printer):
         self.printer=printer
@@ -102,6 +116,8 @@ class mockConfig:
         return int(self.config[key])
     def setint(self,key, value):
         self.config[key] = int (value)
+    def getlist(self,key,default):
+        return list(self.config[key])
     def get_name(self):
         return "led_effect simulator"
     def get(self, key, default=None ):
