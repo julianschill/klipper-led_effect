@@ -89,7 +89,7 @@ jobs:
       id: get_release_info
       shell: bash
       run: |
-        value=`cat release_url/release_url.txt`
+        value=`cat release_url.txt`
         echo ::set-output name=upload_url::$value
     - name: Upload Release Asset
       id: upload-release-asset
