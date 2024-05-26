@@ -39,6 +39,8 @@ class mockPrinter:
                 return self
             elif o == "buttons":
                 return self
+            elif o == "gcode_macro":
+                return self
         return None
     def register_event_handler(self, event, callback):
         pass
