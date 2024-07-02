@@ -854,6 +854,39 @@ class ledEffect:
 
             self.frameCount = len(self.thisFrame)
 
+    #Cylon, single LED bounces from start to end of strip
+    class layerCylon(_layerBase):
+        def __init__(self,  **kwargs):
+            super(ledEffect.layerCylon, self).__init__(**kwargs)
+
+            self.paletteColors = colorArray(COLORS, self.paletteColors)
+
+            blank = [0.0, 0.0, 0.0, 0.0]
+
+            # How many frames per sweep animation.
+            frames = int((1 / self.frameRate) * self.effectRate)
+
+            direction = True
+
+            for _ in range(1 if len(self.paletteColors) % 2 == 0 else 2):
+                for c in range(0, len(self.paletteColors)):
+                    color = self.paletteColors[c]
+
+                    for frame in range(frames):
+                        pct = frame / (frames - 1)
+                        newFrame = []
+
+                        p = int(round((self.ledCount - 2) * pct) if direction else 1 + round(((self.ledCount - 2) * (1 - pct))))
+
+                        for i in range(self.ledCount):
+                            newFrame += color if p == i else blank
+
+                        self.thisFrame.append(newFrame)
+
+                    direction = not direction
+
+            self.frameCount = len(self.thisFrame)
+
     #Color gradient over all LEDs
     class layerGradient(_layerBase):
         def __init__(self,  **kwargs):

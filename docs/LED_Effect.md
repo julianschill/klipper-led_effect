@@ -380,6 +380,14 @@ the "head" of the comet and the remaining colors are blended into the "tail"
     Palette:          Color of "head" and gradient of "tail"
 Identical settings as Comet, but with multiple lights chasing each other.
 
+#### Cylon
+    Effect Rate:  1   How fast the cylon sweeps
+    Cutoff:       0   Not used but must be provided
+    Palette:          Color of sweeping LED
+A light moves between each end of the strip. Multiple colors can be provided;
+the color will change after each sweep. If an odd number of colors are
+provided, the effect will be repeated.
+
 #### Heater
     Effect Rate:  1   Minimum temperature to activate effect
     Cutoff:       0   Disable effect once temp is reached
