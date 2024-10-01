@@ -57,7 +57,7 @@ Stop Klipper:
 
 Link the file in the Klipper directory (adjust the paths as needed):
 
-    ln -s klipper-led_effect/led_effect.py ~/klipper/extras/led_effect.py
+    ln -s klipper-led_effect/led_effect.py ~/klipper/klippy/extras/led_effect.py
 
 Start Klipper:
 
@@ -88,7 +88,7 @@ installation script with parameters:
 
 If that fails, you can delete the link in Klipper manually:
 
-    rm ~/klipper/extras/led_effect.py
+    rm ~/klipper/klippy/extras/led_effect.py
 
 Delete the repository (optional):
 
