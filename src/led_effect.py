@@ -927,7 +927,7 @@ class ledEffect:
             if heaterTarget > 0.0 and heaterCurrent > 0.0:
                 if (heaterCurrent >= self.effectRate):
                     if (heaterCurrent <= heaterTarget-2):
-                        s = int(((heaterCurrent - self.effectRate) / heaterTarget) * 200)
+                        s = int(((heaterCurrent - self.effectRate) / (heaterTarget - self.effectRate)) * 200)
                         s = min(len(self.thisFrame)-1,s)
                         return self.thisFrame[s]
                     elif self.effectCutoff > 0:
