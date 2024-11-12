@@ -85,9 +85,13 @@ class ledFrameHandler:
         self.gcode.register_command('STOP_LED_EFFECTS',
                                     self.cmd_STOP_LED_EFFECTS,
                                     desc=self.cmd_STOP_LED_EFFECTS_help)
+        self.gcode.register_command('QUERY_LED_EFFECTS',
+                                    self.cmd_QUERY_LED_EFFECTS,
+                                    desc=self.cmd_QUERY_LED_EFFECTS_help)
         self.shutdown = False
 
     cmd_STOP_LED_EFFECTS_help = 'Stops all led_effects'
+    cmd_QUERY_LED_EFFECTS_help = 'List active led_effects'
 
     def _handle_ready(self):
         self.shutdown = False
@@ -294,6 +298,31 @@ class ledFrameHandler:
                 if effect.enabled:
                     effect.set_fade_time(gcmd.get_float('FADETIME', 0.0))
                 effect.set_enabled(False)
+
+    def cmd_QUERY_LED_EFFECTS(self, gcmd):
+        ledParam = gcmd.get('LEDS', "")
+        listAll = (ledParam == "")
+
+        for effect in self.effects:
+            listEffect = listAll
+            if not listAll:
+                try:
+                    chainName, ledIndices = self.parse_chain(ledParam)
+                    chain = self.printer.lookup_object(chainName)
+                except Exception as e:
+                    raise gcmd.error("Unknown LED '%s'" % (ledParam,))
+
+                if ledIndices == [] and chain in effect.ledChains: 
+                    listEffect = True
+                else:
+                    for index in ledIndices:
+                        if (chain,index) in effect.leds: 
+                            listEffect=True
+
+            if listEffect:
+                if effect.enabled:
+                    chainName, _ = self.parse_chain(ledParam)
+                    self.gcode.respond_info("Active effect: %s" % effect.name)
 
 def load_config(config):
     return ledFrameHandler(config)
