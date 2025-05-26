@@ -158,6 +158,9 @@ class ledFrameHandler:
                                                 self._pollStepper,
                                                 self.reactor.NOW)
 
+        if effect in self.effects:
+            self.effects.remove(effect)
+
         self.effects.append(effect)
 
     def _pollHeater(self, eventtime):
