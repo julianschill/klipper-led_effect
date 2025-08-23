@@ -208,8 +208,8 @@ Example: `stepper: x`
 
 endstops:
 Specifies the endstops the homing effect triggers on. Multiple endstops can be
-specified as a comma seperated list. Possible values are: `x`, `y`, `z` and `probe`.
-Example: `endstops: x, y`
+specified as a comma seperated list. Possible values are: `stepper_x`, `stepper_y`, `stepper_z` and `probe`.
+Example: `endstops: stepper_x, stepper_y`
 
 button_pins:
 Specifies the pins the button effect trigger on. Multiple pins can be specified
