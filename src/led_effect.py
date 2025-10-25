@@ -433,7 +433,7 @@ class ledEffect:
                         self.leds.append((ledChain, int(i)))
                 else:
                     for led in ledIndices:
-                        if led >= ledChain.led_helper.led_count:
+                        if led > ledChain.led_helper.led_count:
                             raise self.printer.config_error(
                                 "LED index %d out of range for chain '%s' with %d LEDs."
                                     % (led, chainName, ledChain.led_helper.led_count))
