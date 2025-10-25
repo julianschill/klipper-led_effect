@@ -162,7 +162,13 @@ class ledFrameHandler:
                 self.heaters[effect.heater] = self.printer.lookup_object(effect.heater)
             else:
                 pheater = self.printer.lookup_object('heaters')
-                self.heaters[effect.heater] = pheater.lookup_heater(effect.heater)
+
+                heater = pheater.lookup_heater(effect.heater)
+                if heater is None:
+                    raise self.printer.config_error(
+                        "LED Effect '%s': unknown heater '%s'." 
+                            % (effect.config.get_name(), effect.heater,))
+                self.heaters[effect.heater] = heater
             self.heaterLast[effect.heater] = 100
             self.heaterCurrent[effect.heater] = 0
             self.heaterTarget[effect.heater]  = 0
@@ -427,6 +433,10 @@ class ledEffect:
                         self.leds.append((ledChain, int(i)))
                 else:
                     for led in ledIndices:
+                        if led >= ledChain.led_helper.led_count:
+                            raise self.printer.config_error(
+                                "LED index %d out of range for chain '%s' with %d LEDs."
+                                    % (led, chainName, ledChain.led_helper.led_count))
                         self.leds.append((ledChain, led))
 
         self.ledCount = len(self.leds)
