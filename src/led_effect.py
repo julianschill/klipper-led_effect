@@ -89,6 +89,28 @@ class ledFrameHandler:
 
     cmd_STOP_LED_EFFECTS_help = 'Stops all led_effects'
 
+    def _transmit_chain(self, chain):
+
+        # Force update (dotstar workaround)
+        if hasattr(chain, "prev_data"):
+            chain.prev_data = None
+
+        helper = getattr(chain, 'led_helper', None)
+        if helper is None:
+            raise RuntimeError("Klipper version not compatible: chain has no 'led_helper'.")
+
+        # Request a transmit
+        helper.need_transmit = True
+
+        if hasattr(helper, '_check_transmit'):
+            helper._check_transmit()
+        elif hasattr(helper, 'check_transmit'):
+            # Older Klipper / Kalico API
+            helper.check_transmit(None)
+        else:
+            raise RuntimeError("Klipper version not compatible: led_helper missing '_check_transmit' and 'check_transmit'.")
+
+
     def _handle_ready(self):
         self.shutdown = False
         self.reactor = self.printer.get_reactor()
@@ -107,8 +129,7 @@ class ledFrameHandler:
             if not effect.runOnShutown:
                 for chain in self.ledChains:
                     chain.led_helper.set_color(None, (0.0, 0.0, 0.0, 0.0))
-                    chain.led_helper.need_transmit = True
-                    chain.led_helper._check_transmit()
+                    self._transmit_chain(chain)
                     
         pass
     
@@ -233,11 +254,8 @@ class ledFrameHandler:
                     chainsToUpdate.add(chain)
 
         for chain in chainsToUpdate:
-            if hasattr(chain,"prev_data"):
-                chain.prev_data = None # workaround to force update of dotstars
             if not self.shutdown: 
-                chain.led_helper.need_transmit = True
-                chain.led_helper._check_transmit()
+                self._transmit_chain(chain)
         if self.effects:
             next_eventtime=min(self.effects, key=lambda x: x.nextEventTime)\
                             .nextEventTime
@@ -368,7 +386,13 @@ class ledEffect:
         if self.analogPin:
             ppins = self.printer.lookup_object('pins')
             self.mcu_adc = ppins.setup_pin('adc', self.analogPin)
-            self.mcu_adc.setup_adc_sample(ANALOG_SAMPLE_TIME, ANALOG_SAMPLE_COUNT)
+            if hasattr(self.mcu_adc, 'setup_adc_sample'):
+                self.mcu_adc.setup_adc_sample(ANALOG_SAMPLE_TIME, ANALOG_SAMPLE_COUNT)
+            elif hasattr(self.mcu_adc, 'setup_minmax'):
+                self.mcu_adc.setup_minmax(ANALOG_SAMPLE_TIME, ANALOG_SAMPLE_COUNT)
+            else:
+                raise RuntimeError(
+                    "Klipper version not compatible: mcu_adc missing 'setup_adc_sample' and 'setup_minmax'.")
             self.mcu_adc.setup_adc_callback(ANALOG_REPORT_TIME, self.adcCallback)
             query_adc = self.printer.load_object(self.config, 'query_adc')
             query_adc.register_adc(self.name, self.mcu_adc)
