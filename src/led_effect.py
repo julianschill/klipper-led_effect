@@ -386,7 +386,13 @@ class ledEffect:
         if self.analogPin:
             ppins = self.printer.lookup_object('pins')
             self.mcu_adc = ppins.setup_pin('adc', self.analogPin)
-            self.mcu_adc.setup_adc_sample(ANALOG_SAMPLE_TIME, ANALOG_SAMPLE_COUNT)
+            if hasattr(self.mcu_adc, 'setup_adc_sample'):
+                self.mcu_adc.setup_adc_sample(ANALOG_SAMPLE_TIME, ANALOG_SAMPLE_COUNT)
+            elif hasattr(self.mcu_adc, 'setup_minmax'):
+                self.mcu_adc.setup_minmax(ANALOG_SAMPLE_TIME, ANALOG_SAMPLE_COUNT)
+            else:
+                raise RuntimeError(
+                    "Klipper version not compatible: mcu_adc missing 'setup_adc_sample' and 'setup_minmax'.")
             self.mcu_adc.setup_adc_callback(ANALOG_REPORT_TIME, self.adcCallback)
             query_adc = self.printer.load_object(self.config, 'query_adc')
             query_adc.register_adc(self.name, self.mcu_adc)
