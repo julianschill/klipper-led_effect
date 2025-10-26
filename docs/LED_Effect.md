@@ -126,6 +126,11 @@ below): `STOP_LED_EFFECTS LEDS="neopixel:panel_ring (1-7)"`. Only one
 LED parameter can be specified at a time. To stop the effects for multiple LEDs
 we have to run the command multiple times.
 
+Currently active effects can be listed with the GCode command `QUERY_LED_EFFECTS`.
+To only show effects for certain LEDs we can specify the LEDS parameter:
+`QUERY_LED_EFFECTS LEDS="neopixel:panel_ring"`. You can also specify indeces 
+here just like with the `STOP_LED_EFFECTS` command.
+
 #### Fading in and out
 Effects can be faded in and out by specifying the `FADETIME` parameter:
 `SET_LED_EFFECT EFFECT=panel_idle FADETIME=1.0` fades the effect in during one
