@@ -59,11 +59,130 @@ class colorArray(list):
 # LED Effect handler
 ######################################################################
 
+class ToolLedState:
+    def __init__(self, registry, group):
+        self.registry = registry
+        self.group = group
+    def __setitem__(self, index, value):
+        mapping = self.registry.get_active_mapping()
+        if mapping:
+            target = mapping.get_target(self.group, index)
+            if target:
+                chain, led_index = target
+                chain.led_helper.led_state[led_index] = value
+    def __getitem__(self, index):
+        mapping = self.registry.get_active_mapping()
+        if mapping:
+            target = mapping.get_target(self.group, index)
+            if target:
+                chain, led_index = target
+                return chain.led_helper.led_state[led_index]
+        return (0.0, 0.0, 0.0, 0.0)
+    def __len__(self):
+        return self.registry.get_group_max_count(self.group)
+
+class ToolLedHelper:
+    def __init__(self, registry, group):
+        self.registry = registry
+        self.group = group
+        self.led_state = ToolLedState(registry, group)
+        self.led_count = self.registry.get_group_max_count(self.group)
+        self.need_transmit = False
+    def set_color(self, index, color):
+        if index is None:
+            mapping = self.registry.get_active_mapping()
+            if mapping:
+                targets = mapping.get_all_targets(self.group)
+                for chain, led_index in targets:
+                    chain.led_helper.led_state[led_index] = color
+        else:
+            self.led_state[index] = color
+    def _check_transmit(self):
+        mapping = self.registry.get_active_mapping()
+        if mapping:
+            chains = mapping.get_involved_chains(self.group)
+            for chain in chains:
+                if hasattr(chain.led_helper, "_check_transmit"):
+                    chain.led_helper._check_transmit()
+                elif hasattr(chain.led_helper, "check_transmit"):
+                    chain.led_helper.check_transmit(None)
+
+class ToolLedProxy:
+    def __init__(self, registry, group):
+        self.led_helper = ToolLedHelper(registry, group)
+
+class ToolNeoPixelsRegistry:
+    def __init__(self, printer, frame_handler):
+        self.printer = printer
+        self.frame_handler = frame_handler
+        self.mappings = []
+        self.proxies = {}
+        self.active_tool_cache = (None, 0) # (tool, time)
+    def add_mapping(self, mapping):
+        self.mappings.append(mapping)
+    def _handle_ready(self):
+        for m in self.mappings:
+            m._handle_ready()
+    def get_active_mapping(self):
+        cur_time = self.printer.get_reactor().monotonic()
+        if cur_time - self.active_tool_cache[1] < 0.1: # Cache for 100ms
+             active_tool = self.active_tool_cache[0]
+        else:
+            toolhead = self.printer.lookup_object("toolhead")
+            try:
+                status = toolhead.get_status(self.printer.get_reactor().NOW)
+                active_tool = status.get("extruder")
+                if not active_tool:
+                    active_tool = status.get("tool")
+            except Exception:
+                active_tool = None
+            self.active_tool_cache = (active_tool, cur_time)
+        if not active_tool:
+            return None
+        for m in self.mappings:
+            if m.tool == active_tool:
+                return m
+        return None
+    def get_group_max_count(self, group):
+        max_count = 0
+        for m in self.mappings:
+            if group in m.groups:
+                max_count = max(max_count, len(m.groups[group]))
+        return max_count
+    def get_proxy_info(self, group):
+        proxy_name = "tool_neopixels " + group
+        if group not in self.proxies:
+            proxy = ToolLedProxy(self, group)
+            self.proxies[group] = proxy
+            self.printer.add_object(proxy_name, proxy)
+        return proxy_name, []
+
 class ledFrameHandler:
     def __init__(self, config):
         self.printer = config.get_printer()
         self.gcode   = self.printer.lookup_object('gcode')
         self.printer.load_object(config, "display_status")
+        self.tool_registry = ToolNeoPixelsRegistry(self.printer, self)
+        configfile = self.printer.lookup_object("configfile")
+        
+        # Attempt to access the raw config object
+        raw_config = getattr(configfile, "config", getattr(configfile, "_config", None))
+        
+        sections = []
+        if raw_config:
+            if hasattr(raw_config, "get_sections"):
+                sections = raw_config.get_sections()
+            elif isinstance(raw_config, dict):
+                sections = raw_config.keys()
+        
+        for section in sections:
+            if section.startswith("tool_neopixels "):
+                # Lookup the object registered by tool_neopixels.py
+                try:
+                    obj = self.printer.lookup_object(section)
+                    self.tool_registry.add_mapping(obj)
+                except Exception:
+                    pass
         self.heaters = {}
         self.printProgress = 0
         self.effects = []
@@ -113,6 +232,7 @@ class ledFrameHandler:
 
     def _handle_ready(self):
         self.shutdown = False
+        self.tool_registry._handle_ready()
         self.reactor = self.printer.get_reactor()
         self.printer.register_event_handler('klippy:shutdown', 
                                             self._handle_shutdown)
@@ -273,6 +393,9 @@ class ledFrameHandler:
     
     def parse_chain(self, chain):
         chain = chain.strip()
+        if chain.startswith("tool_neopixels:"):
+            group = chain.split(":")[1]
+            return self.tool_registry.get_proxy_info(group)
         leds=[]
         parms = [parameter.strip() for parameter in chain.split()
                     if parameter.strip()]
