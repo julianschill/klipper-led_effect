@@ -58,8 +58,7 @@ check_folders()
 link_extension()
 {
     echo -n "Linking extension to Klipper... "
-    ln -sf "${SRCDIR}/led_effect.py" "${KLIPPER_PATH}/klippy/extras/led_effect.py"
-    ln -sf "${SRCDIR}/tool_neopixels.py" "${KLIPPER_PATH}/klippy/extras/tool_neopixels.py"
+    ln -sf "${SRCDIR}/multitool_neopixels.py" "${KLIPPER_PATH}/klippy/extras/multitool_neopixels.py"
     echo "[OK]"
 }
 
@@ -76,7 +75,7 @@ add_updater()
 {
     echo -e -n "Adding update manager to moonraker.conf... "
 
-    update_section=$(grep -c '\[update_manager led_effect\]' ${MOONRAKER_CONFIG_DIR}/moonraker.conf || true)
+    update_section=$(grep -c '\[update_manager multitool_neopixels\]' ${MOONRAKER_CONFIG_DIR}/moonraker.conf || true)
     if [ "${update_section}" -eq 0 ]; then
         echo -e "\n" >> ${MOONRAKER_CONFIG_DIR}/moonraker.conf
         while read -r line; do
@@ -86,7 +85,7 @@ add_updater()
         echo "[OK]"
         restart_moonraker
         else
-        echo -e "[update_manager led_effect] already exists in moonraker.conf [SKIPPED]"
+        echo -e "[update_manager multitool_neopixels] already exists in moonraker.conf [SKIPPED]"
     fi
 }
 
@@ -113,13 +112,13 @@ stop_klipper()
 
 uninstall()
 {
-    if [ -f "${KLIPPER_PATH}/klippy/extras/led_effect.py" ]; then
+    if [ -f "${KLIPPER_PATH}/klippy/extras/multitool_neopixels.py" ]; then
         echo -n "Uninstalling... "
-        rm -f "${KLIPPER_PATH}/klippy/extras/led_effect.py"
+        rm -f "${KLIPPER_PATH}/klippy/extras/multitool_neopixels.py"
         echo "[OK]"
-        echo "You can now remove the [update_manager led_effect] section in your moonraker.conf and delete this directory. Also remove all led_effect configurations from your Klipper configuration."
+        echo "You can now remove the [update_manager multitool_neopixels] section in your moonraker.conf and delete this directory. Also remove all relevant configurations from your Klipper configuration."
     else
-        echo "led_effect.py not found in \"${KLIPPER_PATH}/klippy/extras/\". Is it installed?"
+        echo "multitool_neopixels.py not found in \"${KLIPPER_PATH}/klippy/extras/\". Is it installed?"
         echo "[FAILED]"
     fi
 }
