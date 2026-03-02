@@ -6,6 +6,7 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 
+import logging
 from math import cos, exp, pi
 from random import randint
 
@@ -90,25 +91,36 @@ class ledFrameHandler:
     cmd_STOP_LED_EFFECTS_help = 'Stops all led_effects'
 
     def _transmit_chain(self, chain):
+        # Reentrancy guard: prevent RecursionError if _check_transmit fires
+        # reactor.register_callback synchronously (older Klipper versions).
+        if getattr(chain, '_led_effect_tx_busy', False):
+            return
+        chain._led_effect_tx_busy = True
+        try:
+            # Force update (dotstar workaround)
+            if hasattr(chain, "prev_data"):
+                chain.prev_data = None
 
-        # Force update (dotstar workaround)
-        if hasattr(chain, "prev_data"):
-            chain.prev_data = None
+            helper = getattr(chain, 'led_helper', None)
+            if helper is None:
+                raise RuntimeError("Klipper version not compatible: chain has no 'led_helper'.")
 
-        helper = getattr(chain, 'led_helper', None)
-        if helper is None:
-            raise RuntimeError("Klipper version not compatible: chain has no 'led_helper'.")
+            # Request a transmit
+            helper.need_transmit = True
 
-        # Request a transmit
-        helper.need_transmit = True
-
-        if hasattr(helper, '_check_transmit'):
-            helper._check_transmit()
-        elif hasattr(helper, 'check_transmit'):
-            # Older Klipper / Kalico API
-            helper.check_transmit(None)
-        else:
-            raise RuntimeError("Klipper version not compatible: led_helper missing '_check_transmit' and 'check_transmit'.")
+            try:
+                if hasattr(helper, '_check_transmit'):
+                    helper._check_transmit()
+                elif hasattr(helper, 'check_transmit'):
+                    # Older Klipper / Kalico API
+                    helper.check_transmit(None)
+                else:
+                    raise RuntimeError("Klipper version not compatible: led_helper missing '_check_transmit' and 'check_transmit'.")
+            except RecursionError:
+                logging.exception("led_effect: RecursionError in _check_transmit for chain %s;"
+                                  " skipping frame. Update Klipper or report this bug.", chain)
+        finally:
+            chain._led_effect_tx_busy = False
 
 
     def _handle_ready(self):
@@ -127,11 +139,15 @@ class ledFrameHandler:
         self.shutdown = True
         for effect in self.effects:
             if not effect.runOnShutown:
-                for chain in self.ledChains:
+                # Zero out every LED that belongs to this effect
+                for chain, index in effect.leds:
                     chain.led_helper.set_color(None, (0.0, 0.0, 0.0, 0.0))
-                    self._transmit_chain(chain)
-                    
-        pass
+                # Transmit once per chain (ignore errors — MCU may already be down)
+                for chain in effect.ledChains:
+                    try:
+                        self._transmit_chain(chain)
+                    except Exception:
+                        pass
     
     def _handle_homing_move_begin(self, hmove):
         endstops_being_homed = [name for es,name in hmove.endstops]
@@ -265,10 +281,11 @@ class ledFrameHandler:
         if self.effects:
             next_eventtime=min(self.effects, key=lambda x: x.nextEventTime)\
                             .nextEventTime
+            # run at least with 10Hz
+            next_eventtime=min(next_eventtime, eventtime + 0.1)
         else:
-            next_eventtime = eventtime
-        # run at least with 10Hz
-        next_eventtime=min(next_eventtime, eventtime + 0.1) 
+            # No effects registered — poll slowly to avoid busy-looping
+            next_eventtime = eventtime + 1.0
         return next_eventtime
     
     def parse_chain(self, chain):
@@ -540,7 +557,11 @@ class ledEffect:
         if self.enabled != state:
             self.enabled = state
             self.nextEventTime = self.handler.reactor.NOW
-            self.handler._getFrames(self.handler.reactor.NOW)
+            # Reschedule the frame timer to fire immediately instead of calling
+            # _getFrames directly (direct call bypasses reactor ordering and
+            # its return value is discarded, leaving the timer unaffected).
+            self.handler.reactor.update_timer(
+                self.handler.frameTimer, self.handler.reactor.NOW)
     
     def reset_frame(self):
         for layer in self.layers:
