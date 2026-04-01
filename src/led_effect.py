@@ -56,6 +56,27 @@ class colorArray(list):
         self += v * a
 
 ######################################################################
+# Config proxy for template-generated effects
+######################################################################
+
+class _ConfigProxy:
+    """Wraps a Klipper config section, overriding specific get() values.
+    Used by led_effect templates to create child effects with different
+    LED chain assignments while sharing all other configuration."""
+    def __init__(self, config, name_override, overrides):
+        object.__setattr__(self, '_config', config)
+        object.__setattr__(self, '_name_override', name_override)
+        object.__setattr__(self, '_overrides', overrides)
+    def get_name(self):
+        return self._name_override
+    def get(self, option, *args, **kwargs):
+        if option in self._overrides:
+            return self._overrides[option]
+        return self._config.get(option, *args, **kwargs)
+    def __getattr__(self, name):
+        return getattr(self._config, name)
+
+######################################################################
 # LED Effect handler
 ######################################################################
 
@@ -338,6 +359,13 @@ class ledEffect:
         self.gcode        = self.printer.lookup_object('gcode')
         self.gcode_macro  = self.printer.load_object(config, 'gcode_macro')
         self.handler      = self.printer.load_object(config, 'led_effect')
+
+        # Template mode: 'instances' creates multiple named effects
+        instances_raw = config.get('instances', None)
+        if instances_raw is not None:
+            self._init_as_template(config, instances_raw)
+            return
+
         self.frameRate    = 1.0 / config.getfloat('frame_rate', 
                                         default=24, minval=1, maxval=60)
         self.enabled      = False
@@ -406,6 +434,74 @@ class ledEffect:
         if self.buttonPins:
             buttons = self.printer.load_object(config, "buttons")
             buttons.register_buttons(self.buttonPins, self.button_callback)
+
+    def _init_as_template(self, config, instances_raw):
+        """Create multiple named child effects from a single template.
+
+        Config example:
+            [led_effect logo_busy]
+            instances:
+                t0 = neopixel:T0 (1-8)
+                t1 = neopixel:T1 (1-8)
+                t2 = neopixel:T2 (1-8)
+                t3 = neopixel:T3 (1-8)
+            autostart: false
+            frame_rate: 10
+            layers:
+                breathing  3 1 top (1,0,0)
+
+        Generates effects: t0_logo_busy, t1_logo_busy, t2_logo_busy,
+        t3_logo_busy — each independently controllable via SET_LED_EFFECT.
+        """
+        template_name = config.get_name().split()[1]
+
+        # Ensure leds and instances are mutually exclusive
+        leds_check = config.get('leds', None)
+        if leds_check is not None:
+            raise self.printer.config_error(
+                "LED effect '%s': cannot use both 'leds' and 'instances'. "
+                "Use 'instances' to define per-chain LED mappings."
+                % template_name)
+
+        # Parse instances: "prefix = led_chain_spec" per line
+        instances = {}
+        for line in instances_raw.strip().split('\n'):
+            line = line.strip()
+            if not line:
+                continue
+            if '=' not in line:
+                raise self.printer.config_error(
+                    "LED effect '%s': invalid instance format '%s'. "
+                    "Expected: prefix = neopixel:chain (leds)"
+                    % (template_name, line))
+            prefix, led_spec = line.split('=', 1)
+            prefix = prefix.strip()
+            led_spec = led_spec.strip()
+            if not prefix or not led_spec:
+                raise self.printer.config_error(
+                    "LED effect '%s': empty prefix or LED spec in '%s'"
+                    % (template_name, line))
+            instances[prefix] = led_spec
+
+        if not instances:
+            raise self.printer.config_error(
+                "LED effect '%s': no instances defined" % template_name)
+
+        # Create a child ledEffect for each instance
+        self._template_children = []
+        for prefix, led_spec in instances.items():
+            child_name = "%s_%s" % (prefix, template_name)
+            proxy = _ConfigProxy(config,
+                                 "led_effect %s" % child_name,
+                                 {'leds': led_spec, 'instances': None})
+            child = ledEffect(proxy)
+            self._template_children.append(child)
+
+    def get_status(self, eventtime):
+        if hasattr(self, '_template_children'):
+            return {c.name: c.get_status(eventtime)
+                    for c in self._template_children}
+        return {'enabled': self.enabled}
 
     cmd_SET_LED_EFFECT_help = 'Starts or Stops the specified led_effect'
 
@@ -579,9 +675,6 @@ class ledEffect:
                 self.reset_frame()
             self.set_enabled(True)
     
-    def get_status(self, eventtime):
-        return {'enabled':self.enabled}
-
     def _handle_shutdown(self):
         self.set_enabled(self.runOnShutown)
 
