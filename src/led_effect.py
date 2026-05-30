@@ -868,6 +868,10 @@ class ledEffect:
             if len(self.paletteColors) == 1:
                 self.paletteColors += colorArray(COLORS,COLORS*[0])
 
+            if self.effectCutoff <= 0:
+                raise self.handler.printer.config_error(
+                    "LED Effect '%s': effect cutoff for chase must be > 0" % (self.handler.name,))
+
             decayTable = self._decayTable(factor=len(self.paletteColors) * \
                             self.effectCutoff, rate=1)
 
