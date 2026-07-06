@@ -128,7 +128,10 @@ class ledFrameHandler:
         for effect in self.effects:
             if not effect.runOnShutown:
                 for chain in self.ledChains:
-                    chain.led_helper.set_color(None, (0.0, 0.0, 0.0, 0.0))
+                    if hasattr(chain.led_helper, '_set_color'):
+                        chain.led_helper._set_color(None, (0.0, 0.0, 0.0, 0.0))
+                    else:
+                        chain.led_helper.set_color(None, (0.0, 0.0, 0.0, 0.0))
                     self._transmit_chain(chain)
                     
         pass
