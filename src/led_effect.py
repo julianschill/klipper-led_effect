@@ -1140,17 +1140,28 @@ class ledEffect:
             self.frameCount = len(self.thisFrame)
 
         def nextFrame(self, eventtime):
-            if self.effectCutoff == self.effectRate:
-                s = len(self.thisFrame) if self.frameHandler.heaterCurrent[self.handler.heater] >= self.effectRate else 0
+            current = self.frameHandler.heaterCurrent[self.handler.heater]
+            floor   = self.effectRate
+            ceiling = self.effectCutoff
+
+            # A ceiling of 0 means "follow the heater's live setpoint": use the
+            # current target, or the last non-zero target once the heater is off
+            # (e.g. while cooling down). This gives a fixed floor with a dynamic
+            # top that tracks whatever the material's setpoint happens to be,
+            # without hard-coding any temperature. Backwards compatible: a
+            # non-zero ceiling behaves exactly as before.
+            if ceiling == 0:
+                target = self.frameHandler.heaterTarget[self.handler.heater]
+                last   = self.frameHandler.heaterLast[self.handler.heater]
+                ceiling = target if target > 0.0 else last
+
+            if ceiling <= floor:
+                s = len(self.thisFrame) if current >= floor else 0
             else:
-                s = int(((self.frameHandler.heaterCurrent[self.handler.heater] - 
-                            self.effectRate) / 
-                            (self.effectCutoff - self.effectRate)) * self.steps)
-                
+                s = int(((current - floor) / (ceiling - floor)) * self.steps)
+
             s = min(len(self.thisFrame)-1,s)
             s = max(0,s)
-
-
 
             return self.thisFrame[s]
 
