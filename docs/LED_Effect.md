@@ -430,6 +430,14 @@ temperature to the hot temperature its target is represented by the first color
 in the palette. The remaining colors form a gradient on the lower side of the 
 strip.
 
+If the Cutoff (Hot Temperature) is set to `0`, the hot temperature is taken from
+the heater's live target instead of a fixed value: the current target while
+heating, or the last non-zero target once the heater is switched off (e.g. during
+cool-down). This gives a fixed cold-temperature floor with a dynamic top that
+follows whatever the setpoint is, without hard-coding a temperature. A non-zero
+Cutoff keeps the original fixed-range behaviour. This requires a heater (a plain
+temperature sensor has no target).
+
 #### Fire
     Effect Rate:  45  Probability of "sparking"
     Cutoff:       40  Rate of "cooling"
