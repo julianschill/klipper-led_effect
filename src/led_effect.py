@@ -539,6 +539,14 @@ class ledEffect:
     def set_enabled(self, state):
         if self.enabled != state:
             self.enabled = state
+            if state:
+                # Notify layers that the effect was (re)enabled. Lets a
+                # temperature gauge with a dynamic floor (effectRate < 0)
+                # re-sample the current temperature for THIS heat-up.
+                for layer in self.layers:
+                    on_enabled = getattr(layer, 'on_enabled', None)
+                    if on_enabled is not None:
+                        on_enabled()
             self.nextEventTime = self.handler.reactor.NOW
             self.handler._getFrames(self.handler.reactor.NOW)
     
@@ -1138,23 +1146,70 @@ class ledEffect:
                 self.thisFrame.append(frames2)
 
             self.frameCount = len(self.thisFrame)
+            self.start_temp = None
+            self.start_ceiling = None
+
+        def on_enabled(self):
+            # Called when the parent effect is (re)enabled. Reset the captured
+            # start temperatures so a dynamic floor (effectRate < 0) or a
+            # dynamic ceiling by capture (effectCutoff < 0) re-sample the
+            # current temperature for THIS heat-up / cool-down.
+            self.start_temp = None
+            self.start_ceiling = None
 
         def nextFrame(self, eventtime):
-            if self.effectCutoff == self.effectRate:
-                s = len(self.thisFrame) if self.frameHandler.heaterCurrent[self.handler.heater] >= self.effectRate else 0
+            current = self.frameHandler.heaterCurrent[self.handler.heater]
+            floor   = self.effectRate
+            ceiling = self.effectCutoff
+
+            # A floor below 0 means "capture the temperature when the effect is
+            # enabled and use it as the floor". The gauge then shows the PROGRESS
+            # of THIS heat-up: 0% at the start temperature, 100% at the top.
+            # Combined with a ceiling of 0 (dynamic top), the bar always fills
+            # 0->100% for the current heating, no matter where it started.
+            # Backwards compatible: a floor >= 0 behaves exactly as before.
+            if floor < 0:
+                if self.start_temp is None:
+                    self.start_temp = current
+                floor = self.start_temp
+
+            # A ceiling of 0 means "follow the heater's live setpoint": use the
+            # current target, or the last non-zero target once the heater is off
+            # (e.g. while cooling down). A ceiling below 0 means "capture the
+            # temperature when the effect is enabled and use it as the top" --
+            # the mirror of the dynamic floor, for cool-down: the bar starts
+            # full at whatever temperature the cooling began and empties down to
+            # the fixed floor. Backwards compatible: a ceiling > 0 is a fixed
+            # top, exactly as before.
+            if ceiling == 0:
+                target = self.frameHandler.heaterTarget[self.handler.heater]
+                last   = self.frameHandler.heaterLast[self.handler.heater]
+                ceiling = target if target > 0.0 else last
+            elif ceiling < 0:
+                if self.start_ceiling is None:
+                    self.start_ceiling = current
+                ceiling = self.start_ceiling
+
+            # Guard against a degenerate/near-zero span (e.g. the effect is
+            # enabled when the heater is already at its target, so a captured
+            # dynamic floor sits right under the ceiling). Dividing by a span of
+            # a few tenths of a degree turns sensor noise into a bar flickering
+            # across the whole strip. Treat a span at or below the deadband as
+            # "already there": full if the temperature reached the range, else
+            # empty. Backwards compatible: this also keeps an inverted fixed
+            # range fail-safe.
+            deadband = 2.0
+            if ceiling - floor <= deadband:
+                s = len(self.thisFrame) if current >= ceiling - deadband else 0
             else:
-                s = int(((self.frameHandler.heaterCurrent[self.handler.heater] - 
-                            self.effectRate) / 
-                            (self.effectCutoff - self.effectRate)) * self.steps)
-                
+                s = int(((current - floor) / (ceiling - floor)) * self.steps)
+
             s = min(len(self.thisFrame)-1,s)
             s = max(0,s)
 
-
-
             return self.thisFrame[s]
 
-            
+
     #Responds to analog pin voltage
     class layerAnalogPin(_layerBase):
         def __init__(self,  **kwargs):

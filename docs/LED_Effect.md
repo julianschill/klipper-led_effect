@@ -430,6 +430,33 @@ temperature to the hot temperature its target is represented by the first color
 in the palette. The remaining colors form a gradient on the lower side of the 
 strip.
 
+If the Cutoff (Hot Temperature) is set to `0`, the hot temperature is taken from
+the heater's live target instead of a fixed value: the current target while
+heating, or the last non-zero target once the heater is switched off (e.g. during
+cool-down). This gives a fixed cold-temperature floor with a dynamic top that
+follows whatever the setpoint is, without hard-coding a temperature. A non-zero
+Cutoff keeps the original fixed-range behaviour. This requires a heater (a plain
+temperature sensor has no target).
+
+If the Cutoff (Hot Temperature) is set to a value below `0`, the hot temperature
+is not fixed either: it is captured from the current temperature at the moment the
+effect is (re)enabled and used as the top — the mirror image of a negative Effect
+Rate. This is meant for cool-down: combined with a fixed cold-temperature floor,
+the gauge starts full at whatever temperature the cooling began and empties down
+to the floor as the heater cools, without hard-coding a temperature. A positive
+Cutoff keeps the original fixed-range behaviour. This requires a heater.
+
+If the Effect Rate (Cold Temperature) is set to a value below `0`, the cold
+temperature is not fixed: it is captured from the current temperature at the
+moment the effect is enabled, and re-captured every time the effect is
+(re)enabled. Combined with a Cutoff of `0` (dynamic top), the gauge shows the
+progress of the current heat-up — empty at whatever temperature it started from,
+full at the live target — regardless of the starting point. An Effect Rate of 0
+or above keeps the original fixed-floor behaviour. To avoid noise when the effect
+is enabled with the heater already at its target (a near-zero span), a span at or
+below a small deadband is treated as "already there" (full). This requires a
+heater.
+
 #### Fire
     Effect Rate:  45  Probability of "sparking"
     Cutoff:       40  Rate of "cooling"
