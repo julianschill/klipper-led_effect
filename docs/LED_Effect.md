@@ -438,6 +438,14 @@ follows whatever the setpoint is, without hard-coding a temperature. A non-zero
 Cutoff keeps the original fixed-range behaviour. This requires a heater (a plain
 temperature sensor has no target).
 
+If the Cutoff (Hot Temperature) is set to a value below `0`, the hot temperature
+is not fixed either: it is captured from the current temperature at the moment the
+effect is (re)enabled and used as the top — the mirror image of a negative Effect
+Rate. This is meant for cool-down: combined with a fixed cold-temperature floor,
+the gauge starts full at whatever temperature the cooling began and empties down
+to the floor as the heater cools, without hard-coding a temperature. A positive
+Cutoff keeps the original fixed-range behaviour. This requires a heater.
+
 If the Effect Rate (Cold Temperature) is set to a value below `0`, the cold
 temperature is not fixed: it is captured from the current temperature at the
 moment the effect is enabled, and re-captured every time the effect is

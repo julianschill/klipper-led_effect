@@ -1147,12 +1147,15 @@ class ledEffect:
 
             self.frameCount = len(self.thisFrame)
             self.start_temp = None
+            self.start_ceiling = None
 
         def on_enabled(self):
             # Called when the parent effect is (re)enabled. Reset the captured
-            # start temperature so a dynamic floor (effectRate < 0) re-samples
-            # the current temperature for THIS heat-up.
+            # start temperatures so a dynamic floor (effectRate < 0) or a
+            # dynamic ceiling by capture (effectCutoff < 0) re-sample the
+            # current temperature for THIS heat-up / cool-down.
             self.start_temp = None
+            self.start_ceiling = None
 
         def nextFrame(self, eventtime):
             current = self.frameHandler.heaterCurrent[self.handler.heater]
@@ -1172,14 +1175,20 @@ class ledEffect:
 
             # A ceiling of 0 means "follow the heater's live setpoint": use the
             # current target, or the last non-zero target once the heater is off
-            # (e.g. while cooling down). This gives a FIXED floor with a DYNAMIC
-            # top that tracks whatever the material's setpoint happens to be,
-            # without hard-coding any temperature. Backwards compatible: a
-            # non-zero ceiling behaves exactly as before.
+            # (e.g. while cooling down). A ceiling below 0 means "capture the
+            # temperature when the effect is enabled and use it as the top" --
+            # the mirror of the dynamic floor, for cool-down: the bar starts
+            # full at whatever temperature the cooling began and empties down to
+            # the fixed floor. Backwards compatible: a ceiling > 0 is a fixed
+            # top, exactly as before.
             if ceiling == 0:
                 target = self.frameHandler.heaterTarget[self.handler.heater]
                 last   = self.frameHandler.heaterLast[self.handler.heater]
                 ceiling = target if target > 0.0 else last
+            elif ceiling < 0:
+                if self.start_ceiling is None:
+                    self.start_ceiling = current
+                ceiling = self.start_ceiling
 
             # Guard against a degenerate/near-zero span (e.g. the effect is
             # enabled when the heater is already at its target, so a captured
