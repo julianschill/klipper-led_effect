@@ -382,6 +382,7 @@ class ledEffect:
         self.layerTempl   = self.gcode_macro.load_template(config, 'layers')
         self.configLayers = []
         self.configLeds   = config.get('leds')
+        self.offset       = config.getfloat('offset', 0.0)
 
         self.nextEventTime = 0
         self.printer.register_event_handler('klippy:ready', self._handle_ready)
@@ -501,7 +502,8 @@ class ledEffect:
                                         paletteColors = palette,
                                         frameRate     = self.frameRate,
                                         ledCount      = len(self.leds),
-                                        blendingMode  = parms[3]))
+                                        blendingMode  = parms[3],
+                                        offset        = self.offset))
 
         self.handler.addEffect(self)
 
@@ -608,6 +610,7 @@ class ledEffect:
             self.effectCutoff    = kwargs['effectCutoff']
             self.frameRate       = kwargs['frameRate']
             self.blendingMode    = kwargs['blendingMode']
+            self.offset          = kwargs.get('offset', 0.0)
             self.frameNumber     = 0
             self.thisFrame       = []
             self.frameCount      = 1
@@ -1092,17 +1095,19 @@ class ledEffect:
             heaterTarget  = self.frameHandler.heaterTarget[self.handler.heater]
             heaterCurrent = self.frameHandler.heaterCurrent[self.handler.heater]
             heaterLast    = self.frameHandler.heaterLast[self.handler.heater]
-            
-            if heaterTarget > 0.0:
-                p = int(heaterCurrent/heaterTarget * 100.0)
-            elif heaterLast > 0.0:
-                p = int(heaterCurrent/heaterLast * 100.0)
-            else: 
+
+            offset = self.offset
+
+            if heaterTarget > offset:
+                p = int((heaterCurrent - offset) / (heaterTarget - offset) * 100.0)
+            elif heaterLast > offset:
+                p = int((heaterCurrent - offset) / (heaterLast - offset) * 100.0)
+            else:
                 p = 0
-            
-            p = min(len(self.thisFrame)-1,p)
-            p = max(0,p)
-            
+
+            p = min(len(self.thisFrame)-1, p)
+            p = max(0, p)
+
             return self.thisFrame[p]
 
     class layerTemperatureGauge(_layerBase):
