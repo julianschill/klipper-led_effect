@@ -158,7 +158,7 @@ class ledFrameHandler:
 
         if effect.heater:
             effect.heater=effect.heater.strip('\"\'')
-            if effect.heater.startswith("temperature_fan ") or effect.heater.startswith("temperature_sensor "):
+            if effect.heater.startswith("temperature_fan ") or effect.heater.startswith("temperature_sensor ") or effect.heater.startswith("temperature_probe "):
                 self.heaters[effect.heater] = self.printer.lookup_object(effect.heater)
             else:
                 pheater = self.printer.lookup_object('heaters')

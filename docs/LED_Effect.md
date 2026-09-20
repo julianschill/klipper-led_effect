@@ -193,9 +193,11 @@ Enable layer template recalculation on effect activation.
 
 heater:
 Specifies the heater to use for a heater effect. Use `extruder` for the
-extruder and `heater_bed` for the bed. For temperature fans or sensors add the
-type and use quotes.
-Example: `heater: "temperature_fan myfan"`
+extruder and `heater_bed` for the bed. For temperature fans, sensors or probes
+add the type and use quotes.
+Example: `heater: "temperature_fan myfan"` or
+`heater: "temperature_probe my_eddy_probe"` (e.g. to gauge the coil
+temperature of an eddy-current probe).
 
 analog_pin:
 Specifies the pin to use for effects using an analog signal.
