@@ -85,9 +85,20 @@ class ledFrameHandler:
         self.gcode.register_command('STOP_LED_EFFECTS',
                                     self.cmd_STOP_LED_EFFECTS,
                                     desc=self.cmd_STOP_LED_EFFECTS_help)
+        self.gcode.register_command('SET_LED_GLOBAL_BRIGHTNESS',
+                                    self.cmd_SET_LED_GLOBAL_BRIGHTNESS,
+                                    desc=self.cmd_SET_LED_GLOBAL_BRIGHTNESS_help)
+        self.global_brightness = config.getfloat('global_brightness', 1.0, minval=0.0, maxval=1.0)
         self.shutdown = False
 
     cmd_STOP_LED_EFFECTS_help = 'Stops all led_effects'
+
+    cmd_SET_LED_GLOBAL_BRIGHTNESS_help = 'Sets global LED brightness multiplier (0.0-1.0)'
+
+    def cmd_SET_LED_GLOBAL_BRIGHTNESS(self, gcmd):
+        brightness = gcmd.get_float('BRIGHTNESS', 1.0)
+        self.global_brightness = max(0.0, min(1.0, brightness))
+        self._getFrames(self.reactor.NOW)
 
     def _transmit_chain(self, chain):
 
@@ -121,7 +132,7 @@ class ledFrameHandler:
         self.progressTimer = self.reactor.register_timer(self._pollProgress, 
                                                          self.reactor.NOW)
         self.frameTimer    = self.reactor.register_timer(self._getFrames, 
-                                                         self.reactor.NOW)
+                                                          self.reactor.NOW)
 
     def _handle_shutdown(self):
         self.shutdown = True
@@ -130,9 +141,12 @@ class ledFrameHandler:
                 for chain in self.ledChains:
                     chain.led_helper.set_color(None, (0.0, 0.0, 0.0, 0.0))
                     self._transmit_chain(chain)
-                    
+                     
         pass
-    
+     
+    def get_status(self, eventtime):
+        return {'global_brightness': self.global_brightness}
+     
     def _handle_homing_move_begin(self, hmove):
         endstops_being_homed = [name for es,name in hmove.endstops]
 
@@ -224,9 +238,9 @@ class ledFrameHandler:
 
     def _getColorData(self, colors, fade):
         clamp = (lambda x : 0.0 if x < 0.0 else 1.0 if x > 1.0 else x)
-        colors = [x*clamp(fade) for x in colors]
-        colors=colors + [0.0] * (4 - len(colors))
-        colors=colors[:4]
+        colors = [x * clamp(fade) * self.global_brightness for x in colors]
+        colors = colors + [0.0] * (4 - len(colors))
+        colors = colors[:4]
         colors = [clamp(x) for x in colors]
         return tuple(colors)
 
