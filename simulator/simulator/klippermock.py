@@ -111,7 +111,9 @@ class mockConfig:
     def get_object(self,o):
         return self
     def getfloat(self,key,default,minval,maxval):
-        return float(self.config[key])
+        if key in self.config:
+            return float(self.config[key])
+        return float(default)
     def getboolean(self,key,default):
         return bool(self.config[key])
     def getint(self,key,default,minval,maxval):
@@ -123,13 +125,16 @@ class mockConfig:
     def get_name(self):
         return "led_effect simulator"
     def get(self, key, default=None ):
-        return self.config[key]
+        if key in self.config:
+            return self.config[key]
+        return default
     def set(self, key, value ):
         self.config[key]=value
 
 class mockLedHelper:
     def __init__(self,config):
         self.led_count = config.getint("ledcount", 1, 1, 1024)
+        self.led_state = [(0.0, 0.0, 0.0, 0.0)] * self.led_count
     def get_led_count(self):
         return self.led_count
 

@@ -140,6 +140,22 @@ When an effect is stopped and then started again, it resumes from the frame wher
 it last left off.  To restart the effect from the beginning, specify the `RESTART`
 parameter: `SET_LED_EFFECT EFFECT=panel_idle RESTART=1`.
 
+#### Global Brightness Control
+A global brightness multiplier can be applied to all LED output across all effects
+and chains using the `SET_LED_GLOBAL_BRIGHTNESS` command:
+
+`SET_LED_GLOBAL_BRIGHTNESS BRIGHTNESS=0.5` sets all LEDs to 50% brightness.
+`SET_LED_GLOBAL_BRIGHTNESS BRIGHTNESS=1.0` restores full brightness.
+
+The brightness value is clamped between 0.0 and 1.0. The default brightness
+can be set in the configuration using the `global_brightness` parameter:
+```
+[led_effect my_effect]
+global_brightness: 0.8
+```
+This setting applies a uniform scaling after all effect blending and per-effect
+fading, so it does not affect color calculations or blending modes.
+
 #### Template processing
 The effect layers are processed as (templates)[https://www.klipper3d.org/Command_Templates.html#template-expansion].
 That means that they can contain the same control logic that Klipper macros do.
@@ -217,6 +233,11 @@ as a comma seperated list. Then the effect will trigger on any of the buttons.
 Using already assigned pins (such as endstop pins) is possible by using 
 `duplicate_pin_override` (see Klipper documentation for details).
 Example: `button_pins: PC1, PC2`
+
+global_brightness:
+Sets a global brightness multiplier (0.0-1.0) that scales all LED output
+across all effects and chains. Default is 1.0 (full brightness).
+Example: `global_brightness: 0.8`
 
 ## Defining LEDs
 
