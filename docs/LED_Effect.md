@@ -387,6 +387,15 @@ Identical settings as Comet, but with multiple lights chasing each other.
 A light moves between each end of the strip. Multiple colors can be provided;
 the color will change after each sweep.
 
+#### Knightrider
+    Effect Rate:  1   How long one sweep takes, in seconds
+    Cutoff:       15  Length of the trail: how many frames it takes to fade
+                      to about a third
+    Palette:          Color of the sweeping LED and its trail
+A light moves between each end of the strip, as in Cylon, and leaves a fading
+trail behind it, like KITT's scanner in Knight Rider. Multiple colors can be
+provided; the color will change after each sweep.
+
 #### Heater
     Effect Rate:  1   Minimum temperature to activate effect
     Cutoff:       0   Disable effect once temp is reached

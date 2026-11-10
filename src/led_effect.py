@@ -931,6 +931,62 @@ class ledEffect:
 
             self.frameCount = len(self.thisFrame)
 
+    #Knight Rider, a light bounces from start to end of strip and leaves a
+    #fading trail behind it, like KITT's scanner
+    class layerKnightrider(_layerBase):
+        def __init__(self,  **kwargs):
+            super(ledEffect.layerKnightrider, self).__init__(**kwargs)
+
+            self.paletteColors = colorArray(COLORS, self.paletteColors)
+
+            if self.effectRate <= 0:
+                raise self.handler.printer.config_error(
+                    "LED Effect '%s': effect rate for knightrider must be > 0" % (self.handler.name,))
+            if self.effectCutoff <= 0:
+                raise self.handler.printer.config_error(
+                    "LED Effect '%s': cutoff (trail length) for knightrider must be > 0" % (self.handler.name,))
+
+            # How many frames per sweep animation.
+            frames = max(2, int(self.effectRate / self.frameRate))
+
+            # The trail fades by this factor every frame: its time constant
+            # is the cutoff, in frames.
+            fade = exp(-1.0 / self.effectCutoff)
+
+            # Sweeps until both the color and the direction repeat, as cylon
+            # plays them: the loop must start and end on the same picture.
+            cycle = (len(self.paletteColors) % 2 + 1) * len(self.paletteColors)
+
+            brightness = [0.0] * self.ledCount
+            trail = [[0.0] * COLORS for _ in range(self.ledCount)]
+            frameList = []
+
+            # One cycle builds the trail up, the next is the loop that plays.
+            for sweep in range(2 * cycle + 1):
+                color = self.paletteColors[sweep % len(self.paletteColors)]
+                direction = sweep % 2 == 0
+
+                for frame in range(frames):
+                    pct = frame / (frames - 1)
+                    newFrame = []
+
+                    p = int(round((self.ledCount - 2) * pct) if direction else 1 + round(((self.ledCount - 2) * (1 - pct))))
+
+                    for i in range(self.ledCount):
+                        if p == i:
+                            brightness[i] = 1.0
+                            trail[i] = list(color)
+                        else:
+                            brightness[i] *= fade
+                        newFrame += [brightness[i] * x for x in trail[i]]
+
+                    frameList.append(newFrame)
+
+            # Start a quarter sweep in, where the trail is behind the light.
+            start = cycle * frames + frames // 4
+            self.thisFrame = frameList[start:start + cycle * frames]
+            self.frameCount = len(self.thisFrame)
+
     #Color gradient over all LEDs
     class layerGradient(_layerBase):
         def __init__(self,  **kwargs):
